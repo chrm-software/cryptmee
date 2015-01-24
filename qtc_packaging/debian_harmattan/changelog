@@ -1,0 +1,8 @@
+cryptmee (0.2.0) unstable; urgency=low
+  * First public release
+  * Text encryption, mail decryption and key management
+
+ -- Christoph Maciejewski <chrm@chrm.info>  Thu, 22 Jan 2015 11:47:05 +0100
+
+
+

@@ -1,0 +1,24 @@
+Format: 1.8
+Date: Thu, 22 Jan 2015 11:47:05 +0100
+Source: cryptmee
+Binary: cryptmee
+Architecture: armel
+Version: 0.2.0
+Distribution: unstable
+Urgency: low
+Maintainer: Christoph Maciejewski <chrm@chrm.info>
+Changed-By: Christoph Maciejewski <chrm@chrm.info>
+Description: 
+ cryptmee   - Encrypt and decrypt using GnuPG!
+Changes: 
+ cryptmee (0.2.0) unstable; urgency=low
+ .
+   * First public release
+   * Text encryption, mail decryption and key management
+Checksums-Sha1: 
+ afd608900d0fcc0730c12f0553e648c59ff5543b 162516 cryptmee_0.2.0_armel.deb
+Checksums-Sha256: 
+ 97a3dc5359d1d14115c4e2e3e662c8e044703779ab7964a859e6cdfbc0537a18 162516 cryptmee_0.2.0_armel.deb
+Files: 
+ c2dbcc1e9c9dfb590ed6962947df5a62 162516 user/other optional cryptmee_0.2.0_armel.deb
+Maemo-Display-Name: CryptMee

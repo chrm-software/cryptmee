@@ -1,0 +1,179 @@
+// import QtQuick 1.0 // to target S60 5th Edition or Maemo 5
+import QtQuick 1.1
+import com.nokia.meego 1.0
+
+Page {
+    tools: commonTools
+    id: mailViewPage
+
+    property alias prop_eMailHeader: labelHeader.text
+    property alias prop_eMailContent: textareaContent.text
+    property int prop_idx: -1
+
+    onStatusChanged: {
+        if(status === DialogStatus.Open){
+            console.debug("[mailViewPage]: onOpen, call pgpDecrypt")
+            delayDecryptTimer.start();
+            setErrorMessage("");
+        }
+    }
+
+    ToolBarLayout {
+        id: commonTools
+        visible: true
+
+        ToolIcon {
+            id: backButton
+            platformIconId: "toolbar-back";
+            anchors.left: (parent === undefined) ? undefined : parent.left
+            enabled: true
+            onClicked: {
+                myMenu.close();
+                pageStack.pop();
+            }
+        }
+
+        ToolIcon {
+            platformIconId: "toolbar-view-menu"
+            anchors.right: (parent === undefined) ? undefined : parent.right
+            onClicked: (myMenu.status === DialogStatus.Closed) ? myMenu.open() : myMenu.close()
+        }
+    }
+
+    Menu {
+        id: myMenu
+        visualParent: startPage
+    }
+
+    Timer {
+        id: delayDecryptTimer
+        interval: 1000
+        repeat: false
+        running: false
+
+        onTriggered: {
+            startPage.pgpDecrypt(mailPage.prop_mailReader.getContent(prop_idx), "MAIL_DECRYPT");
+        }
+    }
+
+    Rectangle {
+        id: topDecoartion
+        color: "#0000b0"
+        width: parent.width
+        height: childrenRect.height
+        anchors.top: parent.top
+
+        gradient: Gradient {
+            GradientStop {color: "#0093dd"; position: 0.0}
+            GradientStop {color: "#0069a0"; position: 0.9}
+        }
+
+        Label {
+            id: label2
+            x: 10
+            y: 0
+            width: parent.width - 40
+            height: 65
+            color: "#ffffff"
+            text: "CryptMee <font size='-5'>eMail</font>"
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignLeft
+            font.pixelSize: 32
+            font.bold: false
+        }
+    }
+
+    Rectangle {
+        id: errorMessage
+        color: "#ff0000"
+        width: parent.width
+        height: labelError.height
+        anchors.top: topDecoartion.bottom
+        visible: false
+
+        gradient: Gradient {
+            GradientStop {color: "#ff0000"; position: 0.0}
+            GradientStop {color: "#000000"; position: 0.9}
+        }
+        Flickable {
+            id: flickAreaError
+            anchors.fill: parent
+            contentWidth: labelError.width
+            contentHeight: labelError.height
+            flickableDirection: Flickable.VerticalFlick
+            clip: true
+
+            Label {
+                id: labelError
+                width: errorMessage.width
+                height: 0
+                color: "#ffffff"
+                text: "No errors"
+                font.pixelSize: 18
+                font.bold: false
+                visible: false
+            }
+        }
+    }
+
+
+    Rectangle {
+        id: mailHeader
+        width: parent.width
+        height: 130
+        anchors.top: errorMessage.bottom
+
+        Label {
+            id: labelHeader
+            x: 5
+            width: parent.width - 10
+            height: 130
+            text: ""
+            font.pixelSize: 20
+        }
+    }
+
+    Rectangle {
+        id: mailContent
+        width: parent.width
+        anchors.top: mailHeader.bottom
+        anchors.bottom: parent.bottom
+
+        Flickable {
+            id: flickAreaContent
+            anchors.fill: parent
+            contentWidth: textareaContent.width
+            contentHeight: textareaContent.height
+            flickableDirection: Flickable.VerticalFlick
+            clip: true
+
+            TextArea {
+                id: textareaContent
+                readOnly: true
+                text: "Content"
+                width:mailContent.width
+            }
+        }
+
+        ScrollDecorator {
+            flickableItem: flickAreaContent
+        }
+    }
+
+    function setErrorMessage(_msg) {
+        if(_msg !== "") {
+            errorMessage.visible = true;
+            labelError.visible = true;
+            labelError.text = _msg;
+            labelError.height = 150;
+        } else {
+            errorMessage.visible = false;
+            labelError.visible = false;
+            labelError.text = _msg;
+            labelError.height = 0;
+        }
+    }
+
+
+
+}

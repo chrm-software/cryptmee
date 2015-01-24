@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>pix/clipboard_from.png</file>
+        <file>pix/clipboard_to.png</file>
+        <file>pix/gpg-keys.png</file>
+        <file>pix/gpg-mail.png</file>
+        <file>pix/gpg-text.png</file>
+        <file>pix/private_keys.png</file>
+        <file>pix/public_keys.png</file>
+        <file>pix/public_keys_edit.png</file>
+        <file>pix/public_keys_export.png</file>
+        <file>pix/public_keys_import.png</file>
+        <file>pix/CryptMee.png</file>
+    </qresource>
+    <qresource prefix="/languages">
+        <file>languages/lang_de_DE.qm</file>
+    </qresource>
+</RCC>

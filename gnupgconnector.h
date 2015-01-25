@@ -46,6 +46,7 @@ public:
     Q_INVOKABLE QString checkGPGVersion(QString _path);
     Q_INVOKABLE QString getGPGVersionString();
     Q_INVOKABLE bool importKeysFromFile(QString _path);
+    Q_INVOKABLE bool importKeysFromClipboard();
     Q_INVOKABLE bool searchKeysOnKeyserver(QString _keyword);
 
     // Settings interface

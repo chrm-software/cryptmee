@@ -258,6 +258,9 @@ void GnuPGConnector::gpgFinished(int _retVal)
         // Hack: ignore errors
         _retVal = 0;
 
+    } else if(this->currentState == GPG_SET_TRUST) {
+        this->gpgStdOutput = output;
+
     } else {
         // Decrypted content form StdOut
         this->gpgStdOutput = this->readFromTmpFile(1);
@@ -270,7 +273,7 @@ void GnuPGConnector::gpgFinished(int _retVal)
     QFile::remove(QString(TMPFILE));
 
     if(_retVal != 0) {
-        this->gpgErrOutput = QString("RetVal: ") + QString::number(_retVal) + "\n" + error;
+        this->gpgErrOutput = QString("[") + QString::number(_retVal) + "] " + error;
         emit errorOccured();
     } else {
         emit ready();
@@ -403,6 +406,25 @@ bool GnuPGConnector::importKeysFromFile(QString _path)
     return true;
 }
 
+bool GnuPGConnector::importKeysFromClipboard()
+{
+    QString clipBoard = this->getFromClipboard();
+
+    qDebug() << "GnuPGConnector::importKeysFromClipboard()";
+
+    // Write to file
+    this->writeToTmpFile(clipBoard);
+    QString gpgIn = this->gpgBinaryPath + QString(" --batch --import ") + TMPFILE;
+
+    qDebug() << "Starting: " << gpgIn;
+
+    this->currentState = GPG_IMPORT;
+    this->processIsRunning = true;
+    this->process_gpg->start(gpgIn);
+
+    return true;
+}
+
 bool GnuPGConnector::searchKeysOnKeyserver(QString _keyword)
 {
     qDebug() << "GnuPGConnector::searchKeysOnKeyserver(" << _keyword << ")";
@@ -411,7 +433,7 @@ bool GnuPGConnector::searchKeysOnKeyserver(QString _keyword)
         return false;
 
     // TODO: replace keyserver
-    QString gpgIn = this->gpgBinaryPath + QString(" --batch --keyserver key.adeti.org --search-keys ") + _keyword;
+    QString gpgIn = this->gpgBinaryPath + QString(" --batch --keyserver " + this->gpgKeyserverURL + " --search-keys ") + _keyword;
 
     qDebug() << "Starting: " << gpgIn;
 

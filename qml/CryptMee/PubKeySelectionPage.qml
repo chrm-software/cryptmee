@@ -158,6 +158,10 @@ Page {
             }
          }
 
+        ScrollDecorator {
+            flickableItem: flickArea
+        }
+
         Flickable {
             id: flickArea
             width: parent.width
@@ -176,8 +180,6 @@ Page {
             }
         }
 
-        ScrollDecorator {
-            flickableItem: flickArea
-        }
+
     }
 }

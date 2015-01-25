@@ -85,6 +85,25 @@ Page {
            }
     }
 
+    SelectionDialog {
+        id: trustLevelDialog
+        titleText: qsTr("Set user trust:")
+        selectedIndex: 3
+
+        model: ListModel {
+            ListElement { value: "1"; name: "I don't know" }
+            ListElement { value: "2"; name: "I do NOT trust" }
+            ListElement { value: "3"; name: "I trust marginally" }
+            ListElement { value: "4"; name: "I trust fully" }
+            ListElement { value: "6"; name: "I trust ultimately" }
+        }
+
+        onAccepted: {
+            var trust = trustLevelDialog.model.get(trustLevelDialog.selectedIndex).value;
+            setOwnerTrust(trust);
+        }
+    }
+
     /////////////////////////////// GPG functions ////////////////////////
     function showOneKey() {
         busyIndicator.running = false;
@@ -103,15 +122,28 @@ Page {
         startPage.gpgConnector.importKeysFromFile(importKeyFile);
     }
 
+    function importKeysFromClipboard() {
+        startPage.currentState = "IMPORTKEYS";
+        startPage.gpgConnector.importKeysFromClipboard();
+    }
+
     function searchOnKeyServer(_keyword) {
+
+        if(_keyword === "")
+            return;
+
+        busyIndicator.running = true;
+        busyIndicator.visible = true;
+
+        startPage.currentState = "KEYSERVER_SEARCH";
         startPage.gpgConnector.searchKeysOnKeyserver(_keyword);
     }
 
-    function setOwnerTrust() {
+    function setOwnerTrust(_trust) {
         startPage.currentState = "TRUSTKEYS";        
         currentKeyID = keyDialog.selectedKeyID;
 
-        startPage.gpgConnector.setOwnerTrust(currentKeyID, "6");
+        startPage.gpgConnector.setOwnerTrust(currentKeyID, _trust);
     }
 
     function genKeyPair() {
@@ -148,6 +180,21 @@ Page {
         infoBanner.show();
     }
 
+    function keyserverSearched(_result) {
+        busyIndicator.running = false;
+        busyIndicator.visible = false
+
+        if(_result) {
+            // Success
+            infoBanner.text = qsTr("Found keys!");
+        } else {
+            // Fails
+            infoBanner.text = qsTr("Error occures!") + "\n" + startPage.dataErrOutput;
+        }
+
+        infoBanner.show();
+    }
+
     function keyImported(_result) {
         busyIndicator.running = false;
         busyIndicator.visible = false
@@ -157,7 +204,7 @@ Page {
             infoBanner.text = qsTr("Keys imported.");
         } else {
             // Fails
-            infoBanner.text = qsTr("Error occures!");
+            infoBanner.text = qsTr("Error occures!") + "\n" + startPage.dataErrOutput;
         }
 
         infoBanner.show();
@@ -482,7 +529,7 @@ Page {
                 text: qsTr("Trust Key")
 
                 onClicked: {
-                    setOwnerTrust();
+                    trustLevelDialog.open();
                 }
             }
 
@@ -540,9 +587,26 @@ Page {
 
             Grid {
                 columns: 1
-                rows: 6
+                rows: 8
                 spacing: 2
                 anchors.fill: parent
+
+                Label {
+                    text: qsTr("Import from clipboard:")
+                    width: parent.width
+                }
+
+                Button {
+                    id: importKeyCliboardButton
+                    anchors.margins: 3
+                    width: parent.width
+                    iconSource: "qrc:/images/pix/clipboard_from.png"
+                    text: qsTr("Import")
+
+                    onClicked: {
+                        importKeysFromClipboard();
+                    }
+                }
 
                 Label {
                     text: qsTr("Import from file:") + " /home/user/MyDocs/"
@@ -583,6 +647,13 @@ Page {
                     text: ""
                     placeholderText: qsTr("Search keyword...")
                     inputMethodHints: Qt.ImhNoPredictiveText;
+
+                    onTextChanged: {
+                        if(textFieldKeyImportServer.text.length < 4)
+                            importKeyServerButton.enabled = false;
+                        else
+                            importKeyServerButton.enabled = true;
+                    }
                 }
 
                 Button {
@@ -591,6 +662,7 @@ Page {
                     width: parent.width
                     iconSource: "image://theme/icon-m-toolbar-search"
                     text: qsTr("Search")
+                    enabled: false
 
                     onClicked: {
                         searchOnKeyServer(textFieldKeyImportServer.text);

@@ -320,6 +320,10 @@ Public License either version 3 of the license, or (at your option) any later ve
                 // Keys imported
                 keyPage.keyImported(true);
 
+            } else if(currentState === "KEYSERVER_SEARCH") {
+                // Keys imported
+                keyPage.keyserverSearched(true);
+
             } else {
                 currentGpgVersion = myGPGConnector.getGPGVersionString();
             }
@@ -374,6 +378,10 @@ Public License either version 3 of the license, or (at your option) any later ve
             } else if(currentState === "IMPORTKEYS") {
                 // Keys imported
                 keyPage.keyImported(false);
+
+            } else if(currentState === "KEYSERVER_SEARCH") {
+                // Keys imported
+                keyPage.keyserverSearched(false);
             }
         }
     }

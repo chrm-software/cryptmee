@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'gnupgconnector.h'
 **
-** Created: Fri 23. Jan 18:47:04 2015
+** Created: Sun 25. Jan 15:58:49 2015
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.4)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_GnuPGConnector[] = {
        5,       // revision
        0,       // classname
        0,    0, // classinfo
-      22,   14, // methods
+      23,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -53,10 +53,11 @@ static const uint qt_meta_data_GnuPGConnector[] = {
      480,  474,  101,   15, 0x02,
      505,   15,  101,   15, 0x02,
      527,  474,  339,   15, 0x02,
-     564,  555,  339,   15, 0x02,
-     607,  595,   15,   15, 0x02,
-     646,  641,  101,   15, 0x02,
-     672,   15,   15,   15, 0x02,
+     555,   15,  339,   15, 0x02,
+     590,  581,  339,   15, 0x02,
+     633,  621,   15,   15, 0x02,
+     672,  667,  101,   15, 0x02,
+     698,   15,   15,   15, 0x02,
 
        0        // eod
 };
@@ -77,7 +78,8 @@ static const char qt_meta_stringdata_GnuPGConnector[] = {
     "_id,_trustLevel\0setOwnerTrust(QString,QString)\0"
     "_path\0checkGPGVersion(QString)\0"
     "getGPGVersionString()\0importKeysFromFile(QString)\0"
-    "_keyword\0searchKeysOnKeyserver(QString)\0"
+    "importKeysFromClipboard()\0_keyword\0"
+    "searchKeysOnKeyserver(QString)\0"
     "_key,_value\0settingsSetValue(QString,QString)\0"
     "_key\0settingsGetValue(QString)\0"
     "settingsReset()\0"
@@ -143,15 +145,17 @@ int GnuPGConnector::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
         case 17: { bool _r = importKeysFromFile((*reinterpret_cast< QString(*)>(_a[1])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
-        case 18: { bool _r = searchKeysOnKeyserver((*reinterpret_cast< QString(*)>(_a[1])));
+        case 18: { bool _r = importKeysFromClipboard();
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
-        case 19: settingsSetValue((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
-        case 20: { QString _r = settingsGetValue((*reinterpret_cast< QString(*)>(_a[1])));
+        case 19: { bool _r = searchKeysOnKeyserver((*reinterpret_cast< QString(*)>(_a[1])));
+            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
+        case 20: settingsSetValue((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
+        case 21: { QString _r = settingsGetValue((*reinterpret_cast< QString(*)>(_a[1])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
-        case 21: settingsReset(); break;
+        case 22: settingsReset(); break;
         default: ;
         }
-        _id -= 22;
+        _id -= 23;
     }
     return _id;
 }

@@ -16,9 +16,9 @@ Changes:
    * First public release
    * Text encryption, mail decryption and key management
 Checksums-Sha1: 
- afd608900d0fcc0730c12f0553e648c59ff5543b 162516 cryptmee_0.2.0_armel.deb
+ cb713057ad10ff91bea9bd9788e32ac7f41ec147 163378 cryptmee_0.2.0_armel.deb
 Checksums-Sha256: 
- 97a3dc5359d1d14115c4e2e3e662c8e044703779ab7964a859e6cdfbc0537a18 162516 cryptmee_0.2.0_armel.deb
+ c9aa5b4f00c57f5ad1d687fbb8efef164b0f67fd424a4572f187e1f69b79501f 163378 cryptmee_0.2.0_armel.deb
 Files: 
- c2dbcc1e9c9dfb590ed6962947df5a62 162516 user/other optional cryptmee_0.2.0_armel.deb
+ e1b42913477ef96799eee6eaa035b7f6 163378 user/other optional cryptmee_0.2.0_armel.deb
 Maemo-Display-Name: CryptMee

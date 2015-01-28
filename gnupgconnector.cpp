@@ -170,7 +170,7 @@ QString GnuPGConnector::decrypt(QString _input, QString _passphrase)
     if(!this->writeToTmpFile(_input))
         return "*** Error occured ***";
 
-    QString gpgIn = this->gpgBinaryPath + QString(" --batch --no-tty --yes --always-trust --passphrase ") + _passphrase + " -o " + TMPFILE + ".txt" + " --decrypt " + TMPFILE;
+    QString gpgIn = this->gpgBinaryPath + QString(" --batch --no-tty --yes --always-trust --passphrase \"") + _passphrase + "\" -o " + TMPFILE + ".txt" + " --decrypt " + TMPFILE;
 
     qDebug() << "Starting: " << QString(gpgIn).replace(_passphrase, "***");
 
@@ -254,6 +254,7 @@ void GnuPGConnector::gpgFinished(int _retVal)
         // Search results from stdout
         // TODO: parse output!
         this->gpgStdOutput = output;
+        this->myKeyReader->parseGnuPGServerSearchOutput(output);
 
         // Hack: ignore errors
         _retVal = 0;
@@ -309,9 +310,9 @@ void GnuPGConnector::gpgError(QProcess::ProcessError _pe)
     emit errorOccured();
 }
 
-QString GnuPGConnector::getKey(int _i)
+QString GnuPGConnector::getKey(int _i, int _type)
 {   
-    return this->myKeyReader->getKeyAsHTMLString(_i);
+    return this->myKeyReader->getKeyAsHTMLString(_i, false, _type);
 }
 
 QString GnuPGConnector::getKeyByID(QString _id)
@@ -330,9 +331,9 @@ QString GnuPGConnector::getKeyByID(QString _id)
     return retVal;
 }
 
-int GnuPGConnector::getNumOfPubKeys()
+int GnuPGConnector::getNumOfPubKeys(int _type)
 {
-    return this->myKeyReader->getNumOfKeys();
+    return this->myKeyReader->getNumOfKeys(_type);
 }
 
 bool GnuPGConnector::generateKeyPair(QString _name, QString _comment, QString _email, QString _passphrase)
@@ -432,12 +433,32 @@ bool GnuPGConnector::searchKeysOnKeyserver(QString _keyword)
     if(_keyword == "")
         return false;
 
-    // TODO: replace keyserver
     QString gpgIn = this->gpgBinaryPath + QString(" --batch --keyserver " + this->gpgKeyserverURL + " --search-keys ") + _keyword;
 
     qDebug() << "Starting: " << gpgIn;
 
     this->currentState = GPG_SEARCH;
+    this->processIsRunning = true;
+    this->process_gpg->start(gpgIn);
+
+    return true;
+}
+
+bool GnuPGConnector::importKeysFromKeyserver(QString _keys)
+{
+    qDebug() << "GnuPGConnector::importKeysFromKeyserver(" << _keys << ")";
+
+    QStringList keysToImport = _keys.split("|");
+    keysToImport.removeDuplicates();
+
+    if(keysToImport.size() == 0)
+        return false;
+
+    QString gpgIn = this->gpgBinaryPath + QString(" --batch --keyserver " + this->gpgKeyserverURL + " --recv-keys ") + keysToImport.join(" ");
+
+    qDebug() << "Starting: " << gpgIn;
+
+    this->currentState = GPG_IMPORT;
     this->processIsRunning = true;
     this->process_gpg->start(gpgIn);
 

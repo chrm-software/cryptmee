@@ -38,6 +38,11 @@ PageStackWindow {
     SettingsPage {
         id: settingsPage
     }
+
+    KeySearchResultSelectionPage {
+        id: searchKeyDialog
+    }
+
     /////////////////////////////////////////////////////////////
 
 

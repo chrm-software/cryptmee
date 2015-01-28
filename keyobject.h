@@ -6,7 +6,7 @@
 class KeyObject
 {
 public:
-    KeyObject(QString _fromGnuPG);
+    KeyObject(QString _fromGnuPG, bool _searchResult);
 
     QString fromGnuPG;
     QString keyID;

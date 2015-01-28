@@ -1,0 +1,23 @@
+Format: 1.8
+Date: Wed, 28 Jan 2015 19:16:48 +0100
+Source: cryptmee
+Binary: cryptmee
+Architecture: armel
+Version: 0.2.1
+Distribution: unstable
+Urgency: low
+Maintainer: Christoph Maciejewski <chrm@chrm.info>
+Changed-By: Christoph Maciejewski <chrm@users.sf.net>
+Description: 
+ cryptmee   - Encrypt and decrypt using GnuPG!
+Changes: 
+ cryptmee (0.2.1) unstable; urgency=low
+ .
+   * Import keys from keyserver now complete
+Checksums-Sha1: 
+ dcb68fd6ca26d46af569bd4862e023b4fc91cb6b 171670 cryptmee_0.2.1_armel.deb
+Checksums-Sha256: 
+ c354efcecf1f158b07929a63a52fb240ed1a215b529744fc6c6b134e3b144490 171670 cryptmee_0.2.1_armel.deb
+Files: 
+ af01a29fa107c773376cb846251bb7e3 171670 user/other optional cryptmee_0.2.1_armel.deb
+Maemo-Display-Name: CryptMee

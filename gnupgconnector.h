@@ -38,9 +38,9 @@ public:
     Q_INVOKABLE QString getData(bool _errors);
     Q_INVOKABLE QString getFromClipboard();
     Q_INVOKABLE void setToClipboard(QString _data);    
-    Q_INVOKABLE QString getKey(int _i);
+    Q_INVOKABLE QString getKey(int _i, int _type = 0);
     Q_INVOKABLE QString getKeyByID(QString _id);
-    Q_INVOKABLE int getNumOfPubKeys();
+    Q_INVOKABLE int getNumOfPubKeys(int _type = 0);
     Q_INVOKABLE bool generateKeyPair(QString _name, QString _comment, QString _email, QString _passphrase);
     Q_INVOKABLE bool setOwnerTrust(QString _id, QString _trustLevel);
     Q_INVOKABLE QString checkGPGVersion(QString _path);
@@ -48,6 +48,7 @@ public:
     Q_INVOKABLE bool importKeysFromFile(QString _path);
     Q_INVOKABLE bool importKeysFromClipboard();
     Q_INVOKABLE bool searchKeysOnKeyserver(QString _keyword);
+    Q_INVOKABLE bool importKeysFromKeyserver(QString _keys);
 
     // Settings interface
     Q_INVOKABLE void settingsSetValue(QString _key, QString _value);

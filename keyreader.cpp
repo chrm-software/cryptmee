@@ -1,3 +1,4 @@
+#include <QDebug>
 #include "keyreader.h"
 
 KeyReader::KeyReader()
@@ -31,38 +32,75 @@ bool KeyReader::parseGnuPGOutput(QString _fromGnuPG)
 
     for(int i=0; i<tmpList.size(); i++) {
         // create KeyObjects
-        KeyObject* tmp = new KeyObject(tmpList[i]);
+        KeyObject* tmp = new KeyObject(tmpList[i], false);
         this->allKeys << tmp;
     }
 
     return true;
 }
 
-QString KeyReader::getKeyAsHTMLString(int _key, bool _fullInfo) {
+bool KeyReader::parseGnuPGServerSearchOutput(QString _fromGnuPG)
+{
+    // Parse content;
+    QStringList tmpList;
+    qDebug() << "KeyReader::parseGnuPGServerSearchOutput()";
+
+    // Clear List
+    for(int i=0; i<this->lastSearchKeys.size(); i++) {
+        delete this->lastSearchKeys.at(i);
+    }
+
+    this->lastSearchKeys.clear();
+
+    tmpList = _fromGnuPG.split(QRegExp("\\([0-9]+\\)"));
+
+    for(int i=1; i<tmpList.size(); i++) {
+        KeyObject* tmp = new KeyObject(tmpList[i], true);
+        this->lastSearchKeys << tmp;
+    }
+
+    return true;
+}
+
+QString KeyReader::getKeyAsHTMLString(int _key, bool _fullInfo, int _type) {
     QString retVal;
 
-    if(!_fullInfo) {
-        retVal = this->allKeys[_key]->trustValue + "|" + this->allKeys[_key]->keyID + "|(Created: " + this->allKeys[_key]->date + ")" ;
+    if(_type == 0) {
+        if(!_fullInfo) {
+            retVal = this->allKeys[_key]->trustValue + "|" + this->allKeys[_key]->keyID + "|(Created: " + this->allKeys[_key]->date + ")" ;
 
-        for(int i=0; i<this->allKeys[_key]->identities.size(); i++) {
-            retVal += "<br>" + QString(this->allKeys[_key]->identities.at(i)).replace("<", "&lt;");
+            for(int i=0; i<this->allKeys[_key]->identities.size(); i++) {
+                retVal += "<br>" + QString(this->allKeys[_key]->identities.at(i)).replace("<", "&lt;");
+            }
+        } else {
+            retVal = "ID: " + this->allKeys[_key]->keyID + "<br>";
+            retVal += "Created: " + this->allKeys[_key]->date + "<br>" + "Expires: " + this->allKeys[_key]->expires + "<br>";
+            retVal += "Length: " + this->allKeys[_key]->length;
+
+            for(int i=0; i<this->allKeys[_key]->identities.size(); i++) {
+                retVal += "<br>" + QString(this->allKeys[_key]->identities.at(i)).replace("<", "&lt;");
+            }
         }
-    } else {
-        retVal = "ID: " + this->allKeys[_key]->keyID + "<br>";
-        retVal += "Created: " + this->allKeys[_key]->date + "<br>" + "Expires: " + this->allKeys[_key]->expires + "<br>";
-        retVal += "Length: " + this->allKeys[_key]->length;
+    } else if(_type == 1) {
+        // Search keys
+        retVal = this->lastSearchKeys[_key]->keyID + "|(Created: " + this->lastSearchKeys[_key]->date + ")" ;
 
-        for(int i=0; i<this->allKeys[_key]->identities.size(); i++) {
-            retVal += "<br>" + QString(this->allKeys[_key]->identities.at(i)).replace("<", "&lt;");
+        for(int i=0; i<this->lastSearchKeys[_key]->identities.size(); i++) {
+            retVal += "<br>" + QString(this->lastSearchKeys[_key]->identities.at(i)).replace("<", "&lt;");
         }
     }
 
     return retVal;
 }
 
-int KeyReader::getNumOfKeys()
+int KeyReader::getNumOfKeys(int _storeType)
 {
-    return this->allKeys.size();
+    if(_storeType == 0)
+        return this->allKeys.size();
+    else if(_storeType == 1)
+        return this->lastSearchKeys.size();
+
+    return 0;
 }
 
 KeyObject* KeyReader::getKeyByID(QString _id)

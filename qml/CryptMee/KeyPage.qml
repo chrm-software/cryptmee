@@ -75,14 +75,14 @@ Page {
     }
 
     QueryDialog  {
-           id: askKeyGenDialog
-           titleText: qsTr("Generate Key Pair")
-           message:  qsTr("Creating cryptographic key pairs takes some time. You can reduce the time by using your phone more intense. Start a game or use the camera!");
-           acceptButtonText: qsTr("Generate!")
-           rejectButtonText: qsTr("Cancel")
-           onAccepted: {
-               genKeyPair();
-           }
+        id: askKeyGenDialog
+        titleText: qsTr("Generate Key Pair")
+        message:  qsTr("Creating cryptographic key pairs takes some time. You can reduce the time by using your phone more intense. Start a game or use the camera!");
+        acceptButtonText: qsTr("Generate!")
+        rejectButtonText: qsTr("Cancel")
+        onAccepted: {
+            genKeyPair();
+        }
     }
 
     SelectionDialog {
@@ -140,7 +140,7 @@ Page {
     }
 
     function setOwnerTrust(_trust) {
-        startPage.currentState = "TRUSTKEYS";        
+        startPage.currentState = "TRUSTKEYS";
         currentKeyID = keyDialog.selectedKeyID;
 
         startPage.gpgConnector.setOwnerTrust(currentKeyID, _trust);
@@ -152,7 +152,11 @@ Page {
         generateKeyPair.enabled = false;
         startPage.currentState = "GENKEYS";
         if(!startPage.gpgConnector.generateKeyPair(nameT.text, commentT.text, mailT.text, passphraseT.text))
-                keyPairGenerated(false);
+            keyPairGenerated(false);
+    }
+
+    function importKeysFromServer(_keyListString) {
+        startPage.gpgConnector.importKeysFromKeyserver(_keyListString);
     }
 
     /////////////////////////////// Results from GnuPG ////////////////////
@@ -186,7 +190,14 @@ Page {
 
         if(_result) {
             // Success
-            infoBanner.text = qsTr("Found keys!");
+            var numOfKeysFound = startPage.gpgConnector.getNumOfPubKeys(1);
+            if(numOfKeysFound == 0)
+                infoBanner.text = qsTr("No keys found. Try again!");
+            else {
+                infoBanner.text = qsTr("Found keys!") + " (" + numOfKeysFound + ")";
+                fillSearchKeysModel();
+                pageStack.push(searchKeyDialog);
+            }
         } else {
             // Fails
             infoBanner.text = qsTr("Error occures!") + "\n" + startPage.dataErrOutput;
@@ -231,6 +242,24 @@ Page {
         labelEditKeyInfo.text = "";
     }
 
+    // Create model for key list view
+    function fillSearchKeysModel() {
+        var tmpEntryID = "";
+        var tmpEntryNames = "";
+
+        searchKeyDialog.allKeyList.clear();
+
+        for(var i=0; i < startPage.gpgConnector.getNumOfPubKeys(1); i++) {
+            tmpEntryID = startPage.gpgConnector.getKey(i, 1).split("|")[0];
+            tmpEntryNames = startPage.gpgConnector.getKey(i, 1).split("|")[1];
+
+            console.debug("Key from search: " + tmpEntryID);
+            searchKeyDialog.allKeyList.append({ name: tmpEntryID, ids: tmpEntryNames, selected_param: false, isVisible: true });
+        }
+    }
+
+    ///////////////////////////////////////
+
     ParallelAnimation {
         id: fadeInKeyGen
         running: false
@@ -258,7 +287,7 @@ Page {
             createKeyPair.visible = true;
             createKeyPair.height = 65;
             importKey.visible = true;
-            importKey.height = 65;            
+            importKey.height = 65;
             exportKey.visible = true;
             exportKey.height = 65;
         }
@@ -338,7 +367,7 @@ Page {
             horizontalAlignment: Text.AlignLeft
             font.pixelSize: 32
             font.bold: false
-        }        
+        }
     }
 
     ScrollDecorator {
@@ -366,7 +395,7 @@ Page {
                 if(createKeyPairArea.visible == false) {
                     createKeyPairArea.visible = true;
                     createKeyPairArea.height = nameT.height*5 + idText.height + generateKeyPair.height + 14;
-                    fadeOutKeyGen.start();                    
+                    fadeOutKeyGen.start();
 
                 } else {
                     createKeyPairArea.visible = false;

@@ -99,12 +99,7 @@ Page {
 
             console.debug("Mail: " + tmpSubject);
 
-            listViewMails.model.append({ name: tmpFrom, subject: tmpSubject, date: tmpDate, direction: tmpDirection, isVisible: true, idx: idx });
-
-            /*if(_filterString === undefined || (tmpEntryID.indexOf(_filterString) > -1 || tmpEntryNames.indexOf(_filterString) > -1))
-                keyDialog.allKeyList.append({ name: tmpFrom, subject: tmpSubject, date: tmpDate, isVisible: true });
-            else
-                keyDialog.allKeyList.append({ name: tmpEntryID, ids: tmpEntryNames, trust: tmpEntryTrust, isVisible: false });*/
+            listViewMails.model.append({ name: tmpFrom, subject: tmpSubject, date: tmpDate, direction: tmpDirection, isVisible: true, idx: idx });            
         }
     }
 

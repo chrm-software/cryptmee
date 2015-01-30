@@ -35,7 +35,72 @@ Page {
 
     Menu {
         id: myMenu
-        visualParent: startPage
+        visualParent: page_Mail
+        MenuLayout {
+            MenuItem { text: qsTr("Info")
+                onClicked: {
+                    helpDialog.open();
+                }
+            }
+            MenuItem { text: qsTr("Show GnuPG log")
+                onClicked: {
+                    pageStack.push(gpgHistoryPage);
+                }
+            }
+        }
+    }
+
+    Dialog {
+        id: helpDialog
+        opacity: 0.8
+        anchors.fill: parent
+
+        content: Rectangle {
+            id: titleField
+            height: blueRect.height * 2
+
+            Rectangle {
+                id: blueRect
+                width: 10
+                height: 150
+                color: "#0093dd"
+                anchors.right: blueText
+            }
+
+            Text {
+                id: blueText
+                anchors.left: blueRect.right
+                anchors.margins: 15
+                font.pixelSize: 25
+                height: blueRect.height
+                color: "white"
+                text: qsTr("Received email")
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            Rectangle {
+                id: greenRect
+                width: 10
+                height: 150
+                color: "#00b804"
+                anchors.right: greenText
+                anchors.top: blueRect.bottom
+            }
+
+            Text {
+                id: greenText
+                anchors.left: blueRect.right
+                anchors.top: blueText.bottom
+                anchors.margins: 15
+                font.pixelSize: 25
+                height: greenRect.height
+                color: "white"
+                text: qsTr("Sent email")
+                verticalAlignment: Text.AlignVCenter
+            }
+        }
+
+
     }
 
     MailReader {
@@ -72,7 +137,6 @@ Page {
                 // Default are 7 days old mails
                 myMailReader.readMails(7);
 
-                console.debug("===> start MailReader");
                 busy01.running = true;
                 busy01.visible = true;
 
@@ -282,7 +346,6 @@ Page {
             buttonAge.text = dialogAge.model.get(dialogAge.selectedIndex).name
             myMailReader.readMails(age);
 
-            console.debug("===> start MailReader");
             busy01.running = true;
             busy01.visible = true;
         }

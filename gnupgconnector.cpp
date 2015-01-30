@@ -3,6 +3,7 @@
 #include <QDir>
 #include <QFile>
 #include <QSettings>
+#include <QDateTime>
 
 #include "gnupgconnector.h"
 
@@ -10,6 +11,7 @@ GnuPGConnector::GnuPGConnector(QDeclarativeItem *parent)
     : QDeclarativeItem(parent)
 {
     qDebug() << "GnuPGConnector!";
+    this->gpgHistory.append("=== CryptMee started");
 
     this->myKeyReader = new KeyReader();
     this->myKeyReader->parseGnuPGOutput("");
@@ -43,6 +45,29 @@ GnuPGConnector::GnuPGConnector(QDeclarativeItem *parent)
     this->checkGPGVersion(this->gpgBinaryPath);
 }
 
+QString GnuPGConnector::getHistory()
+{
+    return this->gpgHistory.join("\n");
+}
+
+bool GnuPGConnector::saveHistory(QString _filename)
+{
+    QString outputFilename = _filename;
+    QFile outputFile(outputFilename);
+    outputFile.open(QIODevice::WriteOnly);
+
+    if(!outputFile.isOpen()){
+        qDebug() << "*** Error, unable to open" << outputFilename << "for log output";
+        return false;
+    }
+
+    QTextStream outStream(&outputFile);
+    outStream << this->getHistory();
+    outputFile.close();
+
+    return true;
+}
+
 void GnuPGConnector::settingsReset()
 {
     QSettings settings;
@@ -71,23 +96,42 @@ QString GnuPGConnector::settingsGetValue(QString _key)
     return settings.value(_key).toString();
 }
 
-QString GnuPGConnector::checkGPGVersion(QString _path)
+// Call gpg with given command
+bool GnuPGConnector::callGnuPG(QString _cmd, int _state)
 {
-    qDebug() << "GnuPGConnector::checkGPGVersion(" << _path << ")";
+    qDebug() << "GnuPGConnector::callGnuPG(" << _cmd << ", " << _state << ")";
+
+    if(_cmd.size() < 5)
+        return false;
 
     this->errorCode = -1; // No error
     this->gpgStdOutput = "";
     this->gpgErrOutput = "No Errors";
 
-    QString gpgIn = _path + QString(" --version");
+    qDebug() << "Starting: " << _cmd;
 
-    qDebug() << "Starting: " << gpgIn;
-
-    this->currentState = GPG_GET_VERSION;
+    this->currentState = _state;
     this->processIsRunning = true;
-    this->process_gpg->start(gpgIn);
+    this->process_gpg->start(_cmd);
 
-    return "";
+    // Remove passwords from log
+    if(_state == GPG_DECRYPT) {
+        _cmd.replace(QRegExp("--passphrase \".*\" -o"), "--passphrase \"#######\" -o");
+    }
+    this->gpgHistory.append("\n=== Starting new gpg command at " + QDateTime::currentDateTime().toString());
+    this->gpgHistory.append(_cmd);
+
+    return true;
+}
+
+bool GnuPGConnector::checkGPGVersion(QString _path)
+{
+    qDebug() << "GnuPGConnector::checkGPGVersion(" << _path << ")";
+
+    QString gpgIn = _path + QString(" --version");
+    this->callGnuPG(gpgIn, GPG_GET_VERSION);
+
+    return true;
 }
 
 bool GnuPGConnector::writeToTmpFile(QString _content)
@@ -141,20 +185,11 @@ QString GnuPGConnector::encrypt(QString _input, QString _recipient)
 {
     qDebug() << "GnuPGConnector::encrypt(" << _input << ")";
 
-    this->errorCode = -1; // No error
-    this->gpgStdOutput = "";
-    this->gpgErrOutput = "No Errors";
-
     if(!this->writeToTmpFile(_input))
         return "*** Error occured ***";
 
     QString gpgIn = this->gpgBinaryPath + QString(" --batch --no-tty --yes --always-trust --armor -r ") + _recipient + " -o " + TMPFILE + ".asc" + " --encrypt " + TMPFILE;
-
-    qDebug() << "Starting: " << gpgIn;
-
-    this->currentState = GPG_ENCRYPT;
-    this->processIsRunning = true;
-    this->process_gpg->start(gpgIn);
+    this->callGnuPG(gpgIn, GPG_ENCRYPT);
 
     return "";
 }
@@ -163,20 +198,11 @@ QString GnuPGConnector::decrypt(QString _input, QString _passphrase)
 {
     qDebug() << "GnuPGConnector::decrypt(" << _input << "," << "***" << ")";
 
-    this->errorCode = -1; // No error
-    this->gpgStdOutput = "";
-    this->gpgErrOutput = "No Errors";
-
     if(!this->writeToTmpFile(_input))
         return "*** Error occured ***";
 
     QString gpgIn = this->gpgBinaryPath + QString(" --batch --no-tty --yes --always-trust --passphrase \"") + _passphrase + "\" -o " + TMPFILE + ".txt" + " --decrypt " + TMPFILE;
-
-    qDebug() << "Starting: " << QString(gpgIn).replace(_passphrase, "***");
-
-    this->currentState = GPG_DECRYPT;
-    this->processIsRunning = true;
-    this->process_gpg->start(gpgIn);
+    this->callGnuPG(gpgIn, GPG_DECRYPT);
 
     return "";
 }
@@ -186,12 +212,7 @@ QString GnuPGConnector::showKeys()
     qDebug() << "GnuPGConnector::showKeys()";
 
     QString gpgIn = this->gpgBinaryPath + QString(" --charset utf-8 --display-charset utf-8 --list-public-keys --fixed-list-mode --with-colons --with-fingerprint");
-
-    qDebug() << "Starting: " << gpgIn;
-
-    this->currentState = GPG_KEYS;
-    this->processIsRunning = true;
-    this->process_gpg->start(gpgIn);
+    this->callGnuPG(gpgIn, GPG_KEYS);
 
     return "";
 }
@@ -240,7 +261,7 @@ void GnuPGConnector::gpgFinished(int _retVal)
         if(_retVal != 0)
             this->gpgVersionString = "-1";
         else
-            this->gpgVersionString = output.left(35) + "...";
+            this->gpgVersionString = output.left(55) + "...";
 
     } else if(this->currentState == GPG_ENCRYPT) {
         // Enrypted content from out file
@@ -248,6 +269,10 @@ void GnuPGConnector::gpgFinished(int _retVal)
 
     } else if(this->currentState == GPG_IMPORT) {
         // Import command output
+        this->gpgStdOutput = output;
+
+    } else if(this->currentState == GPG_DELETE) {
+        // Delete command output
         this->gpgStdOutput = output;
 
     } else if(this->currentState == GPG_SEARCH) {
@@ -272,6 +297,9 @@ void GnuPGConnector::gpgFinished(int _retVal)
     QFile::remove(QString(TMPFILE) + ".asc");
     QFile::remove(QString(TMPFILE) + ".txt");
     QFile::remove(QString(TMPFILE));
+
+    this->gpgHistory.append("stdout: " + output);
+    this->gpgHistory.append("stderr: " + error);
 
     if(_retVal != 0) {
         this->gpgErrOutput = QString("[") + QString::number(_retVal) + "] " + error;
@@ -307,6 +335,8 @@ void GnuPGConnector::gpgError(QProcess::ProcessError _pe)
     this->errorCode = _pe;
     this->currentState = GPG_IDLE;
 
+    this->gpgHistory << ("QProcess-Error: [" + QString::number(_pe) + "]");
+
     emit errorOccured();
 }
 
@@ -323,10 +353,10 @@ QString GnuPGConnector::getKeyByID(QString _id)
     QString retVal;
     retVal = "<b>" + this->myKeyReader->getKeyByID(_id)->keyID + "</b>\n<br>";
     retVal += "<b><font color='blue'>" + this->myKeyReader->getKeyByID(_id)->fingerprint + "</font></b>\n<br>";
-    retVal += this->myKeyReader->getKeyByID(_id)->date + "\n<br>";
-    retVal += this->myKeyReader->getKeyByID(_id)->expires + "\n<br>";
-    retVal += this->myKeyReader->getKeyByID(_id)->length + "\n<br>";
-    retVal += this->myKeyReader->getKeyByID(_id)->trustValue + "\n<br>";
+    retVal += "Created: <b>" + this->myKeyReader->getKeyByID(_id)->date + "</b>\n<br>";
+    retVal += "Expires: <b>" + this->myKeyReader->getKeyByID(_id)->expires + "</b>\n<br>";
+    retVal += "Length: <b>" + this->myKeyReader->getKeyByID(_id)->length + "</b>, Trust: <b>[";
+    retVal += this->myKeyReader->getKeyByID(_id)->trustValue + "]</b>\n<br>";
     retVal += (this->myKeyReader->getKeyByID(_id)->identities.join("\n")).replace("<", "&lt;").replace("\n", "\n<br>");
     return retVal;
 }
@@ -354,13 +384,8 @@ bool GnuPGConnector::generateKeyPair(QString _name, QString _comment, QString _e
     this->writeToTmpFile(genKeyFile);
 
     QString gpgIn = this->gpgBinaryPath + QString(" --batch --no-tty --gen-key ") + TMPFILE;
-    qDebug() << "Starting: " << gpgIn;
 
-    this->currentState = GPG_KEYS_GEN;
-    this->processIsRunning = true;
-    this->process_gpg->start(gpgIn);
-
-    return true;
+    return this->callGnuPG(gpgIn, GPG_KEYS_GEN);
 }
 
 bool GnuPGConnector::setOwnerTrust(QString _id, QString _trustLevel)
@@ -371,7 +396,7 @@ bool GnuPGConnector::setOwnerTrust(QString _id, QString _trustLevel)
         return false;
 
     if(this->myKeyReader->getKeyByID(_id) == NULL)
-        return "";
+        return false;
 
     // Generate file first
     QString genTrustFile;
@@ -381,13 +406,8 @@ bool GnuPGConnector::setOwnerTrust(QString _id, QString _trustLevel)
     this->writeToTmpFile(genTrustFile);
 
     QString gpgIn = this->gpgBinaryPath + QString(" --import-ownertrust ") + TMPFILE;
-    qDebug() << "Starting: " << gpgIn;
 
-    this->currentState = GPG_SET_TRUST;
-    this->processIsRunning = true;
-    this->process_gpg->start(gpgIn);
-
-    return true;
+    return this->callGnuPG(gpgIn, GPG_SET_TRUST);
 }
 
 bool GnuPGConnector::importKeysFromFile(QString _path)
@@ -398,13 +418,7 @@ bool GnuPGConnector::importKeysFromFile(QString _path)
 
     QString gpgIn = this->gpgBinaryPath + QString(" --batch --import ") + MYDOCS_PATH +_path;
 
-    qDebug() << "Starting: " << gpgIn;
-
-    this->currentState = GPG_IMPORT;
-    this->processIsRunning = true;
-    this->process_gpg->start(gpgIn);
-
-    return true;
+    return this->callGnuPG(gpgIn, GPG_IMPORT);
 }
 
 bool GnuPGConnector::importKeysFromClipboard()
@@ -417,13 +431,7 @@ bool GnuPGConnector::importKeysFromClipboard()
     this->writeToTmpFile(clipBoard);
     QString gpgIn = this->gpgBinaryPath + QString(" --batch --import ") + TMPFILE;
 
-    qDebug() << "Starting: " << gpgIn;
-
-    this->currentState = GPG_IMPORT;
-    this->processIsRunning = true;
-    this->process_gpg->start(gpgIn);
-
-    return true;
+    return this->callGnuPG(gpgIn, GPG_IMPORT);
 }
 
 bool GnuPGConnector::searchKeysOnKeyserver(QString _keyword)
@@ -435,13 +443,7 @@ bool GnuPGConnector::searchKeysOnKeyserver(QString _keyword)
 
     QString gpgIn = this->gpgBinaryPath + QString(" --batch --keyserver " + this->gpgKeyserverURL + " --search-keys ") + _keyword;
 
-    qDebug() << "Starting: " << gpgIn;
-
-    this->currentState = GPG_SEARCH;
-    this->processIsRunning = true;
-    this->process_gpg->start(gpgIn);
-
-    return true;
+    return this->callGnuPG(gpgIn, GPG_SEARCH);
 }
 
 bool GnuPGConnector::importKeysFromKeyserver(QString _keys)
@@ -456,28 +458,19 @@ bool GnuPGConnector::importKeysFromKeyserver(QString _keys)
 
     QString gpgIn = this->gpgBinaryPath + QString(" --batch --keyserver " + this->gpgKeyserverURL + " --recv-keys ") + keysToImport.join(" ");
 
-    qDebug() << "Starting: " << gpgIn;
+    return this->callGnuPG(gpgIn, GPG_IMPORT);
+}
 
-    this->currentState = GPG_IMPORT;
-    this->processIsRunning = true;
-    this->process_gpg->start(gpgIn);
+bool GnuPGConnector::deleteKey(QString _id, bool _privateKeypair)
+{
+    qDebug() << "GnuPGConnector::deleteKey(" << _id << ")";
 
-    return true;
+    QString gpgIn = this->gpgBinaryPath + QString(" --batch --yes --delete-key ") + _id;
+
+    return this->callGnuPG(gpgIn, GPG_DELETE);
 }
 
 // Sign (with ID):
-// gpg --sign-key --batch 1096198193
+// gpg --sign-key --batch ID
 //
-// Owner trust:
-// gpg --import-ownertrust $TEMP_FILE
-// TMP_FILE: "B4D94345B0986AB5EE9DCD755DE249961B012345:3:"
-// Fingerprint + Trust-Level
-// 1 = Don't know
-// 2 = I do NOT trust
-// 3 = I trust marginally
-// 4 = I trust fully
-//
-// Search and import:
-// gpg --batch --keyserver key.adeti.org --search-keys "Xiao"
-// gpg --batch --keyserver key.adeti.org --recv-keys 0ED59ADE
 

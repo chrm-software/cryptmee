@@ -9,10 +9,10 @@ Page {
 
     property string currentKeyID: ""
     property alias importKeyFile: textFieldKeyImportFile.text
+    property int buttonGap: 10;
 
     onStatusChanged: {
         if(status === DialogStatus.Open){
-            //
         }
     }
 
@@ -39,6 +39,8 @@ Page {
                 importKeyArea.height = 0;
                 fadeInKeyImport.start();
 
+                buttonGap = 10;
+
                 myMenu.close();
                 pageStack.pop();
             }
@@ -53,7 +55,14 @@ Page {
 
     Menu {
         id: myMenu
-        visualParent: startPage
+        visualParent: keyPage
+        MenuLayout {
+            MenuItem { text: qsTr("Show GnuPG log")
+                onClicked: {
+                    pageStack.push(gpgHistoryPage);
+                }
+            }
+        }
     }
 
     InfoBanner {
@@ -82,6 +91,17 @@ Page {
         rejectButtonText: qsTr("Cancel")
         onAccepted: {
             genKeyPair();
+        }
+    }
+
+    QueryDialog  {
+        id: askKeyDelDialog
+        titleText: qsTr("Delete Key")
+        message:  qsTr("Are you sure you want to delete this key: ") + currentKeyID;
+        acceptButtonText: qsTr("Delete!")
+        rejectButtonText: qsTr("Cancel")
+        onAccepted: {
+            deleteKey();
         }
     }
 
@@ -144,6 +164,12 @@ Page {
         currentKeyID = keyDialog.selectedKeyID;
 
         startPage.gpgConnector.setOwnerTrust(currentKeyID, _trust);
+    }
+
+    function deleteKey() {
+        startPage.currentState = "DELETEKEY";
+        currentKeyID = keyDialog.selectedKeyID;
+        startPage.gpgConnector.deleteKey(currentKeyID);
     }
 
     function genKeyPair() {
@@ -240,6 +266,26 @@ Page {
         editKeyArea.height = 0;
         fadeInKeyEdit.start();
         labelEditKeyInfo.text = "";
+        buttonGap = 10;
+    }
+
+    function keyDeleted(_result) {
+        if(_result) {
+            // Success
+            infoBanner.text = qsTr("Key successfull deleted.");
+        } else {
+            // Fails
+            infoBanner.text = qsTr("Unable to delete this key!");
+        }
+
+        infoBanner.show();
+
+        // Close edit area
+        editKeyArea.visible = false;
+        editKeyArea.height = 0;
+        fadeInKeyEdit.start();
+        labelEditKeyInfo.text = "";
+        buttonGap = 10;
     }
 
     // Create model for key list view
@@ -341,6 +387,8 @@ Page {
             editKey.height = 0;
             exportKey.visible = false;
             exportKey.height = 0;
+
+            buttonGap = 0;
         }
     }
 
@@ -504,7 +552,7 @@ Page {
         Button {
             id: editKey
             height: 70
-            y: createKeyPairArea.y + createKeyPairArea.height + 10
+            y: createKeyPairArea.y + createKeyPairArea.height + buttonGap
             iconSource: "qrc:/images/pix/public_keys_edit.png"
             text: qsTr("Edit Keys")
             x: 5
@@ -515,6 +563,7 @@ Page {
                     editKeyArea.visible = true;
                     editKeyArea.height = 300;
                     fadeOutKeyEdit.start();
+                    buttonGap = 0;
 
                     keyDialog.stateAfterExit = "SHOWKEY";
                     pageStack.push(keyDialog);
@@ -524,6 +573,7 @@ Page {
                     fadeInKeyEdit.start();
 
                     labelEditKeyInfo.text = "";
+                    buttonGap = 10;
                 }
             }
         }
@@ -581,13 +631,17 @@ Page {
                 anchors.top: signKeyButton.bottom
                 iconSource: "image://theme/icon-m-toolbar-delete"
                 text: qsTr("Remove Key")
+
+                onClicked: {
+                    askKeyDelDialog.open();
+                }
             }
         }
 
         Button {
             id: importKey
             height: 70
-            y: editKeyArea.y + editKeyArea.height + 10
+            y: editKeyArea.y + editKeyArea.height + buttonGap
             iconSource: "qrc:/images/pix/public_keys_import.png"
             text: qsTr("Import Key")
             x: 5
@@ -602,6 +656,7 @@ Page {
                     importKeyArea.visible = false;
                     importKeyArea.height = 0;
                     fadeInKeyImport.start();
+                    buttonGap = 10;
                 }
             }
         }
@@ -704,13 +759,30 @@ Page {
         Button {
             id: exportKey
             height: 70
-            y: importKeyArea.y + importKeyArea.height + 10
+            y: importKeyArea.y + importKeyArea.height + buttonGap
             iconSource: "qrc:/images/pix/public_keys_export.png"
             text: qsTr("Export Key")
             x: 5
             width: parent.width-10
 
             onClicked: {
+                if(!exportKeyArea.visible) {
+                    exportKeyArea.visible = true;
+                    exportKeyArea.height = 300;
+                    //fadeOutKeyImport.start();
+                    createKeyPair.visible = false;
+                    importKey.visible = false;
+                    editKey.visible = false;
+                    buttonGap = 0;
+                } else {
+                    exportKeyArea.visible = false;
+                    exportKeyArea.height = 0;
+                    //fadeInKeyImport.start();
+                    createKeyPair.visible = true;
+                    importKey.visible = true;
+                    editKey.visible = true;
+                    buttonGap = 10;
+                }
             }
         }
 

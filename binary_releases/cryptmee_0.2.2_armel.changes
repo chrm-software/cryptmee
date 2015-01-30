@@ -1,0 +1,25 @@
+Format: 1.8
+Date: Thu, 29 Jan 2015 17:34:48 +0100
+Source: cryptmee
+Binary: cryptmee
+Architecture: armel
+Version: 0.2.2
+Distribution: unstable
+Urgency: low
+Maintainer: Christoph Maciejewski <chrm@users.sf.net>
+Changed-By: Christoph Maciejewski <chrm@users.sf.net>
+Description: 
+ cryptmee   - Encrypt and decrypt using GnuPG!
+Changes: 
+ cryptmee (0.2.2) unstable; urgency=low
+ .
+   * Delete public keys
+   * Bugfixes for keyserver lookup
+   * Show and save gpg logging
+Checksums-Sha1: 
+ 39b603126a4a33c073013c14eb320b7b963aa4fb 175252 cryptmee_0.2.2_armel.deb
+Checksums-Sha256: 
+ ae190d3f03d2f7f29477c34bbde96dbd22d2746f423435a3aa63e15c681a51da 175252 cryptmee_0.2.2_armel.deb
+Files: 
+ 73305da916cc6b47f9e4037beb93c43a 175252 user/other optional cryptmee_0.2.2_armel.deb
+Maemo-Display-Name: CryptMee

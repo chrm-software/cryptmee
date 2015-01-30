@@ -23,7 +23,7 @@ void MailReaderThread::run()
 
         // Check only newer files
         if(it.fileInfo().created().daysTo(QDateTime::currentDateTime()) > this->fromLastDays) {
-            qDebug() << "### File too old: " << it.fileInfo().created().daysTo(QDateTime::currentDateTime()) << ". " << this->fromLastDays;
+            qDebug() << "MailReaderThread::run(): File too old: " << it.fileInfo().created().daysTo(QDateTime::currentDateTime()) << ". " << this->fromLastDays;
             continue;
         }
 

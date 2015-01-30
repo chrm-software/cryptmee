@@ -21,6 +21,7 @@
 #define GPG_IMPORT 8
 #define GPG_EXPORT 9
 #define GPG_SEARCH 10
+#define GPG_DELETE 11
 
 
 
@@ -43,12 +44,15 @@ public:
     Q_INVOKABLE int getNumOfPubKeys(int _type = 0);
     Q_INVOKABLE bool generateKeyPair(QString _name, QString _comment, QString _email, QString _passphrase);
     Q_INVOKABLE bool setOwnerTrust(QString _id, QString _trustLevel);
-    Q_INVOKABLE QString checkGPGVersion(QString _path);
+    Q_INVOKABLE bool checkGPGVersion(QString _path);
     Q_INVOKABLE QString getGPGVersionString();
     Q_INVOKABLE bool importKeysFromFile(QString _path);
     Q_INVOKABLE bool importKeysFromClipboard();
     Q_INVOKABLE bool searchKeysOnKeyserver(QString _keyword);
     Q_INVOKABLE bool importKeysFromKeyserver(QString _keys);
+    Q_INVOKABLE bool deleteKey(QString _id, bool _privateKeypair = false);
+    Q_INVOKABLE QString getHistory();
+    Q_INVOKABLE bool saveHistory(QString _filename);
 
     // Settings interface
     Q_INVOKABLE void settingsSetValue(QString _key, QString _value);
@@ -65,11 +69,15 @@ private:
     QString gpgStdOutput;
     QString gpgErrOutput;
 
+    QStringList gpgHistory;
+
     int errorCode;
     unsigned int currentState;
 
     bool writeToTmpFile(QString _content);
     QString readFromTmpFile(int _type);
+
+    bool callGnuPG(QString _cmd, int _state);
 
     KeyReader* myKeyReader;    
 

@@ -43,6 +43,10 @@ PageStackWindow {
         id: searchKeyDialog
     }
 
+    GpgHistoryViewPage {
+        id: gpgHistoryPage
+    }
+
     /////////////////////////////////////////////////////////////
 
 

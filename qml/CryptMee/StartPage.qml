@@ -39,23 +39,6 @@ Page {
         id: myMenu
         visualParent: startPage
         MenuLayout {
-            MenuItem { text: qsTr("Encrypt Or Decrypt Text")
-                onClicked: {
-                    pageStack.push(mainPage);
-                }
-            }
-
-            MenuItem { text: qsTr("Read Encrypted Emails")
-                onClicked: {
-                    pageStack.push(mailPage);
-                }
-            }
-
-            MenuItem { text: qsTr("PGP Key Management")
-                onClicked: {
-                    pageStack.push(keyPage);
-                }
-            }
 
             MenuItem { text: qsTr("Settings")
                 onClicked: {
@@ -320,6 +303,10 @@ Public License either version 3 of the license, or (at your option) any later ve
                 // Keys imported
                 keyPage.keyImported(true);
 
+            } else if(currentState === "DELETEKEY") {
+                // Keys deleted
+                keyPage.keyDeleted(true);
+
             } else if(currentState === "KEYSERVER_SEARCH") {
                 // Keys imported
                 keyPage.keyserverSearched(true);
@@ -379,7 +366,11 @@ Public License either version 3 of the license, or (at your option) any later ve
                 // Keys imported
                 keyPage.keyImported(false);
 
-            } else if(currentState === "KEYSERVER_SEARCH") {
+            } else if(currentState === "DELETEKEY") {
+                // Keys deleted
+                keyPage.keyDeleted(false);
+
+            }  else if(currentState === "KEYSERVER_SEARCH") {
                 // Keys imported
                 keyPage.keyserverSearched(false);
             }
@@ -448,13 +439,16 @@ Public License either version 3 of the license, or (at your option) any later ve
         var tmpEntryTrust = "";
 
         var filterString = keyDialog.filterKeys;
+        keyDialog.allKeyList.clear();
+
+        console.debug("fillPublicKeysModel(): filter keys: " + filterString);
 
         for(var i=0; i<myGPGConnector.getNumOfPubKeys(); i++) {
             tmpEntryTrust = myGPGConnector.getKey(i).split("|")[0];
             tmpEntryID = myGPGConnector.getKey(i).split("|")[1];
             tmpEntryNames = myGPGConnector.getKey(i).split("|")[2];
 
-            console.debug("Key: " + tmpEntryID);
+            //console.debug("Key: " + tmpEntryID);
 
             if(filterString === undefined || (tmpEntryID.indexOf(filterString) > -1 || tmpEntryNames.indexOf(filterString) > -1))
                 keyDialog.allKeyList.append({ name: tmpEntryID, ids: tmpEntryNames, trust: tmpEntryTrust, isVisible: true });

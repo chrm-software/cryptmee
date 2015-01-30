@@ -52,7 +52,7 @@ bool KeyReader::parseGnuPGServerSearchOutput(QString _fromGnuPG)
 
     this->lastSearchKeys.clear();
 
-    tmpList = _fromGnuPG.split(QRegExp("\\([0-9]+\\)"));
+    tmpList = _fromGnuPG.split(QRegExp("\\([0-9]{1,2}\\)"));
 
     for(int i=1; i<tmpList.size(); i++) {
         KeyObject* tmp = new KeyObject(tmpList[i], true);

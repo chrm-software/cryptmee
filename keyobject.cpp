@@ -31,7 +31,11 @@ KeyObject::KeyObject(QString _fromGnuPG, bool _searchResult = false)
 
         QDateTime dt_exp;
         dt_exp.setTime_t(QString(uids.at(0).split(":").at(5)).toInt());
-        this->expires = dt_exp.toString(Qt::SystemLocaleShortDate);
+
+        if(dt_exp.toTime_t() == 0)
+            this->expires = "never";
+        else
+            this->expires = dt_exp.toString(Qt::SystemLocaleShortDate);
 
         uids.removeFirst();
 
@@ -50,6 +54,8 @@ KeyObject::KeyObject(QString _fromGnuPG, bool _searchResult = false)
 
     } else {
         // Parsing search results
+        qDebug() << "KeyObject() search result - got from gpg: " << _fromGnuPG;
+
         _fromGnuPG.replace(QRegExp(">\\s+"), ">|||");
         this->identities = _fromGnuPG.split("|||");
 
@@ -59,10 +65,17 @@ KeyObject::KeyObject(QString _fromGnuPG, bool _searchResult = false)
 
         dataPart.replace(QRegExp(".*\\s+([A-Z0-9]+),\\s+.*:\\s+([\\S]+)\\s*$"), "\\1,\\2");
 
-        qDebug() << "###>" << dataPart;
+        qDebug() << "KeyObject() search result - after parsing: "  << dataPart;
 
-        this->keyID = dataPart.split(",").at(0);
-        this->date = dataPart.split(",").at(1);
+        if(!dataPart.contains(",")) {
+            // No valid data found - fill with empty data
+            this->keyID = dataPart;
+            this->date = "UNKNOWN";
+
+        } else {
+            this->keyID = dataPart.split(",").at(0);
+            this->date = dataPart.split(",").at(1);
+        }
     }
 
     qDebug() << "KeyObject: ID: " << this->keyID;

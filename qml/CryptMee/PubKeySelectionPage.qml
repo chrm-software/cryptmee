@@ -110,13 +110,13 @@ Page {
                 platformStyle: TextFieldStyle { paddingRight: clearText.width }
                 inputMethodHints: Qt.ImhNoPredictiveText;
 
-                onAccepted: {
+                /*onAccepted: {
                     textfield1.selectAll();
                     startPage.updatePublicKeys();
-                }
+                }*/
 
                 onTextChanged: {
-                    startPage.updatePublicKeys();
+                    startPage.fillPublicKeysModel();
                 }
 
                 Image {

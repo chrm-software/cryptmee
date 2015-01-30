@@ -103,6 +103,12 @@ Page {
                     startPage.pgpEncrypt();
                 }
             }
+
+            MenuItem { text: qsTr("Show GnuPG log")
+                onClicked: {
+                    pageStack.push(gpgHistoryPage);
+                }
+            }
         }
     }
 
@@ -169,7 +175,7 @@ Page {
     Rectangle {
         anchors.top: errorMessage.bottom
         width: parent.width
-        height: parent.height - textarea2.height - showErrors.height - 10
+        height: parent.height - textarea2.height - showErrors.height
         color: "transparent"
 
         Flickable {

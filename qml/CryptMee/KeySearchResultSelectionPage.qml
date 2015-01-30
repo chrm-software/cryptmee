@@ -85,7 +85,7 @@ Page {
                 id: importButton
                 text: qsTr("Import from server!")
                 y: 5
-                width: parent.width/2
+                width: parent.width/1.5
                 onClicked: {
                     findSelected();
                     pageStack.pop();
@@ -95,8 +95,7 @@ Page {
             Button {
                 id: cancelButton
                 text: qsTr("Cancel")
-                y: 5
-                width: parent.width/2
+                y: 5                
                 anchors { left: importButton.right; right: parent.right; }
                 onClicked: {
                     pageStack.pop();

@@ -42,7 +42,20 @@ Page {
 
     Menu {
         id: myMenu
-        visualParent: startPage
+        visualParent: mailViewPage
+        MenuLayout {
+            MenuItem { text: qsTr("Show raw data")
+                onClicked: {
+                    startPage.pgpDecrypt();
+                }
+            }
+
+            MenuItem { text: qsTr("Show GnuPG log")
+                onClicked: {
+                    pageStack.push(gpgHistoryPage);
+                }
+            }
+        }
     }
 
     Timer {

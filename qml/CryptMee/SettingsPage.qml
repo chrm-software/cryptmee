@@ -106,15 +106,14 @@ Page {
             Grid {
                 id: settingsGrid
                 columns: 1
-                rows: 9
+                rows: 10
                 spacing: 5
                 anchors.fill: parent
                 width: parent.width
-                height: 500
+                height: 550
 
-                Label {
-                    text: qsTr("GnuPG binary path:")
-                    width: parent.width
+                GroupSeparator {
+                    title: qsTr("GnuPG binary path:")
                 }
 
                 TextField {
@@ -130,9 +129,8 @@ Page {
                     }
                 }
 
-                Label {
-                    text: qsTr("PGP Keyserver:")
-                    width: parent.width
+                GroupSeparator {
+                    title: qsTr("PGP Keyserver:")
                 }
 
                 TextField {
@@ -142,10 +140,10 @@ Page {
                     inputMethodHints: Qt.ImhNoPredictiveText;
                 }
 
-                Label {
-                    text: qsTr("Email directory and DB:")
-                    width: parent.width
+                GroupSeparator {
+                    title: qsTr("Email directory and DB:")
                 }
+
 
                 TextField {
                     id: emailDir;
@@ -159,6 +157,10 @@ Page {
                     text: ""
                     width: parent.width
                     inputMethodHints: Qt.ImhNoPredictiveText;
+                }
+
+                GroupSeparator {
+
                 }
 
                 Button {

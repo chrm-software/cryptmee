@@ -61,10 +61,10 @@ Page {
 
             Rectangle {
                 id: blueRect
-                width: 10
+                width: 15
                 height: 150
                 color: "#0093dd"
-                anchors.right: blueText
+                //anchors.right: blueText
             }
 
             Text {
@@ -80,10 +80,10 @@ Page {
 
             Rectangle {
                 id: greenRect
-                width: 10
+                width: 15
                 height: 150
                 color: "#00b804"
-                anchors.right: greenText
+                //anchors.right: greenText
                 anchors.top: blueRect.bottom
             }
 
@@ -155,13 +155,13 @@ Page {
         listViewMails.model.clear();
 
         for(var i=0; i<myMailReader.getNumOfMails(); i++) {
-            tmpFrom = myMailReader.getMail(i).split("|")[0];
-            tmpSubject = myMailReader.getMail(i).split("|")[1];
-            tmpDate = myMailReader.getMail(i).split("|")[2];
-            tmpDirection = myMailReader.getMail(i).split("|")[3];
+            tmpFrom = myMailReader.getMail(i).split("###")[0];
+            tmpSubject = myMailReader.getMail(i).split("###")[1];
+            tmpDate = myMailReader.getMail(i).split("###")[2];
+            tmpDirection = myMailReader.getMail(i).split("###")[3];
             idx = i;
 
-            console.debug("Mail: " + tmpSubject);
+            console.debug("Mail: " + tmpSubject + " \t[" + tmpDate + "]");
 
             listViewMails.model.append({ name: tmpFrom, subject: tmpSubject, date: tmpDate, direction: tmpDirection, isVisible: true, idx: idx });            
         }

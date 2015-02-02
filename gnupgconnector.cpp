@@ -108,8 +108,6 @@ bool GnuPGConnector::callGnuPG(QString _cmd, int _state)
     this->gpgStdOutput = "";
     this->gpgErrOutput = "No Errors";
 
-    qDebug() << "Starting: " << _cmd;
-
     this->currentState = _state;
     this->processIsRunning = true;
     this->process_gpg->start(_cmd);
@@ -201,7 +199,7 @@ QString GnuPGConnector::decrypt(QString _input, QString _passphrase)
     if(!this->writeToTmpFile(_input))
         return "*** Error occured ***";
 
-    QString gpgIn = this->gpgBinaryPath + QString(" --batch --no-tty --yes --always-trust --passphrase \"") + _passphrase + "\" -o " + TMPFILE + ".txt" + " --decrypt " + TMPFILE;
+    QString gpgIn = this->gpgBinaryPath + QString(" --batch --no-tty --yes --always-trust --charset utf-8 --display-charset utf-8 --passphrase \"") + _passphrase + "\" -o " + TMPFILE + ".txt" + " --decrypt " + TMPFILE;
     this->callGnuPG(gpgIn, GPG_DECRYPT);
 
     return "";

@@ -280,7 +280,7 @@ Public License either version 3 of the license, or (at your option) any later ve
 
             } else if(currentState === "MAIL_DECRYPT") {
                 // Show decrypted eMail
-                mailViewPage.prop_eMailContent = mailPage.prop_mailReader.parseMailContent(dataOutput);
+                mailViewPage.mailDecrypted(dataOutput, true);
 
             } else if(currentState === "GENKEYS") {
                 // Keypair successfull generated
@@ -339,7 +339,7 @@ Public License either version 3 of the license, or (at your option) any later ve
                 // Since there are a lot of possible warnings, just try
                 // to decrypt message anyway
                 console.debug("[MainPage] onErrorOccured: send output to mailView anyway.");
-                mailViewPage.prop_eMailContent = mailPage.prop_mailReader.parseMailContent(dataOutput);
+                mailViewPage.mailDecrypted(dataOutput, false);
 
             } else if(currentState === "GETKEYS") {
                 // TODO

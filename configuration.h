@@ -2,7 +2,7 @@
 #define CONFIGURATION_H
 
 // Release
-#define RELEASE "0.2.2"
+#define RELEASE "0.2.3"
 
 // Set Build target
 #define MEEGO_BUILD
@@ -23,11 +23,13 @@
 
 // eMails storage
 #ifdef WIN_BUILD
-    #define MAIL_PATH "D:/chrm-profile/Projects/QtProjects/CryptMee/tmpData/conversations/conversations/.qmf/mail/"
-    #define MAIL_DB "D:/chrm-profile/Projects/QtProjects/CryptMee/tmpData/conversations/conversations/.qmf/database/qmailstore.db"
+    #define MAIL_PATH "D:/chrm-profile/Projects/QtProjects/CryptMee/tmpData/.qmf/mail/"
+    #define MAIL_DB "D:/chrm-profile/Projects/QtProjects/CryptMee/tmpData/.qmf/database/qmailstore.db"
+    #define TMP_DIR "D:/chrm-profile/Projects/QtProjects/CryptMee/tmpData/.CryptMee/"
 #else
     #define MAIL_PATH QDir::homePath()+"/.qmf/mail/"
     #define MAIL_DB QDir::homePath()+"/.qmf/database/qmailstore.db"
+    #define TMP_DIR "/home/user/MyDocs/.CryptMee/"
 #endif
 
 // Import file prefix

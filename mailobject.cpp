@@ -126,6 +126,15 @@ void MailObject::parseMail()
             this->isQuotedPrintable = true;
         }
     }
+
+    // All header fields could also conatins encoded characters
+    if(this->subject.contains("=?")) {
+        this->subject = this->myMailreader->encodeMIMEString(this->subject);
+    }
+
+    if(this->from.contains("=?")) {
+        this->from = this->myMailreader->encodeMIMEString(this->from);
+    }
 }
 
 QString MailObject::getEncryptedContent()
@@ -162,8 +171,29 @@ QString MailObject::getDecryptedContent()
 }
 
 bool MailObject::operator<(const MailObject * object) {
-    return (this->dateTime.toMSecsSinceEpoch() < object->dateTime.toMSecsSinceEpoch());
+
+    qDebug() << "SORT: 1:" << this->dateTime.toMSecsSinceEpoch() << " 2: " << object->dateTime.toMSecsSinceEpoch();
+
+
+    bool retVal = this->dateTime.toMSecsSinceEpoch() < object->dateTime.toMSecsSinceEpoch();
+
+    qDebug() << "SORT: 1<2: " << retVal;
+
+    return retVal;
 }
+
+bool MailObject::operator>(const MailObject * object) {
+
+    qDebug() << "SORT: 1:" << this->dateTime.toMSecsSinceEpoch() << " 2: " << object->dateTime.toMSecsSinceEpoch();
+
+
+    bool retVal = this->dateTime.toMSecsSinceEpoch() > object->dateTime.toMSecsSinceEpoch();
+
+    qDebug() << "SORT: 1>2: " << retVal;
+
+    return retVal;
+}
+
 
 bool MailObject::parseDate()
 {

@@ -9,12 +9,34 @@ Page {
     property alias prop_eMailHeader: labelHeader.text
     property alias prop_eMailContent: textareaContent.text
     property int prop_idx: -1
+    property string rawMailData: ""
+
+    function setAttachments() {
+        dialogAttach.model.clear();
+
+        var size = mailPage.prop_mailReader.getAttachmentListCount();
+
+        for(var i=0; i<size; i++) {
+            var tmpAttachment = mailPage.prop_mailReader.getAttachment(i);
+            dialogAttach.model.append({ name: tmpAttachment });
+        }
+    }
+
+    function mailDecrypted(_content, _result) {
+        if(_result)
+            delayDecryptTimer.stop();
+
+        rawMailData = _content;
+        prop_eMailContent = mailPage.prop_mailReader.parseMailContent(_content);
+        setAttachments();
+    }
 
     onStatusChanged: {
         if(status === DialogStatus.Open){
             console.debug("[mailViewPage]: onOpen, call pgpDecrypt")
             delayDecryptTimer.start();
             setErrorMessage("");
+            prop_eMailContent = "[Loading...]";
         }
     }
 
@@ -44,9 +66,15 @@ Page {
         id: myMenu
         visualParent: mailViewPage
         MenuLayout {
+            MenuItem { text: qsTr("Show attachments")
+                onClicked: {                    
+                    dialogAttach.open();
+                }
+            }
+
             MenuItem { text: qsTr("Show raw data")
                 onClicked: {
-                    startPage.pgpDecrypt();
+                     prop_eMailContent = rawMailData;
                 }
             }
 
@@ -55,6 +83,19 @@ Page {
                     pageStack.push(gpgHistoryPage);
                 }
             }
+        }
+    }
+
+    SelectionDialog {
+        id: dialogAttach
+        titleText: qsTr("Open attachment:")
+        selectedIndex: 0
+
+        model: ListModel {}
+
+        onAccepted: {
+            var filename = dialogAttach.model.get(dialogAttach.selectedIndex).name;
+            Qt.openUrlExternally("file://" + TMP_DIR + filename);
         }
     }
 
@@ -135,6 +176,7 @@ Page {
         width: parent.width
         height: 130
         anchors.top: errorMessage.bottom
+        color: "#dddddd"
 
         Label {
             id: labelHeader

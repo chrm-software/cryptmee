@@ -52,6 +52,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     ctxt->setContextProperty("GnuPG_KEYSERVER", KEYSERVER);
     ctxt->setContextProperty("MAIL_PATH", MAIL_PATH);
     ctxt->setContextProperty("MAIL_DB", MAIL_DB);
+    ctxt->setContextProperty("TMP_DIR", TMP_DIR);
 
 
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);

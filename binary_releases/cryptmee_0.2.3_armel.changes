@@ -1,0 +1,28 @@
+Format: 1.8
+Date: Sun, 01 Feb 2015 01:07:29 +0100
+Source: cryptmee
+Binary: cryptmee
+Architecture: armel
+Version: 0.2.3
+Distribution: unstable
+Urgency: low
+Maintainer: Christoph Maciejewski <chrm@users.sf.net>
+Changed-By: Christoph Maciejewski <chrm@users.sf.net>
+Description: 
+ cryptmee   - Encrypt and decrypt using GnuPG!
+Changes: 
+ cryptmee (0.2.3) unstable; urgency=low
+ .
+   * MIME mails: Parse headers
+   * MIME mails: Show correct encoding
+   * MIME mails: Save attachments
+   * MIME mails: Show raw data
+   * Many bugfixes
+   * Tested with mails from Thunderbird+Enigmail, KMail and K9-Mail
+Checksums-Sha1: 
+ 90ab9110a5e5dd65201de9d4f5362132fb6ca7dd 190728 cryptmee_0.2.3_armel.deb
+Checksums-Sha256: 
+ 8d2c13e868862af64b170e2ad479c8e78566dc8ba2b4cf4693a7df940216f7a7 190728 cryptmee_0.2.3_armel.deb
+Files: 
+ f5b4869326860af7af0a6f0734ef1bb9 190728 user/other optional cryptmee_0.2.3_armel.deb
+Maemo-Display-Name: CryptMee

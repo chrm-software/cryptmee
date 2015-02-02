@@ -7,6 +7,7 @@
 #include <QDeclarativeItem>
 #include <QList>
 #include <QStringList>
+#include <QStringListModel>
 #include <QThread>
 
 class MailObject;
@@ -24,17 +25,28 @@ public:
     Q_INVOKABLE QString getContent(int _i);
     Q_INVOKABLE QString getHeader(int _i);
     Q_INVOKABLE QString parseMailContent(QString _mail);
+    Q_INVOKABLE int getAttachmentListCount();
+    Q_INVOKABLE QString getAttachment(int _i);
+
 
     QString translateText(const char *_txt);
+    QString quotedPrintableDecode(QString &input, QString _codec = "");
+    QString encodeMIMEString(QString _input);
 
 private:
     QList<MailObject*> allMails;
     MailReaderThread* myThread;
-    QByteArray& quotedPrintableDecode(QString &input);
 
+    static bool lessThenComperator(MailObject* _left, MailObject* _right);
     void sortListByDate();
-    bool readMailDB();
 
+    bool readMailDB();
+    QString parseMIMEMultiparts(QString _content);
+    QString parseMIMEObject(QString _part);
+    QString decodeBASE64(QString _filename, QString _mail, QString _codec = "utf-8");
+    void cleanUpAttachments();
+
+    QStringList attachments;
     QString mailDB;
 
 private slots:

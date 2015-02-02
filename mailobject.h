@@ -23,6 +23,7 @@ public:
     QString getDecryptedContent();
     bool isSendedMail;
     bool operator<(const MailObject * object);
+    bool operator>(const MailObject * object);
 
 private:
     void parseMail();

@@ -18,7 +18,7 @@ public:
     QString getEncryptedContent();
     QString getShortHeader();
     QString getCompleteHeader();
-    QString from, to, dateString, subject;
+    QString from, to, cc, dateString, subject;
     QDateTime dateTime;
     QString getDecryptedContent();
     bool isSendedMail;

@@ -11,6 +11,7 @@ Page {
     property alias pGPG_KEYSERVER: keyServer.text
     property alias pEmailDir: emailDir.text
     property alias pEmailDB: emailDB.text
+    property alias pUseOwnKey: switchEncryptWithMyKey.checked
 
     property string textFieldColor: "green"
 
@@ -19,6 +20,13 @@ Page {
         pGPG_KEYSERVER = startPage.gpgConnector.settingsGetValue("SETTINGS_GPGKEYSERVER");
         pEmailDir = startPage.gpgConnector.settingsGetValue("SETTINGS_MAILDIR");
         pEmailDB = startPage.gpgConnector.settingsGetValue("SETTINGS_MAILDB");
+
+        var useKey = startPage.gpgConnector.settingsGetValue("SETTINGS_USEOWNKEY");
+        if(useKey === "1")
+            pUseOwnKey = true;
+        else
+            pUseOwnKey = false;
+
     }
 
     function gpgRetValVersion(_result, _content) {
@@ -106,11 +114,11 @@ Page {
             Grid {
                 id: settingsGrid
                 columns: 1
-                rows: 10
+                rows: 12
                 spacing: 5
                 anchors.fill: parent
                 width: parent.width
-                height: 550
+                height: 560
 
                 GroupSeparator {
                     title: qsTr("GnuPG binary path:")
@@ -160,6 +168,33 @@ Page {
                 }
 
                 GroupSeparator {
+                    title: qsTr("Use own public key:")
+                }
+
+                Row {
+                    width: parent.width;
+                    spacing: 10
+
+                    Switch {
+                        id: switchEncryptWithMyKey;
+                        checked: {
+                            var useKey = startPage.gpgConnector.settingsGetValue("SETTINGS_USEOWNKEY");
+                            if(useKey === "1")
+                                return true;
+                            else
+                                return false;
+                        }
+                    }
+
+                    Label {
+                        id: ownKeyId
+                        height: switchEncryptWithMyKey.height
+                        text: qsTr("Allwas encrypt with my own public key");
+                    }
+                }
+
+
+                GroupSeparator {
 
                 }
 
@@ -174,6 +209,12 @@ Page {
                         startPage.gpgConnector.settingsSetValue("SETTINGS_GPGPATH", pGPG_PATH);
                         startPage.gpgConnector.settingsSetValue("SETTINGS_MAILDIR", pEmailDir);
                         startPage.gpgConnector.settingsSetValue("SETTINGS_MAILDB", pEmailDB);
+
+                        if(switchEncryptWithMyKey.checked) {
+                            startPage.gpgConnector.settingsSetValue("SETTINGS_USEOWNKEY", "1");
+                        } else {
+                            startPage.gpgConnector.settingsSetValue("SETTINGS_USEOWNKEY", "0");
+                        }
 
                         pageStack.pop();
                     }

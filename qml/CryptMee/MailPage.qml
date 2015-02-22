@@ -313,9 +313,10 @@ Page {
 
                     onClicked: {
                         parent.color = "red";
-                        //pageStack.push(mailViewPage);
-                        mailViewPage.prop_eMailHeader = myMailReader.getHeader(idx);
                         mailViewPage.prop_idx = idx;
+                        mailViewPage.prop_eMailHeader = myMailReader.getHeader(idx);
+
+                        console.debug("[mailPage]: push MailViewer");
                         pageStack.push(mailViewPage);
                     }
                 }

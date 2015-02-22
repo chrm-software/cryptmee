@@ -268,6 +268,10 @@ Public License either version 3 of the license, or (at your option) any later ve
             }
 
             if(currentState === "GETKEYS") {
+                // Read secret keys now
+                updateSecretKeys();
+
+            } else if(currentState === "GET_SECRETKEYS") {
                 fillPublicKeysModel();
 
             } else if(currentState === "TXT_ENCRYPT") {
@@ -313,9 +317,7 @@ Public License either version 3 of the license, or (at your option) any later ve
 
             } else {
                 currentGpgVersion = myGPGConnector.getGPGVersionString();
-            }
-
-            currentState = "IDLE";
+            }            
         }
 
         onErrorOccured: {
@@ -421,9 +423,16 @@ Public License either version 3 of the license, or (at your option) any later ve
 
     // Load keys
     function updatePublicKeys() {
-        keyDialog.allKeyList.clear();
+        //keyDialog.allKeyList.clear();
         currentState = "GETKEYS";
         myGPGConnector.showKeys();
+    }
+
+    // Load secret keys
+    function updateSecretKeys() {
+        keyDialog.allKeyList.clear();
+        currentState = "GET_SECRETKEYS";
+        myGPGConnector.showSecretKeys();
     }
 
     // Get Version
@@ -437,6 +446,7 @@ Public License either version 3 of the license, or (at your option) any later ve
         var tmpEntryID = "";
         var tmpEntryNames = "";
         var tmpEntryTrust = "";
+        var tmpEntryIsSecret = "";
 
         var filterString = keyDialog.filterKeys;
         keyDialog.allKeyList.clear();
@@ -447,13 +457,14 @@ Public License either version 3 of the license, or (at your option) any later ve
             tmpEntryTrust = myGPGConnector.getKey(i).split("|")[0];
             tmpEntryID = myGPGConnector.getKey(i).split("|")[1];
             tmpEntryNames = myGPGConnector.getKey(i).split("|")[2];
+            tmpEntryIsSecret = myGPGConnector.getKey(i).split("|")[3];
 
-            //console.debug("Key: " + tmpEntryID);
+            console.debug("Key: " + tmpEntryID + ", isSecret: " + tmpEntryIsSecret);
 
             if(filterString === undefined || (tmpEntryID.indexOf(filterString) > -1 || tmpEntryNames.indexOf(filterString) > -1))
-                keyDialog.allKeyList.append({ name: tmpEntryID, ids: tmpEntryNames, trust: tmpEntryTrust, isVisible: true });
+                keyDialog.allKeyList.append({ name: tmpEntryID, ids: tmpEntryNames, trust: tmpEntryTrust, isVisible: true, isSecret: tmpEntryIsSecret });
             else
-                keyDialog.allKeyList.append({ name: tmpEntryID, ids: tmpEntryNames, trust: tmpEntryTrust, isVisible: false });
+                keyDialog.allKeyList.append({ name: tmpEntryID, ids: tmpEntryNames, trust: tmpEntryTrust, isVisible: false, isSecret: tmpEntryIsSecret });
         }
     }
 }

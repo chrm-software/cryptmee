@@ -62,16 +62,39 @@ Page {
                     anchors.left: parent.left
                 }
 
+                Rectangle {
+                    id: colorSecret
+                    color: "black"
+                    height: textLabel.height-3
+                    width: 6
+                    x: 12
+                    anchors.left: colorRect.right
+                    visible: {
+                        if(isSecret === "1")
+                            return true;
+                        else
+                            return false;
+                    }
+                }
+
+
                 Text {
                     id: textLabel
-                    text: "<b>"+name+"</b><br>"+ids+"<br>"
+                    text: {
+                        if(isSecret === "1") {
+                            return ("<b>"+qsTr("Private Key Pair")+"<br>"+name+"</b><br>"+ids+"<br>");
+                        }
+
+                        return ("<b>"+name+"</b><br>"+ids+"<br>");
+                    }
                     font.pixelSize: 22
                     width: parent.width - colorRect.width - 2;
                     height: {
-                        var lines = ids.split("<br>");
+                        var lines = ids.split("<br>").length;
+                        if(isSecret === "1") lines++;
                         return (lines.length + 2) * 30;
                     }
-                    anchors.left: colorRect.right
+                    anchors.left: colorSecret.right
                     anchors.margins: 6
 
                     MouseArea {
@@ -81,7 +104,7 @@ Page {
 
                         onClicked: {
                             parent.color = "red";                            
-                            selectedKeyID = name;
+                            selectedKeyID = name + "|" + isSecret;
 
                             if(stateAfterExit == "TXT_ENCRYPT")
                                 startPage.pgpEncrypt(name, stateAfterExit);

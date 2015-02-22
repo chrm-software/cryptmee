@@ -6,6 +6,7 @@
 KeyObject::KeyObject(QString _fromGnuPG, bool _searchResult = false)
 {
     this->trustValue = "o";
+    this->isSecretKey = "0";
 
     this->fromGnuPG = _fromGnuPG;
 

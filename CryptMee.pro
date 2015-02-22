@@ -71,6 +71,8 @@ HEADERS += \
 RESOURCES += \
     cryptmeeressource.qrc
 
+TRANSLATIONS += languages/lang_de_DE.ts
+
 # Install splashscreen
 #splash.path = /opt/CryptMee
 #splash.files = pix/splash.png

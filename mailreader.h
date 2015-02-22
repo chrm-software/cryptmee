@@ -44,6 +44,8 @@ private:
     QString parseMIMEMultiparts(QString _content);
     QString parseMIMEObject(QString _part);
     QString decodeBASE64(QString _filename, QString _mail, QString _codec = "utf-8");
+    QString saveToAttachment(QString _filename, QString _content);
+    QString writeDataToFile(QString _filename, QByteArray _content);
     void cleanUpAttachments();
 
     QStringList attachments;

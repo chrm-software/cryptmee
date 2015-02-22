@@ -107,6 +107,8 @@ void MailObject::parseMail()
         if(this->completeHeader[i].startsWith("From: ")) {
             this->from = this->completeHeader[i];
             this->from.replace("From: ", "");
+            this->from.replace("\"", "");
+            this->from.replace("<", "&lt;");
         }
         if(this->completeHeader[i].startsWith("To: ")) {
             this->to = this->completeHeader[i];
@@ -119,6 +121,10 @@ void MailObject::parseMail()
         if(this->completeHeader[i].startsWith("Date: ")) {
             this->dateString = this->completeHeader[i];
             this->parseDate();
+        }
+        if(this->completeHeader[i].startsWith("Cc: ")) {
+            this->cc = this->completeHeader[i];
+            this->cc.replace("Cc: ", "");
         }
 
         if(this->completeHeader[i].contains("quoted-printable")) {
@@ -148,16 +154,18 @@ QString MailObject::getEncryptedContent()
 
 QString MailObject::getShortHeader()
 {
+    qDebug() << "MailObject::getShortHeader()";
+
     if(this->isSendedMail)
-        return QString(tr("<b>From:</b> ")) + this->from + tr(" (From this Device)") + "\n<br>" +
-                tr("<b>To:</b> ") + this->to + "\n<br>" +
-                tr("<b>Date:</b> ") + this->dateTime.toString() + "\n<br>" +
-                tr("<b>Subject:</b> ") + this->subject;
+        return QString(("<b><font size='+1'>")) + this->from + ("</font></b> (sent)") + "\n<br>" +
+                ("<b> ") + this->subject + "</b><br>" +
+                ("") + this->to + " " + this->cc + "\n<br>" +
+                ("<font color='#006ea7'>") + this->dateTime.toString() + "</font>\n<br>";
     else
-        return QString(tr("<b>From:</b> ")) + this->from + "\n<br>" +
-                tr("<b>To:</b> ") + this->to + "\n<br>" +
-                tr("<b>Date:</b> ") + this->dateTime.toString() + "\n<br>" +
-                tr("<b>Subject:</b> ") + this->subject;
+        return QString(("<b><font size='+1'>")) + this->from + ("</font></b>") + "\n<br>" +
+                ("<b> ") + this->subject + "</b><br>" +
+                ("") + this->to + " " + this->cc + "\n<br>" +
+                ("<font color='#006ea7'>") + this->dateTime.toString() + "</font>\n<br>";
 }
 
 QString MailObject::getCompleteHeader()

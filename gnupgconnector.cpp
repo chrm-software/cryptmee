@@ -40,6 +40,7 @@ GnuPGConnector::GnuPGConnector(QDeclarativeItem *parent)
     this->gpgKeyserverURL = settings.value("SETTINGS_GPGKEYSERVER", KEYSERVER).toString();
     this->localMailPath = settings.value("SETTINGS_MAILDIR", MAIL_PATH).toString();
     this->localMailDB = settings.value("SETTINGS_MAILDB", MAIL_DB).toString();
+    this->useOwnKey = settings.value("SETTINGS_USEOWNKEY", "0").toString();
 
     // Initial check GnuPG version
     this->checkGPGVersion(this->gpgBinaryPath);
@@ -76,6 +77,7 @@ void GnuPGConnector::settingsReset()
     settings.setValue("SETTINGS_GPGKEYSERVER", KEYSERVER);
     settings.setValue("SETTINGS_MAILDIR", MAIL_PATH);
     settings.setValue("SETTINGS_MAILDB", MAIL_DB);
+    settings.setValue("SETTINGS_USEOWNKEY", "0");
 }
 
 void GnuPGConnector::settingsSetValue(QString _key, QString _value)
@@ -88,6 +90,7 @@ void GnuPGConnector::settingsSetValue(QString _key, QString _value)
     this->gpgKeyserverURL = settings.value("SETTINGS_GPGKEYSERVER", KEYSERVER).toString();
     this->localMailPath = settings.value("SETTINGS_MAILDIR", MAIL_PATH).toString();
     this->localMailDB = settings.value("SETTINGS_MAILDB", MAIL_DB).toString();
+    this->useOwnKey = settings.value("SETTINGS_USEOWNKEY", "0").toString();
 }
 
 QString GnuPGConnector::settingsGetValue(QString _key)
@@ -186,6 +189,9 @@ QString GnuPGConnector::encrypt(QString _input, QString _recipient)
     if(!this->writeToTmpFile(_input))
         return "*** Error occured ***";
 
+    if(this->useOwnKey == "1")
+        _recipient += " " + this->myKeyReader->getAllPrivateKeyIDs(true);
+
     QString gpgIn = this->gpgBinaryPath + QString(" --batch --no-tty --yes --always-trust --armor -r ") + _recipient + " -o " + TMPFILE + ".asc" + " --encrypt " + TMPFILE;
     this->callGnuPG(gpgIn, GPG_ENCRYPT);
 
@@ -211,6 +217,16 @@ QString GnuPGConnector::showKeys()
 
     QString gpgIn = this->gpgBinaryPath + QString(" --charset utf-8 --display-charset utf-8 --list-public-keys --fixed-list-mode --with-colons --with-fingerprint");
     this->callGnuPG(gpgIn, GPG_KEYS);
+
+    return "";
+}
+
+QString GnuPGConnector::showSecretKeys()
+{
+    qDebug() << "GnuPGConnector::showSecretKeys()";
+
+    QString gpgIn = this->gpgBinaryPath + QString(" --charset utf-8 --display-charset utf-8 --list-secret-keys --fixed-list-mode --with-colons --with-fingerprint");
+    this->callGnuPG(gpgIn, GPG_SECRET_KEYS);
 
     return "";
 }
@@ -242,12 +258,17 @@ void GnuPGConnector::gpgFinished(int _retVal)
     QString output = this->process_gpg->readAllStandardOutput().simplified();
     QString error = this->process_gpg->readAllStandardError().simplified();
 
+    qDebug() << "GnuPGConnector::gpgFinished(): State finished: " << this->currentState;
     qDebug() << "GnuPGConnector::gpgFinished(): stdout: " << output;
     qDebug() << "GnuPGConnector::gpgFinished(): stderr: " << error;
 
     if(this->currentState == GPG_KEYS) {
         // Key listing finished: parse output
-        this->myKeyReader->parseGnuPGOutput(output);
+        this->myKeyReader->parseGnuPGOutput(output);        
+
+    } else if(this->currentState == GPG_SECRET_KEYS) {
+        // All keys are now available. Compare secret keys with public keys
+        this->myKeyReader->parseGnuPGPrivateKeysOutput(output);
 
     } else if(this->currentState == GPG_KEYS_GEN) {
         // Nothing to do: just check retval
@@ -299,14 +320,14 @@ void GnuPGConnector::gpgFinished(int _retVal)
     this->gpgHistory.append("stdout: " + output);
     this->gpgHistory.append("stderr: " + error);
 
+    this->currentState = GPG_IDLE;
+
     if(_retVal != 0) {
         this->gpgErrOutput = QString("[") + QString::number(_retVal) + "] " + error;
         emit errorOccured();
     } else {
         emit ready();
-    }
-
-    this->currentState = GPG_IDLE;
+    }    
 }
 
 QString GnuPGConnector::getData(bool _errors)
@@ -362,6 +383,11 @@ QString GnuPGConnector::getKeyByID(QString _id)
 int GnuPGConnector::getNumOfPubKeys(int _type)
 {
     return this->myKeyReader->getNumOfKeys(_type);
+}
+
+QString GnuPGConnector::getPrivateKeyIDs()
+{
+    return this->myKeyReader->getAllPrivateKeyIDs();
 }
 
 bool GnuPGConnector::generateKeyPair(QString _name, QString _comment, QString _email, QString _passphrase)
@@ -459,12 +485,25 @@ bool GnuPGConnector::importKeysFromKeyserver(QString _keys)
     return this->callGnuPG(gpgIn, GPG_IMPORT);
 }
 
-bool GnuPGConnector::deleteKey(QString _id, bool _privateKeypair)
+bool GnuPGConnector::deleteKey(QString _id)
 {
     qDebug() << "GnuPGConnector::deleteKey(" << _id << ")";
 
-    QString gpgIn = this->gpgBinaryPath + QString(" --batch --yes --delete-key ") + _id;
+    QStringList keyData = _id.split("|");
+    QString gpgIn;
 
+    if(keyData.size() == 2) {
+        if(keyData.at(1) == "1") {
+            // This is a private Key
+            gpgIn = this->gpgBinaryPath + QString(" --batch --yes --delete-secret-key ") + this->myKeyReader->getKeyByID(keyData.at(0))->fingerprint;
+            return this->callGnuPG(gpgIn, GPG_DELETE);
+        } else {
+            gpgIn = this->gpgBinaryPath + QString(" --batch --yes --delete-key ") + keyData.at(0);
+            return this->callGnuPG(gpgIn, GPG_DELETE);
+        }
+    }
+
+    gpgIn = this->gpgBinaryPath + QString(" --batch --yes --delete-key ") + _id;
     return this->callGnuPG(gpgIn, GPG_DELETE);
 }
 

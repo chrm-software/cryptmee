@@ -20,6 +20,8 @@ Page {
             var tmpAttachment = mailPage.prop_mailReader.getAttachment(i);
             dialogAttach.model.append({ name: tmpAttachment });
         }
+
+        dialogAttach.selectedIndex = 0;
     }
 
     function mailDecrypted(_content, _result) {
@@ -29,6 +31,9 @@ Page {
         rawMailData = _content;
         prop_eMailContent = mailPage.prop_mailReader.parseMailContent(_content);
         setAttachments();
+
+        busyIndicator.running = false;
+        busyIndicator.visible = false
     }
 
     onStatusChanged: {
@@ -37,7 +42,17 @@ Page {
             delayDecryptTimer.start();
             setErrorMessage("");
             prop_eMailContent = "[Loading...]";
+            busyIndicator.running = true;
+            busyIndicator.visible = true
         }
+    }
+
+    BusyIndicator {
+        id: busyIndicator
+        anchors.centerIn: parent
+        running: false
+        visible: false
+        z: 1
     }
 
     ToolBarLayout {
@@ -67,14 +82,14 @@ Page {
         visualParent: mailViewPage
         MenuLayout {
             MenuItem { text: qsTr("Show attachments")
-                onClicked: {                    
+                onClicked: {
                     dialogAttach.open();
                 }
             }
 
             MenuItem { text: qsTr("Show raw data")
                 onClicked: {
-                     prop_eMailContent = rawMailData;
+                    prop_eMailContent = rawMailData;
                 }
             }
 
@@ -110,7 +125,7 @@ Page {
         }
     }
 
-    Rectangle {
+    /*Rectangle {
         id: topDecoartion
         color: "#0000b0"
         width: parent.width
@@ -135,14 +150,14 @@ Page {
             font.pixelSize: 32
             font.bold: false
         }
-    }
+    }*/
 
     Rectangle {
         id: errorMessage
         color: "#ff0000"
         width: parent.width
         height: labelError.height
-        anchors.top: topDecoartion.bottom
+        anchors.top: parent.top
         visible: false
 
         gradient: Gradient {
@@ -174,17 +189,57 @@ Page {
     Rectangle {
         id: mailHeader
         width: parent.width
-        height: 130
+        height: labelHeader.height
         anchors.top: errorMessage.bottom
         color: "#dddddd"
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#DDDDDD" }
+            GradientStop { position: 1.0; color: "#AAAAAA" }
+        }
 
         Label {
+            id: headerIcon
+            width: 50
+            x: parent.width - 120
+            height: labelHeader.height
+
+            Image {
+                id: iconHeader
+                width: 120
+                height: 110
+                source: "qrc:/images/pix/gpg-mail.png"
+                anchors.margins: 5
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+            }
+        }
+
+        Text {
             id: labelHeader
             x: 5
-            width: parent.width - 10
-            height: 130
+            width: parent.width
+            height: 110
             text: ""
             font.pixelSize: 20
+        }
+
+        Rectangle {
+            x: 0
+            width:  labelHeader.width
+            height: labelHeader.width
+            rotation: 270
+
+            gradient: Gradient {
+
+                GradientStop {
+                position: 0.0
+                color: "#00DDDDDD"
+                }
+                GradientStop {
+                position: 1.0
+                color: "#EEDDDDDD"
+                }
+            }
         }
     }
 

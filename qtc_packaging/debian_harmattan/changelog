@@ -1,3 +1,20 @@
+cryptmee (0.2.4) unstable; urgency=low
+  * MIME bugfixes
+  * Private keypair handling (delete, use for encryptions, ...)
+  * Mailviewer: better UX
+
+ -- Christoph Maciejewski <chrm@users.sf.net>  Tue, 03 Feb 2015 15:43:34 +0100
+
+cryptmee (0.2.3) unstable; urgency=low
+  * MIME mails: Parse headers
+  * MIME mails: Show correct encoding
+  * MIME mails: Save attachments
+  * MIME mails: Show raw data
+  * Many bugfixes
+  * Tested with mails from Thunderbird+Enigmail, KMail and K9-Mail
+
+ -- Christoph Maciejewski <chrm@users.sf.net>  Sun, 01 Feb 2015 01:07:29 +0100
+
 cryptmee (0.2.2) unstable; urgency=low
   * Delete public keys
   * Bugfixes for keyserver lookup

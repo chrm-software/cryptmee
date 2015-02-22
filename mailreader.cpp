@@ -103,7 +103,10 @@ QString MailReader::getContent(int _i)
 
 QString MailReader::getHeader(int _i)
 {
-    return this->allMails.at(_i)->getShortHeader();
+    qDebug() << "MailReader::getHeader(" << _i << ")";
+    QString header = this->allMails.at(_i)->getShortHeader();
+    qDebug() << "MailReader::getHeader(): " << header;
+    return header;
 }
 
 void MailReader::sortListByDate()
@@ -207,13 +210,13 @@ QString MailReader::parseMIMEObject(QString _part)
     qDebug() << "MailReader::parseMIMEObject()";
 
     // Check for end line characters. RFC2822 requires CRLF, but after
-    // decryption they can get lost...
+    // decryption they can get lost. Use just \n as line feed.
     QStringList lines;
 
-    if(_part.contains("\r\n"))
-        lines = _part.split("\r\n");
-    else
-        lines = _part.split("\n");
+    _part.replace("\r\n", "\n");
+    _part.replace("\r", "\n");
+
+    lines = _part.split("\n");
 
     qDebug() << "MailReader::parseMIMEObject(): #lines: " << lines.size();
 
@@ -225,10 +228,11 @@ QString MailReader::parseMIMEObject(QString _part)
     QString charset = "";
 
     int type = 0; // 0: text 1: image 2: else
+    bool isAttachment = false;
 
     // read header
     for(int i=0; i<lines.size(); i++) {
-        currentLine = lines.at(i);        
+        currentLine = lines.at(i);
 
         if(currentLine == "" && i > 1) {
             // Header ends here
@@ -254,12 +258,21 @@ QString MailReader::parseMIMEObject(QString _part)
 
                 // Read content type
                 contentType = currentLine;
+
+                // utf-8 in name
+                if(contentType.contains("utf-8''")) {
+                    // TODO: do it well...
+                    contentType.replace("utf-8''", "\"", Qt::CaseInsensitive);
+                    contentType.replace("%2E", ".", Qt::CaseInsensitive);
+                    contentType.append("\"");
+                }
+
                 contentType.replace(QRegExp("Content-Type: ([^;]*)\\s*[;]*\\s*([^=]*)[=]*[\"]*([^\"]*)[\"]*"), "\\1|\\2|\\3");
 
                 tmp = contentType.split("|").at(0);
 
                 // Check type
-                if(tmp.contains("text/", Qt::CaseInsensitive)) {
+                if(tmp.contains("text/plain", Qt::CaseInsensitive)) {
                     type = 0;
 
                     if(contentType.split("|").size() != 3) {
@@ -282,9 +295,12 @@ QString MailReader::parseMIMEObject(QString _part)
                     } else {
                         if( contentType.split("|").at(1).contains("name", Qt::CaseInsensitive)) {
                             name = contentType.split("|").at(2);
+                            name.replace("*=", "");
                             name.replace("=", "");
                             name.replace("\"", "");
                             name.replace(" ", "_");
+                        } else if(contentType.split("|").at(2).contains(QRegExp(";\\s*name[*]*="))){
+                            name = contentType.split("|").at(2).split(QRegExp(";\\s*name[*]*=")).at(1);
                         }
                     }
 
@@ -300,9 +316,13 @@ QString MailReader::parseMIMEObject(QString _part)
                     } else {
                         if( contentType.split("|").at(1).contains("name", Qt::CaseInsensitive)) {
                             name = contentType.split("|").at(2);
+                            name.replace("*=", "");
                             name.replace("=", "");
                             name.replace("\"", "");
                             name.replace(" ", "_");
+
+                        } else if(contentType.split("|").at(2).contains(QRegExp(";\\s*name[*]*="))){
+                            name = contentType.split("|").at(2).split(QRegExp(";\\s*name[*]*=")).at(1);
                         }
                     }
 
@@ -325,6 +345,7 @@ QString MailReader::parseMIMEObject(QString _part)
                 if(disposition.split("filename=", QString::KeepEmptyParts, Qt::CaseInsensitive).size() == 2)
                     filename = disposition.split("filename=", QString::KeepEmptyParts, Qt::CaseInsensitive).at(1);
 
+                isAttachment = true;
             }
 
         } else if(currentLine.startsWith(("Content-Transfer-Encoding: "))) {
@@ -346,16 +367,71 @@ QString MailReader::parseMIMEObject(QString _part)
     if(charset == "")
         charset = "utf-8";
 
-    if(transferEncoding.contains("quoted-printable", Qt::CaseInsensitive))
-        return quotedPrintableDecode(message, charset);
-    else if(transferEncoding.contains("base64", Qt::CaseInsensitive)) {
+    // Encode text part
+    if(!isAttachment && transferEncoding.contains("quoted-printable", Qt::CaseInsensitive)) {
+        return this->quotedPrintableDecode(message, charset);
+    }
+
+    if(!isAttachment && transferEncoding.contains("base64", Qt::CaseInsensitive)) {
+        return this->decodeBASE64("", message);
+    }
+
+    // Manage attachments
+    if(isAttachment) {
         QString saveAsName = filename;
         if(saveAsName == "")
             saveAsName = name;
+        saveAsName.replace("\"", "");
 
-        return this->decodeBASE64(saveAsName.replace("\"", ""), message);
+        if(transferEncoding.contains("base64", Qt::CaseInsensitive)) {
+            // Decode BASE64 and save to file
+            return this->decodeBASE64(saveAsName, message);
+
+        } else {
+            // Save all other attachments to files
+            if(transferEncoding.contains("quoted-printable", Qt::CaseInsensitive))
+                message = quotedPrintableDecode(message, charset);
+
+            return this->saveToAttachment(saveAsName, message);
+        }
     } else
         return message;
+}
+
+QString MailReader::writeDataToFile(QString _filename, QByteArray _content)
+{
+    if(_filename != "") {
+        QFile file(TMP_DIR + _filename);
+        if (!file.open(QIODevice::WriteOnly))
+        {
+            return "ERROR";
+        }
+
+        this->attachments << _filename;
+        file.write(_content);
+        file.close();
+
+        return _filename;
+    }
+
+    return "[ERROR]";
+}
+
+QString MailReader::saveToAttachment(QString _filename, QString _content)
+{
+    qDebug() << "MailReader::saveToAttachment(" << _filename << ")";
+
+    if(_filename != "") {
+        if(this->attachments.contains(_filename)) {
+            qDebug() << "MailReader::saveToAttachment(): already got this file. Ignore.";
+            return _filename;
+        }
+    }
+
+    QByteArray ba;
+    ba.append(_content);
+
+    return this->writeDataToFile(_filename, ba);
 }
 
 QString MailReader::decodeBASE64(QString _filename, QString _mail, QString _codec)
@@ -376,17 +452,8 @@ QString MailReader::decodeBASE64(QString _filename, QString _mail, QString _code
     QByteArray fileData = QByteArray::fromBase64(ba);
 
     if(_filename != "") {
-        QFile file(TMP_DIR + _filename);
-        if (!file.open(QIODevice::WriteOnly))
-        {
-            return "ERROR";
-        }
+        return this->writeDataToFile(_filename, fileData);
 
-        this->attachments << _filename;
-        file.write(fileData);
-        file.close();
-
-        return _filename;
     } else {
         // No filename means, this ist just a text part. TODO: make it clear!
         QString retVal;
@@ -435,7 +502,7 @@ QString MailReader::parseMailContent(QString _mail)
             // Remove quoted printable
             _mail.replace(QRegExp("Content-Transfer-Encoding: quoted-printable\\s*"), "");
             _mail = this->quotedPrintableDecode(_mail);
-        }        
+        }
     }
 
     // Nothing to do for now for Inline mails:

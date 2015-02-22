@@ -97,7 +97,16 @@ Page {
     QueryDialog  {
         id: askKeyDelDialog
         titleText: qsTr("Delete Key")
-        message:  qsTr("Are you sure you want to delete this key: ") + currentKeyID;
+        message:  {
+            var keyID = currentKeyID.split("|")[0];
+            var keyType = currentKeyID.split("|")[1];
+
+            if(keyType === "0") {
+                return qsTr("Are you sure you want to delete this key: ") + keyID;
+            } else {
+                return qsTr("This is a secret key! Are you sure you want to delete this key: ") + keyID;
+            }
+        }
         acceptButtonText: qsTr("Delete!")
         rejectButtonText: qsTr("Cancel")
         onAccepted: {
@@ -131,7 +140,7 @@ Page {
         editKeyArea.height = 300;
 
         currentKeyID = keyDialog.selectedKeyID;
-        var keyData = startPage.gpgConnector.getKeyByID(currentKeyID);
+        var keyData = startPage.gpgConnector.getKeyByID(currentKeyID.split("|")[0]);
 
         labelEditKeyInfo.text = keyData;
 
@@ -163,7 +172,7 @@ Page {
         startPage.currentState = "TRUSTKEYS";
         currentKeyID = keyDialog.selectedKeyID;
 
-        startPage.gpgConnector.setOwnerTrust(currentKeyID, _trust);
+        startPage.gpgConnector.setOwnerTrust(currentKeyID.split("|")[0], _trust);
     }
 
     function deleteKey() {

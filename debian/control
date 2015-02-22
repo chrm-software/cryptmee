@@ -1,7 +1,7 @@
 Source: cryptmee
 Section: user/other
 Priority: optional
-Maintainer: Christoph Maciejewski <chrm@chrm.info>
+Maintainer: Christoph Maciejewski <chrm@users.sf.net>
 Build-Depends: debhelper (>= 5), libqt4-dev
 Standards-Version: 3.7.3
 Homepage: http://chrm.info/cms/CryptMee

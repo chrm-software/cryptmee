@@ -16,6 +16,7 @@ public:
     QString length;
     QString expires;
     QString fingerprint;
+    QString isSecretKey;
 
 };
 

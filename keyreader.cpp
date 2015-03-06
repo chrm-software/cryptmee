@@ -165,13 +165,16 @@ KeyObject* KeyReader::getKeyByID(QString _id)
 QString KeyReader::getAllPrivateKeyIDs(bool _asCommandLine)
 {
     QString retVal;
-    QString param = " ";
+    QString param = "|";
 
     if(_asCommandLine)
         param = " -r ";
 
     for(int i=0; i<this->allSecretKeys.size(); i++) {
-       retVal += param + this->allSecretKeys.at(i)->keyID;
+        if(_asCommandLine)
+            retVal += param + this->allSecretKeys.at(i)->keyID;
+        else
+            retVal += this->allSecretKeys.at(i)->keyID + param;
     }
 
     return retVal;

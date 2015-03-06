@@ -92,7 +92,7 @@
     </message>
     <message>
         <source>Are you sure you want to delete this key: </source>
-        <translation type="unfinished">Wollen Sie diesen Schlüssel wirklich löschen: </translation>
+        <translation>Wollen Sie diesen Schlüssel wirklich löschen: </translation>
     </message>
     <message>
         <source>Delete!</source>
@@ -196,7 +196,59 @@
     </message>
     <message>
         <source>This is a secret key! Are you sure you want to delete this key: </source>
-        <translation type="unfinished">Privates Schlüsselpaar! Wollen Sie diesen Schlüssel wirklich löschen: </translation>
+        <translation>Privates Schlüsselpaar! Wollen Sie diesen Schlüssel wirklich löschen: </translation>
+    </message>
+    <message>
+        <source>I don&apos;t know</source>
+        <translation>Ich weiss es nicht</translation>
+    </message>
+    <message>
+        <source>I do NOT trust</source>
+        <translation>Ich vertraue ihm nicht</translation>
+    </message>
+    <message>
+        <source>I trust marginally</source>
+        <translation>Ich vetraue ihm minimal</translation>
+    </message>
+    <message>
+        <source>I trust fully</source>
+        <translation>Ich vetraue ihm voll</translation>
+    </message>
+    <message>
+        <source>I trust ultimately</source>
+        <translation>Ich vetraue ihm absolut</translation>
+    </message>
+    <message>
+        <source>Export all public keys</source>
+        <translation>Alle öffentlichen Schlüssel exportieren</translation>
+    </message>
+    <message>
+        <source>Export private keys only</source>
+        <translation>Nur private Schlüssel exportieren</translation>
+    </message>
+    <message>
+        <source>Sign with this private key:</source>
+        <translation>Mit diesem privaten Schlüssel signieren:</translation>
+    </message>
+    <message>
+        <source>Export to file:</source>
+        <translation>In Datei exportieren:</translation>
+    </message>
+    <message>
+        <source>Key successfull signed.</source>
+        <translation>Schlüssel erfolgreich signiert.</translation>
+    </message>
+    <message>
+        <source>Unable to sign this key!</source>
+        <translation>Schlüssel konnte nicht signiert werden!</translation>
+    </message>
+    <message>
+        <source>Keyring successfull exported to file: </source>
+        <translation>Alle Schlüssel wurden exportiert nach: </translation>
+    </message>
+    <message>
+        <source>Unable to export the keyring!</source>
+        <translation>Konnte Schlüssel nicht exportieren!</translation>
     </message>
 </context>
 <context>

@@ -116,9 +116,10 @@ bool GnuPGConnector::callGnuPG(QString _cmd, int _state)
     this->process_gpg->start(_cmd);
 
     // Remove passwords from log
-    if(_state == GPG_DECRYPT) {
-        _cmd.replace(QRegExp("--passphrase \".*\" -o"), "--passphrase \"#######\" -o");
+    if(_state == GPG_DECRYPT || _state == GPG_SIGN) {
+        _cmd.replace(QRegExp("--passphrase \"[^\"]\" "), "--passphrase \"#######\" ");
     }
+
     this->gpgHistory.append("\n=== Starting new gpg command at " + QDateTime::currentDateTime().toString());
     this->gpgHistory.append(_cmd);
 
@@ -294,9 +295,7 @@ void GnuPGConnector::gpgFinished(int _retVal)
         // Delete command output
         this->gpgStdOutput = output;
 
-    } else if(this->currentState == GPG_SEARCH) {
-        // Search results from stdout
-        // TODO: parse output!
+    } else if(this->currentState == GPG_SEARCH) {        
         this->gpgStdOutput = output;
         this->myKeyReader->parseGnuPGServerSearchOutput(output);
 
@@ -304,6 +303,12 @@ void GnuPGConnector::gpgFinished(int _retVal)
         _retVal = 0;
 
     } else if(this->currentState == GPG_SET_TRUST) {
+        this->gpgStdOutput = output;
+
+    } else if(this->currentState == GPG_SIGN) {
+        this->gpgStdOutput = output;
+
+    } else if(this->currentState == GPG_EXPORT) {
         this->gpgStdOutput = output;
 
     } else {
@@ -385,9 +390,9 @@ int GnuPGConnector::getNumOfPubKeys(int _type)
     return this->myKeyReader->getNumOfKeys(_type);
 }
 
-QString GnuPGConnector::getPrivateKeyIDs()
+QString GnuPGConnector::getPrivateKeyIDs(bool _asCommandLine)
 {
-    return this->myKeyReader->getAllPrivateKeyIDs();
+    return this->myKeyReader->getAllPrivateKeyIDs(_asCommandLine);
 }
 
 bool GnuPGConnector::generateKeyPair(QString _name, QString _comment, QString _email, QString _passphrase)
@@ -507,7 +512,26 @@ bool GnuPGConnector::deleteKey(QString _id)
     return this->callGnuPG(gpgIn, GPG_DELETE);
 }
 
-// Sign (with ID):
-// gpg --sign-key --batch ID
-//
+bool GnuPGConnector::signKey(QString _id, QString _passwd, QString _privateKey)
+{
+    qDebug() << "GnuPGConnector::signKey(" << _id << ", " << _privateKey << ")";
+    QString gpgIn;
+
+    gpgIn = this->gpgBinaryPath + QString(" --batch --no-tty --yes --always-trust --passphrase \"") + _passwd + "\" -u " + _privateKey + " --sign-key " + _id;
+    return this->callGnuPG(gpgIn, GPG_SIGN);
+}
+
+bool GnuPGConnector::exportKeys(int _mode, QString _path)
+{
+    qDebug() << "GnuPGConnector::exportKeys(" << _mode << ")";
+    QString gpgIn;
+
+    if(_mode == 1) {
+        gpgIn = this->gpgBinaryPath + QString(" --batch --no-tty --yes --always-trust --export --armor --output ") + MYDOCS_PATH + _path;
+    } else {
+        gpgIn = this->gpgBinaryPath + QString(" --batch --no-tty --yes --always-trust --export-secret-keys --armor --output ") + MYDOCS_PATH + _path;
+    }
+
+    return this->callGnuPG(gpgIn, GPG_EXPORT);
+}
 

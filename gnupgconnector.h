@@ -44,7 +44,7 @@ public:
 
     Q_INVOKABLE QString getKey(int _i, int _type = 0);
     Q_INVOKABLE QString getKeyByID(QString _id);
-    Q_INVOKABLE QString getPrivateKeyIDs();
+    Q_INVOKABLE QString getPrivateKeyIDs(bool _asCommandLine = true);
 
     Q_INVOKABLE int getNumOfPubKeys(int _type = 0);
     Q_INVOKABLE bool generateKeyPair(QString _name, QString _comment, QString _email, QString _passphrase);
@@ -57,6 +57,8 @@ public:
     Q_INVOKABLE bool searchKeysOnKeyserver(QString _keyword);
     Q_INVOKABLE bool importKeysFromKeyserver(QString _keys);
     Q_INVOKABLE bool deleteKey(QString _id);
+    Q_INVOKABLE bool signKey(QString _id, QString _passwd, QString _privateKey);
+    Q_INVOKABLE bool exportKeys(int _mode, QString _path);
 
     Q_INVOKABLE QString getHistory();
     Q_INVOKABLE bool saveHistory(QString _filename);

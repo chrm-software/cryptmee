@@ -255,7 +255,7 @@ Public License either version 3 of the license, or (at your option) any later ve
         id: myGPGConnector
 
         onReady: {
-            console.debug("---> READY Signal from C++ (gpgconnector)!");
+            console.debug("---> READY Signal from C++ (gpgconnector)! State: " + currentState);
 
             dataErrOutput = myGPGConnector.getData(true);
             dataOutput = myGPGConnector.getData(false);
@@ -311,6 +311,14 @@ Public License either version 3 of the license, or (at your option) any later ve
                 // Keys deleted
                 keyPage.keyDeleted(true);
 
+            } else if(currentState === "SIGNKEY") {
+                // Keys signed
+                keyPage.keySigned(true);
+
+            } else if(currentState === "EXPORTKEYS") {
+                // Keys export
+                keyPage.keyExported(true);
+
             } else if(currentState === "KEYSERVER_SEARCH") {
                 // Keys imported
                 keyPage.keyserverSearched(true);
@@ -321,7 +329,7 @@ Public License either version 3 of the license, or (at your option) any later ve
         }
 
         onErrorOccured: {
-            console.debug("---> ERROR Signal from C++ (gpgconnector)!");
+            console.debug("---> ERROR Signal from C++ (gpgconnector)! State:" + currentState);
 
             dataErrOutput = myGPGConnector.getData(true);
             dataOutput = myGPGConnector.getData(false);
@@ -365,14 +373,22 @@ Public License either version 3 of the license, or (at your option) any later ve
                 currentGpgVersion = myGPGConnector.getGPGVersionString();
 
             } else if(currentState === "IMPORTKEYS") {
-                // Keys imported
+                // Keys imported                
                 keyPage.keyImported(false);
 
             } else if(currentState === "DELETEKEY") {
                 // Keys deleted
                 keyPage.keyDeleted(false);
 
-            }  else if(currentState === "KEYSERVER_SEARCH") {
+            } else if(currentState === "SIGNKEY") {
+                // Keys signed
+                keyPage.keySigned(false);
+
+            } else if(currentState === "EXPORTKEYS") {
+                // Keys export
+                keyPage.keyExported(false);
+
+            } else if(currentState === "KEYSERVER_SEARCH") {
                 // Keys imported
                 keyPage.keyserverSearched(false);
             }

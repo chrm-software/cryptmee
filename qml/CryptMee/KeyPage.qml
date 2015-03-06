@@ -10,11 +10,23 @@ Page {
     property string currentKeyID: ""
     property alias importKeyFile: textFieldKeyImportFile.text
     property int buttonGap: 10;
+    property string prop_lastFileName: ""
+
+    Component.onCompleted: {
+        exportKeyDialogModel.get(0).name = qsTr("Export all public keys");
+        exportKeyDialogModel.get(1).name = qsTr("Export private keys only");
+
+        trustLevelDialogModel.get(0).name = qsTr("I don't know");
+        trustLevelDialogModel.get(1).name = qsTr("I do NOT trust");
+        trustLevelDialogModel.get(2).name = qsTr("I trust marginally");
+        trustLevelDialogModel.get(3).name = qsTr("I trust fully");
+        trustLevelDialogModel.get(4).name = qsTr("I trust ultimately");
+    }
 
     onStatusChanged: {
         if(status === DialogStatus.Open){
         }
-    }
+    }    
 
     ToolBarLayout {
         id: commonTools
@@ -120,11 +132,12 @@ Page {
         selectedIndex: 3
 
         model: ListModel {
-            ListElement { value: "1"; name: "I don't know" }
-            ListElement { value: "2"; name: "I do NOT trust" }
-            ListElement { value: "3"; name: "I trust marginally" }
-            ListElement { value: "4"; name: "I trust fully" }
-            ListElement { value: "6"; name: "I trust ultimately" }
+            id: trustLevelDialogModel
+            ListElement { value: "1"; name: "" }
+            ListElement { value: "2"; name: "" }
+            ListElement { value: "3"; name: "" }
+            ListElement { value: "4"; name: "" }
+            ListElement { value: "6"; name: "" }
         }
 
         onAccepted: {
@@ -133,7 +146,63 @@ Page {
         }
     }
 
+    SelectionDialog {
+        id: signKeyDialog
+        titleText: qsTr("Sign with this private key:")
+        selectedIndex: 3
+
+        model: ListModel { }
+
+        onAccepted: {
+            var keyID = currentKeyID.split("|")[0];
+            var keyType = currentKeyID.split("|")[1];
+            var signWithKey = signKeyDialog.model.get(signKeyDialog.selectedIndex).name;
+
+            signKeyWithMine(keyID, signWithKey);
+        }
+    }
+
+    SelectionDialog {
+        id: exportKeyDialog
+        titleText: qsTr("Export to file:")
+        selectedIndex: 0
+
+        model: ListModel {
+            id: exportKeyDialogModel
+            ListElement { value: "1"; name: "" }
+            ListElement { value: "2"; name: "" }
+        }
+
+        onAccepted: {
+            var option = exportKeyDialog.model.get(exportKeyDialog.selectedIndex).value;
+
+            if(option == 1)
+                exportKeys(option, "gpg-keys-export.asc");
+            else
+                exportKeys(option, "gpg-private-keys-export.asc");
+        }
+    }
+
     /////////////////////////////// GPG functions ////////////////////////
+    function exportKeys(_option, _path) {
+        startPage.currentState = "EXPORTKEYS";
+        prop_lastFileName = _path;
+        startPage.gpgConnector.exportKeys(_option, _path);
+    }
+
+    function setPrivateKeys() {
+        signKeyDialog.model.clear();
+
+        var secKeys = startPage.gpgConnector.getPrivateKeyIDs(false).split("|");
+        console.debug("[KeyPage] setPrivateKeys: " + secKeys);
+
+        for(var i=0; i<secKeys.length - 1; i++) {
+            signKeyDialog.model.append({ name: secKeys[i] });
+        }
+
+        signKeyDialog.selectedIndex = 0;
+    }
+
     function showOneKey() {
         busyIndicator.running = false;
         busyIndicator.visible = false
@@ -144,6 +213,22 @@ Page {
 
         labelEditKeyInfo.text = keyData;
 
+    }
+
+    function signKeyWithMine(_key, _myKey) {
+        passwordDialog.prop_state = "SIGNKEY";
+
+        if(passwordDialog.prop_passwd === "") {
+            // Ask for password first
+            passwordDialog.prop_content = _key;
+            passwordDialog.prop_private_key = _myKey;
+
+            pageStack.push(passwordDialog);
+            return;
+        }
+
+        startPage.currentState = "SIGNKEY";
+        startPage.gpgConnector.signKey(_key, passwordDialog.prop_passwd, _myKey);
     }
 
     function importKeysFromFile() {
@@ -191,6 +276,7 @@ Page {
     }
 
     function importKeysFromServer(_keyListString) {
+        startPage.currentState = "IMPORTKEYS";
         startPage.gpgConnector.importKeysFromKeyserver(_keyListString);
     }
 
@@ -296,6 +382,39 @@ Page {
         labelEditKeyInfo.text = "";
         buttonGap = 10;
     }
+
+    function keySigned(_result) {
+        if(_result) {
+            // Success
+            infoBanner.text = qsTr("Key successfull signed.");
+        } else {
+            // Fails
+            infoBanner.text = qsTr("Unable to sign this key!");
+        }
+
+        infoBanner.show();
+
+        // Close edit area
+        editKeyArea.visible = false;
+        editKeyArea.height = 0;
+        fadeInKeyEdit.start();
+        labelEditKeyInfo.text = "";
+        buttonGap = 10;
+    }
+
+    function keyExported(_result) {
+        if(_result) {
+            // Success
+            infoBanner.text = qsTr("Keyring successfull exported to file: ") + prop_lastFileName;
+        } else {
+            // Fails
+            infoBanner.text = qsTr("Unable to export the keyring!");
+        }
+
+        infoBanner.show();
+    }
+
+    ///////////////////////////////////////////////////////////
 
     // Create model for key list view
     function fillSearchKeysModel() {
@@ -630,6 +749,8 @@ Page {
                 text: qsTr("Sign Key")
 
                 onClicked: {
+                    setPrivateKeys();
+                    signKeyDialog.open();
                 }
             }
 
@@ -775,23 +896,8 @@ Page {
             width: parent.width-10
 
             onClicked: {
-                if(!exportKeyArea.visible) {
-                    exportKeyArea.visible = true;
-                    exportKeyArea.height = 300;
-                    //fadeOutKeyImport.start();
-                    createKeyPair.visible = false;
-                    importKey.visible = false;
-                    editKey.visible = false;
-                    buttonGap = 0;
-                } else {
-                    exportKeyArea.visible = false;
-                    exportKeyArea.height = 0;
-                    //fadeInKeyImport.start();
-                    createKeyPair.visible = true;
-                    importKey.visible = true;
-                    editKey.visible = true;
-                    buttonGap = 10;
-                }
+                // Ask for export type
+                exportKeyDialog.open();
             }
         }
 

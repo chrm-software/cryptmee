@@ -104,8 +104,8 @@ Page {
         Flickable {
             id: flickAreaSettings
             width: parent.width
-            height: parent.height
-            contentWidth: parent.width
+            height: parent.height            
+            contentWidth: parent.width - 2
             contentHeight: settingsGrid.height
             flickableDirection: Flickable.VerticalFlick
             clip: true
@@ -118,7 +118,7 @@ Page {
                 spacing: 5
                 anchors.fill: parent
                 width: parent.width
-                height: 560
+                height: 590
 
                 GroupSeparator {
                     title: qsTr("GnuPG binary path:")
@@ -175,8 +175,22 @@ Page {
                     width: parent.width;
                     spacing: 10
 
+                    Rectangle {
+                        width: 1
+                        height: ownKeyId.height
+                        color: "transparent"
+                    }
+
+                    Label {
+                        id: ownKeyId                        
+                        wrapMode: Text.Wrap
+                        width: parent.width - switchEncryptWithMyKey.width - 21
+                        text: qsTr("Allwas encrypt with my own public key");
+                    }
+
                     Switch {
                         id: switchEncryptWithMyKey;
+                        height: ownKeyId.height
                         checked: {
                             var useKey = startPage.gpgConnector.settingsGetValue("SETTINGS_USEOWNKEY");
                             if(useKey === "1")
@@ -184,12 +198,6 @@ Page {
                             else
                                 return false;
                         }
-                    }
-
-                    Label {
-                        id: ownKeyId
-                        height: switchEncryptWithMyKey.height
-                        text: qsTr("Allwas encrypt with my own public key");
                     }
                 }
 

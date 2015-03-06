@@ -8,6 +8,7 @@ Page {
     property string prop_content: ""
     property string prop_state: ""
     property alias prop_passwd: passwordField.text
+    property string prop_private_key: ""
 
     signal clicked()
 
@@ -53,7 +54,11 @@ Page {
                     if(prop_passwd === "") {
                         // nothing
                     } else {
-                        startPage.pgpDecrypt(prop_content, prop_state);
+                        if(prop_state === "TXT_DECRYPT")
+                            startPage.pgpDecrypt(prop_content, prop_state);
+                        else if((prop_state === "SIGNKEY"))
+                            keyPage.signKeyWithMine(prop_content, prop_private_key);
+
                         pageStack.pop();
                     }
                 }

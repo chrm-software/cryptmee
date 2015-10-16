@@ -14,6 +14,7 @@
 #include "gnupgconnector.h"
 #include "mailreader.h"
 #include "configuration.h"
+#include "imcontrolthread.h"
 
 
 Q_DECL_EXPORT int main(int argc, char *argv[])
@@ -23,6 +24,12 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     // i18n stuff
     qDebug() << "I18N: local:" << QLocale::system().name();
     QString locale = QLocale::system().name();
+
+    if(locale.startsWith("de_"))
+        locale = "de_DE";
+    else if(locale.startsWith("ru_"))
+        locale = "ru_RU";
+
     QString filename = QString("languages/languages/lang_") + locale;
 
     // Data for Settings
@@ -40,9 +47,10 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
         qDebug() << "I18N: Translation file not loaded:" << filename;
 
 
-    // Register C++ class
+    // Register C++ classes
     qmlRegisterType<GnuPGConnector>("GnuPGConnector", 1, 0, "GnuPGConnector");
     qmlRegisterType<MailReader>("MailReader", 1, 0, "MailReader");
+    qmlRegisterType<ImControlThread>("ImControlThread", 1, 0, "ImControlThread");
 
     QmlApplicationViewer viewer;
     QDeclarativeContext *ctxt = viewer.rootContext();

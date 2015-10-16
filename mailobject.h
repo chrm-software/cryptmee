@@ -27,7 +27,6 @@ public:
 
 private:
     void parseMail();
-    QString tr(const char *_txt);
 
     QString fileName;
     QStringList completeHeader;

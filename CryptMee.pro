@@ -7,6 +7,28 @@ folder_splash.source = pix/splash
 folder_splash.target = splash
 DEPLOYMENTFOLDERS += folder_splash
 
+# Deploy otrlibs
+#folder_otrlibs.source = lib
+#folder_otrlibs.target = /usr
+#DEPLOYMENTFOLDERS += folder_otrlibs
+
+libs.path = /usr/lib
+libs.files = lib/libotr.so.2.2.0
+INSTALLS += libs
+
+ldd.path = /etc/ld.so.conf.d
+ldd.files = lib/kdepim.conf
+INSTALLS += ldd
+
+#libs2.path = /opt/CryptMee/bin
+#libs2.files = lib/libgpg-error.so.0.8.0
+#INSTALLS += libs2
+
+#libs3.path = /opt/CryptMee/bin
+#libs3.files = lib/libgcrypt.so.11.1.1
+#INSTALLS += libs3
+
+
 # Additional import path used to resolve QML modules in Creator's code model
 QML_IMPORT_PATH =
 
@@ -24,11 +46,21 @@ symbian:TARGET.CAPABILITY += NetworkServices
 
 # If your application uses the Qt Mobility libraries, uncomment the following
 # lines and add the respective components to the MOBILITY variable.
-# CONFIG += mobility
-# MOBILITY +=
+QT += dbus
+#CONFIG += mobility
+#MOBILITY += messaging
 
 # DB
 QT += sql
+
+# Tracker
+# CONFIG+=qtsparql
+
+# Other libs
+CONFIG += link_pkgconfig
+PKGCONFIG += libotr
+LIBS += -lotr -lgcrypt -lgpg-error
+
 
 # Speed up launching on MeeGo/Harmattan when using applauncherd daemon
 CONFIG += qdeclarative-boostable
@@ -43,7 +75,10 @@ SOURCES += main.cpp \
     mailobject.cpp \
     keyreader.cpp \
     keyobject.cpp \
-    gnupgconnector.cpp
+    gnupgconnector.cpp \
+    imcontrolthread.cpp \
+    otrlconnector.cpp \
+    trackeraccess.cpp
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)
@@ -56,8 +91,10 @@ OTHER_FILES += \
     qtc_packaging/debian_harmattan/copyright \
     qtc_packaging/debian_harmattan/control \
     qtc_packaging/debian_harmattan/compat \
+    qtc_packaging/debian_harmattan/postinst \
     qtc_packaging/debian_harmattan/changelog \
     pix/splash.jpg \
+    qml/CryptMee/OTRChatWindow.qml
 
 HEADERS += \
     mailreaderthread.h \
@@ -66,12 +103,34 @@ HEADERS += \
     keyreader.h \
     keyobject.h \
     gnupgconnector.h \
-    configuration.h
+    configuration.h \
+    imcontrolthread.h \
+    otrlconnector.h \
+    trackeraccess.h
 
 RESOURCES += \
     cryptmeeressource.qrc
 
-TRANSLATIONS += languages/lang_de_DE.ts
+lupdate_only{
+    SOURCES += \
+        qml/CryptMee/GpgHistoryViewPage.qml \
+        qml/CryptMee/GroupSeparator.qml \
+        qml/CryptMee/KeyPage.qml \
+        qml/CryptMee/KeySearchResultSelectionPage.qml \
+        qml/CryptMee/MailPage.qml \
+        qml/CryptMee/MailViewer.qml \
+        qml/CryptMee/main.qml \
+        qml/CryptMee/MainPage.qml \
+        qml/CryptMee/OTRConfigPage.qml \
+        qml/CryptMee/PasswordInputPage.qml \
+        qml/CryptMee/PubKeySelectionPage.qml \
+        qml/CryptMee/SettingsPage.qml \
+        qml/CryptMee/StartPage.qml \
+        qml/CryptMee/OTRChatWindow.qml
+}
+
+TRANSLATIONS += languages/lang_de_DE.ts \
+                languages/lang_ru_RU.ts
 
 # Install splashscreen
 #splash.path = /opt/CryptMee

@@ -6,6 +6,7 @@
 
 #include <QDeclarativeItem>
 #include <QList>
+#include <QString>
 #include <QStringList>
 #include <QStringListModel>
 #include <QThread>
@@ -28,8 +29,6 @@ public:
     Q_INVOKABLE int getAttachmentListCount();
     Q_INVOKABLE QString getAttachment(int _i);
 
-
-    QString translateText(const char *_txt);
     QString quotedPrintableDecode(QString &input, QString _codec = "");
     QString encodeMIMEString(QString _input);
 

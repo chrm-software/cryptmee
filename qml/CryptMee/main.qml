@@ -47,6 +47,14 @@ PageStackWindow {
         id: gpgHistoryPage
     }
 
+    OTRConfigPage {
+        id: otrConfigPage
+    }
+
+    OTRChatWindow {
+        id: otrChatWindow
+    }
+
     /////////////////////////////////////////////////////////////
 
 

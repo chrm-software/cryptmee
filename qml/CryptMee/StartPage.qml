@@ -12,12 +12,13 @@ Page {
     // Some properties ///////////////////////////////////
     property string currentState: "IDLE"
     property alias gpgConnector: myGPGConnector
-    property string currentGpgVersion : ""
+    property string currentGpgVersion: ""
 
     property string dataOutput: ""
     property string dataErrOutput: ""
-    //////////////////////////////////////////////////////
 
+    property alias otrIcon: iconOTRState.iconSource
+    //////////////////////////////////////////////////////
 
 
     function showAboutDialog() {
@@ -27,6 +28,15 @@ Page {
     ToolBarLayout {
         id: commonTools
         visible: true
+
+        ToolIcon {
+            id: iconOTRState
+            iconSource: "qrc:/images/pix/otr_inactive_toolbar.png"
+            anchors.left: (parent === undefined) ? undefined : parent.left
+            onClicked: {
+                pageStack.push(otrConfigPage);
+            }
+        }
 
         ToolIcon {
             platformIconId: "toolbar-view-menu"
@@ -46,11 +56,17 @@ Page {
                 }
             }
 
+            MenuItem { text: qsTr("OTR Settings")
+                onClicked: {
+                    pageStack.push(otrConfigPage);                    
+                }
+            }
+
             MenuItem { text: qsTr("About")
                 onClicked: {
                     showAboutDialog();
                 }
-            }
+            }            
         }
     }
 
@@ -113,7 +129,7 @@ Page {
  CryptMee is free software licensed under the terms of the GNU General Public License as published by \
 the Free Software Foundation; you can redistribute it and/or modify it under the terms of the GNU General \
 Public License either version 3 of the license, or (at your option) any later version (GPLv3+)") + "<br><br>" +
-                      qsTr("Using GnuPG: ") + currentGpgVersion;
+                      qsTr("Using GnuPG: ") + currentGpgVersion + "<br><br>" + otrConfigPage.imControlThread.getLibOTRVersion();
                 horizontalAlignment: Text.AlignLeft
             }
         }

@@ -20,11 +20,6 @@ MailObject::MailObject(QString _path, MailReader* _parent)
     this->parseMail();
 }
 
-QString MailObject::tr(const char* _txt)
-{
-    return this->myMailreader->translateText(_txt);
-}
-
 void MailObject::parseMail()
 {
     // Open file and read data

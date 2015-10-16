@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Save original libs and config new libs
+
+#echo "Making backup dir for older libraries..."
+#mkdir /root/.backup
+
+#echo "Move libs to backup folder..."
+#mv -f /usr/lib/libgcrypt.so.11.1.1 /root/.backup/
+#mv -f /usr/lib/libgpg-error.so.0.4.0 /root/.backup/
+
+echo "Calling ldconfig..."
+ldconfig

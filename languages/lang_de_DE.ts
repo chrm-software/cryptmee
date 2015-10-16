@@ -25,6 +25,17 @@
     </message>
 </context>
 <context>
+    <name>ImControlThread</name>
+    <message>
+        <source>OTR stopped!</source>
+        <translation>OTR gestoppt!</translation>
+    </message>
+    <message>
+        <source>OTR activated!</source>
+        <translation>OTR aktiviert!</translation>
+    </message>
+</context>
+<context>
     <name>KeyPage</name>
     <message>
         <source>Generate private key pair and store it on your N9</source>
@@ -390,6 +401,88 @@ die neuer sind als:</translation>
     </message>
 </context>
 <context>
+    <name>OTRChatWindow</name>
+    <message>
+        <source>OTR Chat</source>
+        <translation>OTR Chat</translation>
+    </message>
+    <message>
+        <source>Send Message</source>
+        <translation>Nachricht senden</translation>
+    </message>
+    <message>
+        <source>Contact JID (set resource if needed)</source>
+        <translation>JID des Kontaktes (Ressource kann gesetzt werden)</translation>
+    </message>
+    <message>
+        <source>Send encrypted message</source>
+        <translation>Verschlüsselte Nachricht senden</translation>
+    </message>
+    <message>
+        <source>Fingerprint</source>
+        <translation>Fingerabdruck</translation>
+    </message>
+</context>
+<context>
+    <name>OTRConfigPage</name>
+    <message>
+        <source>OTR Settings</source>
+        <translation>OTR Einstellungen</translation>
+    </message>
+    <message>
+        <source>OTR Account Binding</source>
+        <translation>OTR Account auswählen</translation>
+    </message>
+    <message>
+        <source>Select Account</source>
+        <translation>Account auswählen</translation>
+    </message>
+    <message>
+        <source>Enable OTR</source>
+        <translation>OTR einschalten</translation>
+    </message>
+    <message>
+        <source>Enable OTR.
+It will run automatically on startup</source>
+        <translation>OTR aktivieren.
+Wird beim Programmstart autom. gestartet</translation>
+    </message>
+    <message>
+        <source>My fingerprint</source>
+        <translation>Mein Fingerabdruck</translation>
+    </message>
+    <message>
+        <source>Known fingerprints</source>
+        <translation>Bekannte Fingerabdrücke</translation>
+    </message>
+    <message>
+        <source>Debug output</source>
+        <translation>Debug Ausgabe</translation>
+    </message>
+    <message>
+        <source>Select account
+for OTR usage:</source>
+        <translation>Account für OTR
+auswählen</translation>
+    </message>
+    <message>
+        <source>Generate Private Key</source>
+        <translation>Privaten Schlüssel erzeugen</translation>
+    </message>
+    <message>
+        <source>A private key must be generated first for this account. It will take some time. You can reduce the time by using your phone more intense. Start a game or use the camera!</source>
+        <translation>Das Erzeugen von kryptografischen Schlüsseln kann lange dauern. Sie können die Zeit verkürzen, in dem Sie Ihr Telefon intensiv benutzen. Starten sie zB. ein Spiel oder benutzen Sie die Kamera!</translation>
+    </message>
+    <message>
+        <source>Generate!</source>
+        <translation>Erzeuge!</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+</context>
+<context>
     <name>PasswordInputPage</name>
     <message>
         <source>Enter GnuPG passphrase for your private key:</source>
@@ -421,6 +514,31 @@ die neuer sind als:</translation>
     <message>
         <source>Private Key Pair</source>
         <translation>Privates Schlüsselpaar</translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <source>OTR session closed for contact </source>
+        <translation>OTR-Sitzung beendet für </translation>
+    </message>
+    <message>
+        <source>Secure OTR session opened.</source>
+        <translation>Sichere OTR-Sitzung gestartet.</translation>
+    </message>
+    <message>
+        <source>OTR session closed</source>
+        <translation>OTR-Sitzung geschlossen.</translation>
+    </message>
+    <message>
+        <source>Restarting OTR session for contact: </source>
+        <translation>OTR Sitzung wird neu gestartet für: </translation>
+    </message>
+    <message>
+        <source>Encrypting message to %1 failed.
+The message was not sent.</source>
+        <translation>Nachricht für %1 konnte nicht verschlüsselt werden.
+Es wurde nichts gesendet.</translation>
     </message>
 </context>
 <context>
@@ -511,6 +629,14 @@ die neuer sind als:</translation>
     <message>
         <source>Key Management</source>
         <translation>Schlüssel Verwalten</translation>
+    </message>
+    <message>
+        <source>Configure OTR Messaging</source>
+        <translation type="obsolete">OTR Chat konfigurieren</translation>
+    </message>
+    <message>
+        <source>OTR Settings</source>
+        <translation>OTR Einstellungen</translation>
     </message>
 </context>
 <context>

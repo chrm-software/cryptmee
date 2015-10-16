@@ -28,11 +28,6 @@ MailReader::MailReader(QDeclarativeItem *parent)
     qDebug() << "MailReader::MailReader: LOCALE: " << QLocale::system().country();
 }
 
-QString MailReader::translateText(const char* _txt) {
-    // Helper function for non-QObject classes
-    return tr(_txt);
-}
-
 void MailReader::threadReady()
 {
     QStringList allPGPMails = this->myThread->getAllMails();

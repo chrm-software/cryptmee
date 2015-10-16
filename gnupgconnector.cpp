@@ -4,7 +4,6 @@
 #include <QFile>
 #include <QSettings>
 #include <QDateTime>
-
 #include "gnupgconnector.h"
 
 GnuPGConnector::GnuPGConnector(QDeclarativeItem *parent)
@@ -78,6 +77,8 @@ void GnuPGConnector::settingsReset()
     settings.setValue("SETTINGS_MAILDIR", MAIL_PATH);
     settings.setValue("SETTINGS_MAILDB", MAIL_DB);
     settings.setValue("SETTINGS_USEOWNKEY", "0");
+    settings.setValue("SETTINGS_OTR_ACCOUNT1", "|");
+    settings.setValue("SETTINGS_OTR_AUTORUN", "0");
 }
 
 void GnuPGConnector::settingsSetValue(QString _key, QString _value)
@@ -534,4 +535,7 @@ bool GnuPGConnector::exportKeys(int _mode, QString _path)
 
     return this->callGnuPG(gpgIn, GPG_EXPORT);
 }
+
+
+
 

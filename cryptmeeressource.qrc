@@ -11,8 +11,11 @@
         <file>pix/public_keys_export.png</file>
         <file>pix/public_keys_import.png</file>
         <file>pix/CryptMee.png</file>
+        <file>pix/otr_active_toolbar.png</file>
+        <file>pix/otr_inactive_toolbar.png</file>
     </qresource>
     <qresource prefix="/languages">
         <file>languages/lang_de_DE.qm</file>
+        <file>languages/lang_ru_RU.qm</file>
     </qresource>
 </RCC>

@@ -21,7 +21,7 @@ public:
     explicit TrackerAccess(QObject *parent = 0);
     ~TrackerAccess();
 
-    bool replaceMsgInTracker(QString _origMsg, QString _replacement);
+    bool replaceMsgInTracker(QString _origMsg, QString _replacement, int _retry = 0);
 
 private:
     QProcess* process_tracker;
@@ -38,6 +38,8 @@ private:
 
     QString trackerCurrentMsgID;
     QString trackerMsgReplacement;
+    QString trackerMsgOriginal;
+    int trackerMsgRetry;
 
     QList<ImControlMessage*> receivedMessages;
 

@@ -43,6 +43,17 @@ ImControlThread::~ImControlThread()
 
     this->stopOTR(true);
 
+    QStringList keys = this->chatHistory.keys();
+
+    for(int i=0; i<keys.size(); i++) {
+        qDebug() << "cleanup messages for contact: " + keys[i] << ", size: " << this->chatHistory[keys[i]].size();
+        for(int j=0; j<this->chatHistory[keys[i]].size(); j++) {
+            ChatMessage* cm = this->chatHistory[keys[i]].takeFirst();
+            if(cm != NULL)
+                delete cm;
+        }
+    }
+
     if(this->otrConnector != NULL)
         delete this->otrConnector;
 
@@ -115,6 +126,11 @@ QString ImControlThread::getFingerprint(int _num)
     return this->allKnownFingerprints.at(_num);
 }
 
+QStringList ImControlThread::getKnownOTRPartners()
+{
+    return this->knownOTRPartners;
+}
+
 QString ImControlThread::getReadableAccountName(QString _account)
 {
     QString readableAccountName = _account.split("/").last();
@@ -148,10 +164,10 @@ bool ImControlThread::sendOTRMessage(QString _account, QString _contact, QString
 {
     qDebug() << "ImControlThread::sendOTRMessage(): encrypt message first...";
 
-    QString encMsg = this->otrConnector->encryptMessage(_account, _contact, _message);
-
     if(_message == "")
         return false;
+
+    QString encMsg = this->otrConnector->encryptMessage(_account, _contact, _message);
 
     // Check for resource extended contact and remember it.
     if(_contact.contains("/")) {
@@ -165,6 +181,10 @@ bool ImControlThread::sendOTRMessage(QString _account, QString _contact, QString
     if(encMsg != "") {
         return this->sendXMPPMessage(_contact, _account, ENCRYPT_SYMBOL + " " + _message, encMsg);
     }
+
+    // Something went wrong. End session for this contact
+    qWarning() << "ImControlThread::sendOTRMessage(): Unable to send message. End session.";
+    this->otrConnector->endSession(this->accountName, _contact);
 
     return false;
 }
@@ -242,12 +262,12 @@ void ImControlThread::stopOTR(bool _onExit)
                                              this,
                                              SLOT(telepathyMessageReceived(QDBusMessage)));
 
-    QDBusConnection::sessionBus().disconnect(QString(),
+    /*QDBusConnection::sessionBus().disconnect(QString(),
                                              QString(),
                                              "org.freedesktop.Telepathy.Channel.Interface.Messages" ,
                                              "MessageSent",
                                              this,
-                                             SLOT(telepathyMessageSent(QDBusMessage)));
+                                             SLOT(telepathyMessageSent(QDBusMessage)));*/
 
     this->isActive = false;
 
@@ -358,12 +378,21 @@ bool ImControlThread::sendXMPPMessage(QString _receiver,
                                       QString _contentOriginal,
                                       QString _contentEncrypted)
 {
+    // OTR init message, replace telepathy account name.
+    if(_contentEncrypted.startsWith("?OTR?v")) {
+        qDebug() << "ImControlThread::sendXMPPMessage(): Fount ?OTR?v... init string. make some secial replacements";
+        _contentOriginal = ENCRYPT_SYMBOL + " " + QObject::tr("[starting OTR session]");
+        _contentEncrypted = "?OTR?v2? " + QObject::tr("I want to start a secure conversation. However, you do not have a plugin to support that.");
+    }
+
     this->telepathySendDBusMessage(_receiver,
                                    _account,
                                    _contentEncrypted);
 
-    if(_contentOriginal != _contentEncrypted)
+    if(_contentOriginal != _contentEncrypted) {
+        qDebug() << "ImControlThread::sendXMPPMessage(): Start tracker replace for msg: " << _contentEncrypted.left(30) + "[...]";
         return this->myTrackerAccess->replaceMsgInTracker(_contentEncrypted, _contentOriginal);
+    }
 
     return true;
 }
@@ -371,6 +400,43 @@ bool ImControlThread::sendXMPPMessage(QString _receiver,
 bool ImControlThread::replaceMsgInTracker(QString _origMsg, QString _replacement)
 {
     return this->myTrackerAccess->replaceMsgInTracker(_origMsg, _replacement);
+}
+
+void ImControlThread::addChatMessage(QString _contact, QString _message, bool _remote, bool _system)
+{
+    ChatMessage* cm = new ChatMessage();
+    cm->content = _message;
+    cm->date = QDateTime::currentDateTime();
+    cm->remote = _remote;
+    cm->systemMessage = _system;
+
+    this->chatHistory[_contact].append(cm);
+
+    qDebug() << "ImControlThread::addChatMessage(): " << cm->toString();
+
+    if(this->chatHistory[_contact].size() > 60) {
+        qDebug() << "ImControlThread::addChatMessage(): more then 60 messages in history, delete oldest...";
+        // hold only last 60 messages per contact
+        delete this->chatHistory[_contact].takeFirst();
+    }
+
+    if(_remote || _system)
+        emit otrUpdateChatHistory(_contact);
+}
+
+QString ImControlThread::getChatHistoryMessageFor(QString _contact, int _index)
+{
+    return this->chatHistory[_contact].at(_index)->toString();
+}
+
+int ImControlThread::getChatHistorySizeFor(QString _contact)
+{
+    return this->chatHistory[_contact].size();
+}
+
+QString ImControlThread::getNewestChatMessageFor(QString _contact)
+{
+    return this->chatHistory[_contact].last()->toString();
 }
 
 //////////////////////////////////////////////////////
@@ -397,13 +463,14 @@ bool ImControlThread::registerListeners()
                                           this,
                                           SLOT(telepathyMessageReceived(QDBusMessage)));
 
-    // Message sent
-    QDBusConnection::sessionBus().connect(QString(),
+    // Message sent - not needed for now.
+    /*QDBusConnection::sessionBus().connect(QString(),
                                           QString(),
                                           "org.freedesktop.Telepathy.Channel.Interface.Messages" ,
                                           "MessageSent",
                                           this,
                                           SLOT(telepathyMessageSent(QDBusMessage)));
+                                          */
 
 
     qDebug() << "ImControlThread::initialize(): DBUS initialized.";
@@ -465,13 +532,15 @@ void ImControlThread::telepathyMessageReceived(const QDBusMessage &reply)
         if(this->lastMessage.receivedMessagePath.startsWith(tmp)) {
             qDebug() << "ImControlThread::telepathyMessageReceived() >>>>>>>> Got OTR message for right account! <<<<<<<";
 
-            // Remember all encrypted conversations partners
-            if(!this->knownOTRPartners.contains(this->lastMessage.receivedMessageSender))
-                this->knownOTRPartners.append(this->lastMessage.receivedMessageSender);
-
             if(this->resourceOverwrites.contains(this->lastMessage.receivedMessageSender)) {
                 // Replace with resource extension.
                 this->lastMessage.receivedMessageSender = this->resourceOverwrites[this->lastMessage.receivedMessageSender];
+            }
+
+            // Remember all encrypted conversations partners
+            if(!this->knownOTRPartners.contains(this->lastMessage.receivedMessageSender)) {
+                this->knownOTRPartners.append(this->lastMessage.receivedMessageSender);
+                emit otrUpdateFingerprints();
             }
 
             // Do OTR decrypt stuff here.
@@ -502,7 +571,7 @@ bool ImControlThread::telepathySendDBusMessage(QString _receiver, QString _accou
     QString dbus_path = "/org/freedesktop/Telepathy/ChannelDispatcher";
     QString dbus_interface = "org.freedesktop.Telepathy.ChannelDispatcher.Interface.Messages.DRAFT";
 
-    qDebug() << "ImControlThread::telepathySendDBusMessage(): " << _content.left(30) << "[...]";
+    qDebug() << "ImControlThread::telepathySendDBusMessage(): " << _content.left(30) + "[...]";
 
     QDBusMessage m = QDBusMessage::createMethodCall(dbus_service,
                                                     dbus_path,

@@ -195,4 +195,23 @@ Page {
         }
     }
 
+    state: (screen.currentOrientation === Screen.Portrait) ? "portrait" : "landscape"
+
+    states: [
+        State {
+            name: "landscape"
+            PropertyChanges { target: label2; height: {
+                        return 45
+                }
+            }
+        },
+        State {
+            name: "portrait"
+            PropertyChanges { target: label2; height: {
+                        return 65
+                }
+            }
+        }
+    ]
+
 }

@@ -13,6 +13,8 @@
         <file>pix/CryptMee.png</file>
         <file>pix/otr_active_toolbar.png</file>
         <file>pix/otr_inactive_toolbar.png</file>
+        <file>pix/bubble-in.png</file>
+        <file>pix/bubble-out.png</file>
     </qresource>
     <qresource prefix="/languages">
         <file>languages/lang_de_DE.qm</file>

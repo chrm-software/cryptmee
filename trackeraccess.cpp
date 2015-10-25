@@ -36,11 +36,12 @@ TrackerAccess::~TrackerAccess()
 }
 
 
-bool TrackerAccess::replaceMsgInTracker(QString _origMsg, QString _replacement)
+bool TrackerAccess::replaceMsgInTracker(QString _origMsg, QString _replacement, int _retry)
 {
     ImControlMessage* msg = new ImControlMessage();
     msg->receivedMessageContent = _origMsg;
     msg->replacedMessageContent = _replacement;
+    msg->retryCounter = _retry;
 
     this->mutexSafeListAccess.lock();
     this->receivedMessages << msg;
@@ -58,7 +59,7 @@ void TrackerAccess::trackerGetMsgNumber()
     // Check if runnig
     if(this->processIsRunning) {
         //qWarning() << "TrackerAccess::trackerGetMsgNumber(): Another tracker process is running. Restart later.";
-        QTimer::singleShot(700, this, SLOT(trackerGetMsgNumber()));
+        QTimer::singleShot(900, this, SLOT(trackerGetMsgNumber()));
         return;
     }
 
@@ -72,11 +73,22 @@ void TrackerAccess::trackerGetMsgNumber()
     this->mutexSafeListAccess.lock();
 
     ImControlMessage* msg;
+
     if(!this->receivedMessages.isEmpty()) {
         msg = this->receivedMessages.takeFirst();
         this->trackerMsgReplacement = msg->replacedMessageContent;
+        this->trackerMsgOriginal = msg->receivedMessageContent;
+        this->trackerMsgRetry = msg->retryCounter;
 
-        qDebug() << "TrackerAccess::trackerGetMsgNumber(): processing message: " << msg->receivedMessageContent.left(30) << ". Still in list: " << this->receivedMessages.size();
+        if(msg->retryCounter > 1) {
+            qWarning() << "TrackerAccess::trackerGetMsgNumber(): max retry counter reached. Give up. Not able to replace content: " << this->trackerMsgOriginal;
+            delete msg;
+            this->processIsRunning = false;
+            this->mutexSafeListAccess.unlock();
+            return;
+        }
+
+        qDebug() << "TrackerAccess::trackerGetMsgNumber(): processing message: " << this->trackerMsgOriginal.left(30) << ". Still in list: " << this->receivedMessages.size();
 
         this->callTracker(QString(TRACKER_BINARY) +
                           QString(" -q \"SELECT ?u ?from ?ta ?ptc ?d { ?u a nmo:IMMessage; nmo:from ?from; tracker:added ?ta; nie:plainTextContent ?ptc; nmo:sentDate ?d FILTER(?ta > '" + timeWindow + "') FILTER (?ptc = '" + msg->receivedMessageContent.replace("\n","\\n").replace("'", "\\'") + "') } ORDER BY ?ta\""),
@@ -151,7 +163,9 @@ void TrackerAccess::trackerFinished(int _retVal)
                                   TRACKER_DELETEMSGTXT);
             }
         } else {
-            qWarning() << "TrackerAccess::trackerFinished(): SELECT statement doesn't return a messageID.";
+            qWarning() << "TrackerAccess::trackerFinished(): SELECT statement doesn't return a messageID. Replacement should be: [" << this->trackerMsgReplacement << "]";
+            qWarning() << "TrackerAccess::trackerFinished(): trying once again. Retry: " << this->trackerMsgRetry;
+            this->replaceMsgInTracker(this->trackerMsgOriginal, this->trackerMsgReplacement, ++this->trackerMsgRetry);
             this->processIsRunning = false;
         }
 

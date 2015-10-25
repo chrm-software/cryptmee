@@ -4,6 +4,7 @@
 #include <QDeclarativeItem>
 #include <QDBusArgument>
 #include <QDBusMessage>
+#include <QDateTime>
 #include <QList>
 #include <QProcess>
 #include <QMutex>
@@ -27,9 +28,23 @@ public:
     QString receivedMessageSender;
     QString receivedMessagePath;
     QString replacedMessageContent;
+    int retryCounter;
 
     QString toString() {
         return QString("From: ") + receivedMessageSender + ", Content: " + receivedMessageContent + ", Replacement: " + replacedMessageContent;
+    }
+};
+
+class ChatMessage
+{
+public:
+    QString content;
+    bool remote;
+    QDateTime date;
+    bool systemMessage;
+
+    QString toString() {
+        return content.replace("|", "~") + "|" + QString::number(remote) + "|" + date.toString("hh:mm:ss") + "|" + QString::number(systemMessage);
     }
 };
 
@@ -53,6 +68,11 @@ public:
     Q_INVOKABLE QString getFingerprintForAccount(QString _account);
     Q_INVOKABLE bool sendOTRMessage(QString _account, QString _contact, QString _message);
     Q_INVOKABLE QString getLibOTRVersion();
+
+    Q_INVOKABLE QString getChatHistoryMessageFor(QString _contact, int _index);
+    Q_INVOKABLE int getChatHistorySizeFor(QString _contact);
+    Q_INVOKABLE QString getNewestChatMessageFor(QString _contact);
+    Q_INVOKABLE void addChatMessage(QString _contact, QString _message, bool _remote, bool _system);
     ////////////////////////////////////////////////////
 
     // public interface
@@ -60,8 +80,9 @@ public:
     bool replaceMsgInTracker(QString _origMsg, QString _replacement);
     bool meegoNotification(QString _message);
     void guiConnector(int _action, QString _value);
-
+    QStringList getKnownOTRPartners();
     QString getReadableAccountName(QString _account);
+
     
 public slots:
 
@@ -78,6 +99,7 @@ private:
 
     QStringList knownOTRPartners;
     QHash<QString, QString> resourceOverwrites;
+    QHash<QString, QList<ChatMessage*> > chatHistory;
 
     QString accountName;
     QStringList allAccountNames;
@@ -126,6 +148,7 @@ signals:
     void otrIsRunning();
     void otrHasStopped();
     void otrUpdateFingerprints();
+    void otrUpdateChatHistory(QString _contactName);
 };
 
 #endif // IMCONTROLTHREAD_H

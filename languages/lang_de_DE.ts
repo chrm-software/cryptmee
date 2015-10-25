@@ -457,7 +457,7 @@ Wird beim Programmstart autom. gestartet</translation>
     </message>
     <message>
         <source>Debug output</source>
-        <translation>Debug Ausgabe</translation>
+        <translation type="obsolete">Debug Ausgabe</translation>
     </message>
     <message>
         <source>Select account
@@ -539,6 +539,14 @@ auswählen</translation>
 The message was not sent.</source>
         <translation>Nachricht für %1 konnte nicht verschlüsselt werden.
 Es wurde nichts gesendet.</translation>
+    </message>
+    <message>
+        <source>[starting OTR session]</source>
+        <translation>[OTR Sitzung wird gestartet]</translation>
+    </message>
+    <message>
+        <source>I want to start a secure conversation. However, you do not have a plugin to support that.</source>
+        <translation>Ich möchte einen sicheren Chat starten, leider unterstützt Deine Software das nicht.</translation>
     </message>
 </context>
 <context>

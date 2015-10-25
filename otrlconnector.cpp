@@ -147,8 +147,9 @@ void OTRLConnector::startSession(const QString& _account, const QString& _contac
 
     qDebug() << "OTRLConnector::startSession(): init message: " << msg;
 
-    this->myImControl->sendXMPPMessage(_contact, _account, QString("Opening OTR session"), QString::fromUtf8(msg));
+    this->myImControl->sendXMPPMessage(_contact, _account, ENCRYPT_SYMBOL + " " + "[starting OTR session]", QString::fromUtf8(msg));
     this->myImControl->meegoNotification(QObject::tr("Restarting OTR session for contact: ") + _contact);
+    this->myImControl->addChatMessage(_contact, QObject::tr("Restarting OTR session"), false, true);
 
     free(msg);
 }
@@ -157,7 +158,7 @@ void OTRLConnector::startSession(const QString& _account, const QString& _contac
 QString OTRLConnector::encryptMessage(const QString& _account, const QString& _contact,
                                       const QString& _message)
 {
-    qDebug() << "OTRLConnector::encryptMessage(): msg: " << _message.left(30) << "[...]";
+    qDebug() << "OTRLConnector::encryptMessage(): msg: " << _message.left(30) + "[...]";
 
     char* encMessage = NULL;
     gcry_error_t err;
@@ -176,6 +177,7 @@ QString OTRLConnector::encryptMessage(const QString& _account, const QString& _c
                                           .arg(_contact);
 
         this->myImControl->meegoNotification(err_message);
+        this->myImControl->addChatMessage(_contact, err_message, false, true);
         return QString();
     }
 
@@ -184,7 +186,7 @@ QString OTRLConnector::encryptMessage(const QString& _account, const QString& _c
         QString retMessage(QString::fromUtf8(encMessage));
         otrl_message_free(encMessage);
 
-        qDebug() << "OTRLConnector::encryptMessage(): Encryption was successfull: " << retMessage.left(30) << "[...]";
+        qDebug() << "OTRLConnector::encryptMessage(): Encryption was successfull: " << retMessage.left(30) + "[...]";
         return retMessage;
     }
 
@@ -194,7 +196,7 @@ QString OTRLConnector::encryptMessage(const QString& _account, const QString& _c
 // Decrypt received message
 QString OTRLConnector::decryptMessage(const QString& _account, const QString& _sender, const QString& _message)
 {
-    qDebug() << "OTRLConnector::decryptMessage(): encrypted msg: " << _message.left(30) << "[...]";
+    qDebug() << "OTRLConnector::decryptMessage(): encrypted msg: " << _message.left(30) + "[...]";
 
     // Decrypt here
     QByteArray accArray  = _account.toUtf8();
@@ -221,11 +223,12 @@ QString OTRLConnector::decryptMessage(const QString& _account, const QString& _s
         return QString("[IN: Internal OTR message]");
     }
 
-    qDebug() << "OTRLConnector::decryptMessage(): decrypted msg: " << QString(newMessage).left(30) << "[...]";
+    qDebug() << "OTRLConnector::decryptMessage(): decrypted msg: " << QString(newMessage).left(30) + "[...]";
     QString retVal = ENCRYPT_SYMBOL + " " + QString::fromUtf8(newMessage);
 
     // Show decrypted msg as notification
     this->myImControl->meegoNotification(_sender + "\n" + QString::fromUtf8(newMessage));
+    this->myImControl->addChatMessage(_sender, QString::fromUtf8(newMessage), true, false);
 
     otrl_message_free(newMessage);
 
@@ -288,7 +291,7 @@ void OTRLConnector::inject_message(const char* accountname, const char* protocol
     qDebug() << "OTRLConnector::inject_message(): ";
     qDebug() << "from " << accountname;
     qDebug() << "to " << recipient;
-    qDebug() << "message: " << QString(message).left(30) << "[...]";
+    qDebug() << "message: " << QString(message).left(30) + "[...]";
 
     // Send OTR genearted message
     this->myImControl->sendXMPPMessage(QString(recipient), QString(accountname),
@@ -303,22 +306,32 @@ void OTRLConnector::write_fingerprints()
                                     QFile::encodeName(OTR_FINGERPRINTS_FILE).constData());
 }
 
-void OTRLConnector::new_fingerprint(const char *username, char fingerprint[20])
+QString OTRLConnector::humanFingerprint(const unsigned char* fingerprint)
 {
-    this->myImControl->meegoNotification("Fingerprint: " + QString(username) + "\n" + QString(fingerprint));
-    this->myImControl->guiConnector(ACTION_NEW_FINGERPRINT, QString(fingerprint));
+    char fpHash[OTRL_PRIVKEY_FPRINT_HUMAN_LEN];
+    otrl_privkey_hash_to_human(fpHash, fingerprint);
+    return QString(fpHash);
+}
+
+void OTRLConnector::new_fingerprint(const char *username, unsigned char fingerprint[20])
+{
+    this->myImControl->meegoNotification("Fingerprint: " + QString(username) + "\n" + QString(this->humanFingerprint(fingerprint)));
+    this->myImControl->guiConnector(ACTION_NEW_FINGERPRINT, QString(this->humanFingerprint(fingerprint)));
+    this->myImControl->addChatMessage(QString(username), QObject::tr("New fingerprint received."), false, true);
 }
 
 void OTRLConnector::gone_secure(ConnContext* context)
 {
     Q_UNUSED(context);
     this->myImControl->meegoNotification(QObject::tr("Secure OTR session opened."));
+    this->myImControl->addChatMessage(QString::fromUtf8(context->username), QObject::tr("Secure OTR session opened."), false, true);
 }
 
 void OTRLConnector::gone_insecure(ConnContext* context)
 {
     Q_UNUSED(context);
     this->myImControl->meegoNotification(QObject::tr("OTR session closed"));
+    this->myImControl->addChatMessage(QString::fromUtf8(context->username), QObject::tr("OTR session closed"), false, true);
 }
 
 int OTRLConnector::display_otr_message(const char *msg)
@@ -351,7 +364,8 @@ void OTRLConnector::notify(OtrlNotifyLevel level,
     }*/
 
     // Show msg
-    this->myImControl->meegoNotification(message);
+    // this->myImControl->meegoNotification(message);
+    this->myImControl->addChatMessage(contact, message, false, true);
 }
 
 void OTRLConnector::expireSession(const QString& _account, const QString& _contact)
@@ -389,7 +403,11 @@ QStringList OTRLConnector::getFingerprints()
             char fpHash[OTRL_PRIVKEY_FPRINT_HUMAN_LEN];
             otrl_privkey_hash_to_human(fpHash, fingerprint->fingerprint);
 
-            QString fp(QString(fpHash) + "|" + QString::fromUtf8(context->username));
+            QString onlineState = "offline";
+            if(this->myImControl->getKnownOTRPartners().contains(QString::fromUtf8(context->username)))
+                onlineState = "online";
+
+            QString fp(QString(fpHash) + "|" + QString::fromUtf8(context->username) + "|" + onlineState);
 
             fpList.append(fp);
             fingerprint = fingerprint->next;
@@ -453,7 +471,7 @@ void OTRLConnector::new_fingerprint_cb(void *opdata, OtrlUserState us,
 {
     qDebug() << "OTR-CB: new_fingerprint_cb() Fingerprint has changed! Infor user in GUI!";
     if(opdata != NULL)
-        static_cast<OTRLConnector*>(opdata)->new_fingerprint(username, reinterpret_cast<char*>(fingerprint));
+        static_cast<OTRLConnector*>(opdata)->new_fingerprint(username, fingerprint);
 }
 
 void OTRLConnector::write_fingerprints_cb(void *opdata)

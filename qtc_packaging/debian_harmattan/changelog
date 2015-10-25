@@ -1,3 +1,8 @@
+cryptmee (0.3.2) unstable; urgency=low
+  * Bugfixes in OTR integration
+
+ -- Christoph Maciejewski <chrm@users.sf.net>  Tue, 20 Oct 2015 17:33:03 +0200
+
 cryptmee (0.3.1) unstable; urgency=low
   * OTR integration for instant messaging
 

@@ -45,6 +45,7 @@ private:
     bool isGeneratingPrivKey;
 
     OtrlUserState get_userstate(const char* username);
+    QString humanFingerprint(const unsigned char* fingerprint);
 
     // Static libotr callbacks
     static OtrlPolicy policy_cb(void *opdata, ConnContext *context);
@@ -76,7 +77,7 @@ private:
     void inject_message(const char* accountname, const char* protocol,
                         const char* recipient, const char* message);
     void write_fingerprints();
-    void new_fingerprint(const char *username, char fingerprint[]);
+    void new_fingerprint(const char *username, unsigned char fingerprint[20]);
     void gone_secure(ConnContext* context);
     void gone_insecure(ConnContext* context);
     void notify(OtrlNotifyLevel level,

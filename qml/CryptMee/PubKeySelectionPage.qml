@@ -181,10 +181,6 @@ Page {
             }
          }
 
-        ScrollDecorator {
-            flickableItem: flickArea
-        }
-
         Flickable {
             id: flickArea
             width: parent.width
@@ -194,6 +190,10 @@ Page {
             flickableDirection: Flickable.VerticalFlick
             clip: true
 
+            ScrollDecorator {
+                flickableItem: listViewKeys
+            }
+
             ListView {
                 id: listViewKeys
                 width: parent.width; height: parent.height
@@ -202,7 +202,5 @@ Page {
                 model: ListModel { }
             }
         }
-
-
     }
 }

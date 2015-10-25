@@ -74,6 +74,11 @@ Page {
         onOtrUpdateFingerprints: {
             fillFingerprints();
         }
+
+        onOtrUpdateChatHistory: {
+            console.debug("Got chat history update for: " + _contactName);
+            otrChatWindow.getMessageFor(_contactName);
+        }
     }
 
     function initOTR() {
@@ -107,7 +112,7 @@ Page {
 
         for(var i=0; i<size; i++) {
             var tmpFP = myImControlThread.getFingerprint(i).split("|");
-            allFingerprintsList.append({ name: tmpFP[1], fingerprint: tmpFP[0] });
+            allFingerprintsList.append({ name: tmpFP[1], fingerprint: tmpFP[0], onlineState: tmpFP[2] });
             console.debug("QML: fillFingerprints(): " + tmpFP[1]);
         }
     }
@@ -288,6 +293,7 @@ Page {
                     readOnly: true
                     font.family: "Courier"
                     font.pixelSize: 21
+                    font.bold: true
                 }
 
                 GroupSeparator {
@@ -300,16 +306,16 @@ Page {
                     height: 200
                     color: "transparent"
 
-                    ScrollDecorator {
-                        flickableItem: flickArea
-                    }
-
                     Flickable {
                         id: flickArea
                         width: parent.width
                         height: 260
                         flickableDirection: Flickable.VerticalFlick
                         clip: true
+
+                        ScrollDecorator {
+                            flickableItem: listViewFingerprints
+                        }
 
                         ListView {
                             id: listViewFingerprints
@@ -382,14 +388,28 @@ Page {
                 anchors.left: parent.left
             }
 
+            Rectangle {
+                id: colorRect2
+                color: {
+                    if(onlineState === "offline")
+                        return "grey";
+                    else
+                        return "green";
+                }
+                height: textLabel.height - 3
+                width: 12
+                x: colorRect.width + 2
+                anchors.left: colorRect.right
+            }
+
             Text {
                 id: textLabel
                 text: "<b>"+name+"</b>"
                 font.pixelSize: 26
-                width: parent.width - 40;
+                width: parent.width - 28;
                 height: 65
                 anchors.margins: 6
-                anchors.left: colorRect.right
+                anchors.left: colorRect2.right
 
                 MouseArea {
                     width: listViewFingerprints.width;
@@ -408,4 +428,23 @@ Page {
             }
         }
     }
+
+    state: (screen.currentOrientation === Screen.Portrait) ? "portrait" : "landscape"
+
+    states: [
+        State {
+            name: "landscape"
+            PropertyChanges { target: label2; height: {
+                        return 45
+                }
+            }
+        },
+        State {
+            name: "portrait"
+            PropertyChanges { target: label2; height: {
+                        return 65
+                }
+            }
+        }
+    ]
 }

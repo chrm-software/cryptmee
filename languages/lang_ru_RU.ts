@@ -32,12 +32,12 @@
 <context>
     <name>ImControlThread</name>
     <message>
-        <location filename="../imcontrolthread.cpp" line="243"/>
+        <location filename="../imcontrolthread.cpp" line="269"/>
         <source>OTR stopped!</source>
         <translation>OTR остановлен!</translation>
     </message>
     <message>
-        <location filename="../imcontrolthread.cpp" line="306"/>
+        <location filename="../imcontrolthread.cpp" line="332"/>
         <source>OTR activated!</source>
         <translation>OTR запущен!</translation>
     </message>
@@ -454,99 +454,98 @@
 <context>
     <name>OTRChatWindow</name>
     <message>
-        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="60"/>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="62"/>
         <source>OTR Chat</source>
         <translation>Чат OTR</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="98"/>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="100"/>
         <source>Contact JID (set resource if needed)</source>
-        <translation type="unfinished"></translation>
+        <translation>JID контакта</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="138"/>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="140"/>
         <source>Send encrypted message</source>
-        <translation type="unfinished"></translation>
+        <translation>Отпр. зашифр. сообщение</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="151"/>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="153"/>
         <source>Send Message</source>
         <translation>Отпр. сообщение</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="159"/>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="161"/>
         <source>Fingerprint</source>
-        <translation type="unfinished"></translation>
+        <translation>Отпечаток</translation>
     </message>
 </context>
 <context>
     <name>OTRConfigPage</name>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="177"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="173"/>
         <source>OTR Settings</source>
         <translation>Настройки OTR</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="215"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="211"/>
         <source>OTR Account Binding</source>
         <translation>Аккаунт OTR</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="228"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="224"/>
         <source>Select Account</source>
         <translation>Выбор аккаунта</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="238"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="235"/>
         <source>Enable OTR</source>
         <translation>Включить OTR</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="255"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="252"/>
         <source>Enable OTR.
 It will run automatically on startup</source>
         <translation>Включить OTR.
 Автоматически вкл. вместе с системой</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="284"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="281"/>
         <source>My fingerprint</source>
         <translation>Мой отпечаток</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="296"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="294"/>
         <source>Known fingerprints</source>
         <translation>Известные отпечатки</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="327"/>
         <source>Debug output</source>
-        <translation>Вывод отладки</translation>
+        <translation type="obsolete">Вывод отладки</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="344"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="331"/>
         <source>Select account
 for OTR usage:</source>
         <translation>Выбор аккаунта
 для OTR:</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="368"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="355"/>
         <source>Generate Private Key</source>
         <translation>Создать секретный ключ</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="369"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="356"/>
         <source>A private key must be generated first for this account. It will take some time. You can reduce the time by using your phone more intense. Start a game or use the camera!</source>
         <translation>Необходима генерация секретного ключа для аккаунта. Время генерации сократится при увеличении нагрузки на телефон. Поиграйте в игру или сделайте снимок!</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="370"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="357"/>
         <source>Generate!</source>
         <translation>Сгенерировать!</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="371"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="358"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
@@ -595,31 +594,41 @@ for OTR usage:</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../otrlconnector.cpp" line="145"/>
+        <location filename="../otrlconnector.cpp" line="151"/>
         <source>Restarting OTR session for contact: </source>
         <translation>Перезапуск сессии OTR для контакта: </translation>
     </message>
     <message>
-        <location filename="../otrlconnector.cpp" line="168"/>
+        <location filename="../otrlconnector.cpp" line="174"/>
         <source>Encrypting message to %1 failed.
 The message was not sent.</source>
         <translation>Сбой зашифрования сообщения для %1.
 Сообщение не отправлено.</translation>
     </message>
     <message>
-        <location filename="../otrlconnector.cpp" line="230"/>
+        <location filename="../otrlconnector.cpp" line="236"/>
         <source>OTR session closed for contact </source>
         <translation>Сессия OTR закрыта для контакта </translation>
     </message>
     <message>
-        <location filename="../otrlconnector.cpp" line="309"/>
+        <location filename="../otrlconnector.cpp" line="315"/>
         <source>Secure OTR session opened.</source>
         <translation>Безопасная сессия OTR открыта.</translation>
     </message>
     <message>
-        <location filename="../otrlconnector.cpp" line="315"/>
+        <location filename="../otrlconnector.cpp" line="321"/>
         <source>OTR session closed</source>
         <translation>Сессия OTR закрыта</translation>
+    </message>
+    <message>
+        <location filename="../imcontrolthread.cpp" line="368"/>
+        <source>[starting OTR session]</source>
+        <translation>[запуск сессии OTR]</translation>
+    </message>
+    <message>
+        <location filename="../imcontrolthread.cpp" line="369"/>
+        <source>I want to start a secure conversation. However, you do not have a plugin to support that.</source>
+        <translation>Я хочу начать защищённый диалог, однако, у Вас отсутствует соответствующий плагин.</translation>
     </message>
 </context>
 <context>

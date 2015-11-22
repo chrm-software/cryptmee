@@ -15,6 +15,14 @@
         <file>pix/otr_inactive_toolbar.png</file>
         <file>pix/bubble-in.png</file>
         <file>pix/bubble-out.png</file>
+        <file>pix/fingerprint.png</file>
+        <file>pix/gpg-chat.png</file>
+        <file>pix/otr_unknown.png</file>
+        <file>pix/otr_veryfied.png</file>
+        <file>pix/bubble-in-plaintext.png</file>
+        <file>pix/bubble-out-plaintext.png</file>
+        <file>pix/icon-m-common-locked-verified.png</file>
+        <file>pix/icon-m-common-locked-plaintext.png</file>
     </qresource>
     <qresource prefix="/languages">
         <file>languages/lang_de_DE.qm</file>

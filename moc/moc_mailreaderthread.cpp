@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'mailreaderthread.h'
 **
-** Created: Fri 23. Jan 18:47:02 2015
+** Created: Mon 9. Nov 17:02:13 2015
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.4)
 **
 ** WARNING! All changes made in this file will be lost!

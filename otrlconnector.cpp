@@ -218,6 +218,14 @@ QString OTRLConnector::decryptMessage(const QString& _account, const QString& _s
                                            _message.toUtf8().constData(),
                                            &newMessage, &tlvs, NULL, NULL);
 
+    // Check if remote has closed the session
+    tlv = otrl_tlv_find(tlvs, OTRL_TLV_DISCONNECTED);
+    if (tlv) {
+        qDebug() << "OTRLConnector::decryptMessage(): Session closed!";
+        this->myImControl->meegoNotification(QObject::tr("OTR session closed for contact ") + _sender);
+        this->myImControl->addChatMessage(_sender, QObject::tr("OTR session closed for contact ") + _sender, true, true);
+    }
+
     if(ignoreMessage) {
         qDebug() << "OTRLConnector::decryptMessage(): received message should be ignored.";
         return QString("[IN: Internal OTR message]");
@@ -227,20 +235,105 @@ QString OTRLConnector::decryptMessage(const QString& _account, const QString& _s
     QString retVal = ENCRYPT_SYMBOL + " " + QString::fromUtf8(newMessage);
 
     // Show decrypted msg as notification
-    this->myImControl->meegoNotification(_sender + "\n" + QString::fromUtf8(newMessage));
+    this->myImControl->meegoNotification(_sender + "\n" + QString::fromUtf8(newMessage), true);
     this->myImControl->addChatMessage(_sender, QString::fromUtf8(newMessage), true, false);
 
     otrl_message_free(newMessage);
-
-    // Check if remote has closed the session
-    tlv = otrl_tlv_find(tlvs, OTRL_TLV_DISCONNECTED);
-    if (tlv) {
-        qDebug() << "OTRLConnector::decryptMessage(): Session closed!";
-        this->myImControl->meegoNotification(QObject::tr("OTR session closed for contact ") + _sender);
-    }
+    otrl_tlv_free(tlvs);
 
     return retVal;
 }
+
+void OTRLConnector::verifyFingerprint(QString _account, QString _contact, QString _fingerprint, bool _verified)
+{
+    qDebug() << "OTRLConnector::verifyFingerprint(" + _account + ", " + _contact + ", " + _fingerprint;
+    ConnContext* context = otrl_context_find(this->otrUserState,
+                                             _contact.toUtf8().constData(),
+                                             _account.toUtf8().constData(),
+                                             OTR_PROTOCOL_STRING,
+                                             false, NULL, NULL, NULL);
+    if (context)
+    {
+        ::Fingerprint* fp = otrl_context_find_fingerprint(context,
+                                                          this->fpMappingList[_fingerprint],
+                                                          0, NULL);
+        if (fp)
+        {
+            otrl_context_set_trust(fp, _verified? "verified" : "");
+            write_fingerprints();
+
+            this->myImControl->guiConnector(ACTION_NEW_FINGERPRINT, QString());
+
+        } else {
+            qWarning() << "OTRLConnector::verifyFingerprint(): cannot find fingerprint. Cannot delete key.";
+        }
+
+    } else {
+        qWarning() << "OTRLConnector::verifyFingerprint(): cannot find context. Cannot delete key.";
+    }
+}
+
+void OTRLConnector::deleteFingerprint(QString _account, QString _contact, QString _fingerprint)
+{
+    qDebug() << "OTRLConnector::deleteFingerprint(" + _account + ", " + _contact + ", " + _fingerprint;
+
+    ConnContext* context = otrl_context_find(this->otrUserState,
+                                             _contact.toUtf8().constData(),
+                                             _account.toUtf8().constData(),
+                                             OTR_PROTOCOL_STRING,
+                                             false, NULL, NULL, NULL);
+    if (context)
+    {
+        ::Fingerprint* fp = otrl_context_find_fingerprint(context,
+                                                          this->fpMappingList[_fingerprint],
+                                                          0, NULL);
+
+        qDebug() << "OTR-binary-fingerprint: " << this->fpMappingList[_fingerprint];
+
+        if (fp)
+        {
+            if (context->active_fingerprint == fp)
+            {
+                otrl_context_force_finished(context);
+            }
+
+            otrl_context_forget_fingerprint(fp, true);
+            write_fingerprints();
+
+        } else {
+            qWarning() << "OTRLConnector::deleteFingerprint(): cannot find fingerprint. Cannot delete key.";
+        }
+
+    } else {
+        qWarning() << "OTRLConnector::deleteFingerprint(): cannot find context. Cannot delete key.";
+    }
+}
+
+bool OTRLConnector::isVerified(const QString& _account, const QString& _contact)
+{
+    ConnContext* context;
+    context = otrl_context_find(this->otrUserState,
+                                _contact.toUtf8().constData(),
+                                _account.toUtf8().constData(),
+                                OTR_PROTOCOL_STRING,
+                                false, NULL, NULL, NULL);
+
+    return isVerified(context);
+}
+
+bool OTRLConnector::isVerified(ConnContext* context)
+{
+
+    if (context && context->active_fingerprint)
+    {
+        return (context->active_fingerprint->trust &&
+                context->active_fingerprint->trust[0]);
+    }
+
+    return false;
+}
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -347,24 +440,19 @@ void OTRLConnector::notify(OtrlNotifyLevel level,
                            const char *title, const char *primary, const char *secondary)
 {
     Q_UNUSED(protocol);
+    Q_UNUSED(level);
 
     QString account = QString::fromUtf8(accountname);
     QString contact = QString::fromUtf8(username);
     QString message = QString(title) + "\n" + QString(primary) + ". " + QString(secondary);
 
+    // Transalate some messages
+    if(message.contains("OTR Policy Violation")) {
+        // Trying to open OTR
+        message = QObject::tr("Starting OTR session...");
+    }
+
     qDebug() << "OTRLConnector::notify(): Got OTR notify: " << message;
-
-    /*if (level == OTRL_NOTIFY_ERROR || level == OTRL_NOTIFY_WARNING)
-    {
-        // On error or warning restart OTR for this contact
-        qDebug() << "OTRLConnector::notify(): OTRL_NOTIFY_ERROR - No idea what to do here...";
-        //this->startSession(account, contact);
-
-        return;
-    }*/
-
-    // Show msg
-    // this->myImControl->meegoNotification(message);
     this->myImControl->addChatMessage(contact, message, false, true);
 }
 
@@ -394,6 +482,7 @@ QStringList OTRLConnector::getFingerprints()
     QStringList fpList;
     ConnContext* context;
     ::Fingerprint* fingerprint;
+    this->fpMappingList.clear();
 
     for (context = this->otrUserState->context_root; context != NULL; context = context->next)
     {
@@ -407,9 +496,18 @@ QStringList OTRLConnector::getFingerprints()
             if(this->myImControl->getKnownOTRPartners().contains(QString::fromUtf8(context->username)))
                 onlineState = "online";
 
-            QString fp(QString(fpHash) + "|" + QString::fromUtf8(context->username) + "|" + onlineState);
+            QString tmpUsername = QString::fromUtf8(context->username);
+
+            QString fp(QString(fpHash) + "|" + tmpUsername + "|" +
+                       onlineState + "|" +
+                       QString::fromUtf8(fingerprint->trust));
+
+                       /*QString::fromUtf8(fingerprint->trust) + "|" +
+                       QString::number(this->myImControl->hasPendingMessageFor(tmpUsername)));*/
 
             fpList.append(fp);
+            this->fpMappingList[QString(fpHash)] = fingerprint->fingerprint;
+
             fingerprint = fingerprint->next;
         }
     }
@@ -436,6 +534,9 @@ void OTRLConnector::account_name_free(const char* account_name)
 
 OtrlPolicy OTRLConnector::policy_cb(void *opdata, ConnContext *context)
 {
+    Q_UNUSED(context);
+    Q_UNUSED(opdata);
+
     qDebug() << "OTR-CB: policy_cb(): return: " << OTRL_POLICY_ALWAYS;
     return OTRL_POLICY_ALWAYS;
 }
@@ -456,11 +557,18 @@ void OTRLConnector::create_privkey_cb(void *opdata, const char *accountname,
 
 const char* OTRLConnector::protocol_name_cb(void *opdata, const char *protocol)
 {
+    Q_UNUSED(protocol);
+    Q_UNUSED(opdata);
+
     qDebug() << "OTR-CB: protocol_name_cb(): return: " << OTR_PROTOCOL_STRING;
     return OTR_PROTOCOL_STRING;
 }
 
-void OTRLConnector::protocol_name_free_cb(void* opdata, const char* protocol_name) {
+void OTRLConnector::protocol_name_free_cb(void* opdata, const char* protocol_name)
+{
+    Q_UNUSED(opdata);
+    Q_UNUSED(protocol_name);
+
     qDebug() << "OTR-CB: protocol_name_free_cb()";
     // Nothing to do
 }
@@ -499,6 +607,9 @@ int OTRLConnector::display_otr_message_cb(void *opdata, const char *accountname,
 int OTRLConnector::is_online_cb(void *opdata, const char *accountname,
                                 const char *protocol, const char *recipient)
 {
+    Q_UNUSED(opdata);
+    Q_UNUSED(protocol);
+
     qDebug() << "OTR-CB: is_online_cb() TODO, will always return 1";
     return 1;
 }

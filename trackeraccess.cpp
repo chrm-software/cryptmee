@@ -7,6 +7,7 @@ TrackerAccess::TrackerAccess(QObject *parent) :
     QObject(parent)
 {
     this->processIsRunning = false;
+    this->shouldReloadXMPPContactsLater = false;
 
     this->process_tracker = new QProcess(this);
     this->trackerCurrentState = TRACKER_IDLE;
@@ -35,6 +36,28 @@ TrackerAccess::~TrackerAccess()
     delete this->process_tracker;
 }
 
+bool TrackerAccess::loadXMPPContacts(QString _account)
+{
+    if(this->processIsRunning) {
+        qWarning() << "TrackerAccess::loadXMPPContacts(): Another tracker process is running. Reload later.";
+        this->shouldReloadXMPPContactsLater = true;
+        return false;
+    }
+
+    this->processIsRunning = true;
+    this->accountName = _account;
+    this->shouldReloadXMPPContactsLater = false;
+
+    qDebug() << "TrackerAccess::getXMPPContacts(" + _account + ")";
+    this->callTracker(QString(TRACKER_BINARY) + \
+                      QString(" -q \"SELECT nco:imPresence(?xmpp) nco:imNickname(?xmpp) nie:url(nco:photo(?contact)) ?name ?family ?xmpp  WHERE ") + \
+                              "{ ?contact  a nco:PersonContact . OPTIONAL { ?contact nco:nameGiven ?name . ?contact nco:nameFamily ?family . } " + \
+                              "?contact  nco:hasAffiliation [  nco:hasIMAddress ?xmpp ] . FILTER (fn:starts-with(?xmpp, 'telepathy:" + this->accountName + "'))}\"",
+                      TRACKER_GETCONTACTS);    
+
+
+    return true;
+}
 
 bool TrackerAccess::replaceMsgInTracker(QString _origMsg, QString _replacement, int _retry)
 {
@@ -64,12 +87,6 @@ void TrackerAccess::trackerGetMsgNumber()
     }
 
     this->processIsRunning = true;
-
-    // Set time to last 10sec. '2015-08-30T00:00:00Z'!
-    QDateTime dt = QDateTime::currentDateTimeUtc();
-    dt.setMSecsSinceEpoch(dt.toMSecsSinceEpoch() - (1000*10));
-    QString timeWindow = dt.toString("yyyy-MM-ddThh:mm:ssZ");
-
     this->mutexSafeListAccess.lock();
 
     ImControlMessage* msg;
@@ -79,6 +96,16 @@ void TrackerAccess::trackerGetMsgNumber()
         this->trackerMsgReplacement = msg->replacedMessageContent;
         this->trackerMsgOriginal = msg->receivedMessageContent;
         this->trackerMsgRetry = msg->retryCounter;
+
+        // Set time to last 15sec. '2015-08-30T00:00:00Z'!
+        int timeGap = 15;
+
+        if(msg->retryCounter > 0)
+            timeGap = 60;
+
+        QDateTime dt = QDateTime::currentDateTimeUtc();
+        dt.setMSecsSinceEpoch(dt.toMSecsSinceEpoch() - (1000 * timeGap));
+        QString timeWindow = dt.toString("yyyy-MM-ddThh:mm:ssZ");
 
         if(msg->retryCounter > 1) {
             qWarning() << "TrackerAccess::trackerGetMsgNumber(): max retry counter reached. Give up. Not able to replace content: " << this->trackerMsgOriginal;
@@ -108,7 +135,7 @@ void TrackerAccess::trackerGetMsgNumber()
 // Call gpg with given command
 bool TrackerAccess::callTracker(QString _cmd, int _state)
 {
-    //qDebug() << "TrackerAccess::callTracker(" << _cmd << ", " << _state << ")";
+    qDebug() << "TrackerAccess::callTracker(" << _cmd << ", " << _state << ")";
 
     if(_cmd.size() < 5) {
         this->processIsRunning = false;
@@ -129,7 +156,7 @@ void TrackerAccess::trackerFinished(int _retVal)
 {
     //qDebug() << "TrackerAccess::trackerFinished(" << _retVal << ")";
 
-    QString output = this->process_tracker->readAllStandardOutput().simplified();
+    QString output = QString::fromUtf8(this->process_tracker->readAllStandardOutput().data());
     QString error = this->process_tracker->readAllStandardError().simplified();
 
     if(_retVal != 0) {
@@ -142,7 +169,7 @@ void TrackerAccess::trackerFinished(int _retVal)
     if(this->trackerCurrentState == TRACKER_GETMSGNUMBER && _retVal == 0) {
         if(output.contains("message:")) {
             // Clear Message now
-            QString msgId = output;
+            QString msgId = output.simplified();
             msgId = msgId.split(",").at(0);
             msgId.replace("Results: ", "");
             msgId.trimmed();
@@ -187,6 +214,22 @@ void TrackerAccess::trackerFinished(int _retVal)
         this->trackerCurrentMsgID = "";
         this->processIsRunning = false;
 
+        if(this->shouldReloadXMPPContactsLater) {
+            qDebug() << "TrackerAccess::trackerFinished(): we should reload XMPP contacts now.";
+            this->loadXMPPContacts(this->accountName);
+        }
+
+    } else if(this->trackerCurrentState == TRACKER_GETCONTACTS && _retVal == 0) {
+        qDebug() << "TrackerAccess::trackerFinished(): Tracker job ended successfull for getting contacts:";
+        this->trackerCurrentState = TRACKER_IDLE;
+        this->trackerCurrentMsgID = "";
+        this->processIsRunning = false;
+
+        if(this->parseXMPPContacts(output))
+            emit gotUserList();
+        else
+            emit errorWhileLoadingUserList();
+
     } else {
         qWarning() << "TrackerAccess::trackerFinished(): Can't handle message. State:" << this->trackerCurrentState << ", RetVal:" << _retVal;
         this->processIsRunning = false;
@@ -196,7 +239,69 @@ void TrackerAccess::trackerFinished(int _retVal)
 
 void TrackerAccess::trackerError(QProcess::ProcessError _pe)
 {
-    qDebug() << "TrackerAccess::trackerError(): " << _pe;
+    qWarning() << "TrackerAccess::trackerError(): " << _pe;
     this->processIsRunning = false;
+}
+
+bool TrackerAccess::parseXMPPContacts(QString _trackerRetVal)
+{
+    if(!_trackerRetVal.contains(", "))
+        return false;
+
+    QStringList tmpList = _trackerRetVal.split("\n");
+    QString contactNames, entry, presence, key, key2;
+    QStringList line;
+
+    qDebug() << "TrackerAccess::parseXMPPContacts() size:" << tmpList.size();
+
+    // Parse one row which contains the following data:
+    // < presence-status, nickname, photo, given-name, family-name, jid >
+
+    for(int i=0; i<tmpList.size(); i++) {
+        line = tmpList.at(i).split(", ");
+
+        if(line.size() == 6) {
+
+            contactNames = line.at(3) + " " + line.at(4); // name family-name
+            key = line.at(5); // use jid as key
+
+            // Replace empty name with nickname
+            if(contactNames.startsWith("(null)"))
+                contactNames = line.at(1);
+
+            if(key.contains(this->accountName)) {
+                key2 = key.replace("telepathy:", "").replace(this->accountName, "").replace("!", "");
+
+                // Replace empty name with jid
+                if(contactNames.startsWith("(null)"))
+                    contactNames = key2;
+
+                // Create entry: (name|presence|photo)
+                // presence could be:
+                /*  presence-status-unset
+                    presence-status-offline
+                    presence-status-available
+                    presence-status-away
+                    presence-status-extended-away
+                    presence-status-hidden
+                    presence-status-busy
+                    presence-status-unknown
+                    presence-status-error  */
+                // photo is a local path like: "file:///home/user/.local/share//data/libqtcontacts-tracker/photos/4b6ce96fbc3235bc5ce1b8e63f710dc56002bdb5.png"
+                presence = line.at(0);
+                entry = contactNames.replace("|", "/") + "|" + presence.replace("http://www.semanticdesktop.org/ontologies/2007/03/22/nco#", "").trimmed() + "|" + line.at(2);
+
+                this->allXMPPContacts[key2] = entry;
+            }
+        }
+    }
+
+    //qDebug() << "parseXMPPContacts(): " << this->allXMPPContacts.keys();
+    return true;
+}
+
+QHash<QString, QString> TrackerAccess::getAllXMPPContacts()
+{
+    return this->allXMPPContacts;
 }
 

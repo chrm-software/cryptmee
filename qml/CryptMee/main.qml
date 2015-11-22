@@ -55,6 +55,10 @@ PageStackWindow {
         id: otrChatWindow
     }
 
+    ChatContacts {
+        id: chatContacts
+    }
+
     /////////////////////////////////////////////////////////////
 
 

@@ -2,6 +2,24 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="ru_RU">
 <context>
+    <name>ChatContacts</name>
+    <message>
+        <location filename="../qml/CryptMee/ChatContacts.qml" line="58"/>
+        <source>Unknown Fingerprints</source>
+        <translation>Незвестные Отпечатки</translation>
+    </message>
+    <message>
+        <location filename="../qml/CryptMee/ChatContacts.qml" line="123"/>
+        <source>Contacts</source>
+        <translation>Контакты</translation>
+    </message>
+    <message>
+        <location filename="../qml/CryptMee/ChatContacts.qml" line="175"/>
+        <source>Search...</source>
+        <translation>Поиск…</translation>
+    </message>
+</context>
+<context>
     <name>GpgHistoryViewPage</name>
     <message>
         <location filename="../qml/CryptMee/GpgHistoryViewPage.qml" line="40"/>
@@ -32,12 +50,18 @@
 <context>
     <name>ImControlThread</name>
     <message>
-        <location filename="../imcontrolthread.cpp" line="269"/>
+        <location filename="../imcontrolthread.cpp" line="187"/>
+        <location filename="../imcontrolthread.cpp" line="194"/>
+        <source>Fingerprint changed</source>
+        <translation>Отпечаток изменён</translation>
+    </message>
+    <message>
+        <location filename="../imcontrolthread.cpp" line="335"/>
         <source>OTR stopped!</source>
         <translation>OTR остановлен!</translation>
     </message>
     <message>
-        <location filename="../imcontrolthread.cpp" line="332"/>
+        <location filename="../imcontrolthread.cpp" line="398"/>
         <source>OTR activated!</source>
         <translation>OTR запущен!</translation>
     </message>
@@ -135,7 +159,7 @@
     <message>
         <location filename="../qml/CryptMee/KeyPage.qml" line="151"/>
         <source>Sign with this private key:</source>
-        <translation>Подписать секретным ключем:</translation>
+        <translation>Подписать секретным ключём:</translation>
     </message>
     <message>
         <location filename="../qml/CryptMee/KeyPage.qml" line="167"/>
@@ -188,7 +212,7 @@
     <message>
         <location filename="../qml/CryptMee/KeyPage.qml" line="370"/>
         <source>Key successfull deleted.</source>
-        <translation>Ключ успешно удален.</translation>
+        <translation>Ключ успешно удалён.</translation>
     </message>
     <message>
         <location filename="../qml/CryptMee/KeyPage.qml" line="373"/>
@@ -343,42 +367,42 @@
 <context>
     <name>MailPage</name>
     <message>
-        <location filename="../qml/CryptMee/MailPage.qml" line="40"/>
+        <location filename="../qml/CryptMee/MailPage.qml" line="52"/>
         <source>Info</source>
         <translation>Инфо</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/MailPage.qml" line="45"/>
+        <location filename="../qml/CryptMee/MailPage.qml" line="57"/>
         <source>Show GnuPG log</source>
         <translation>Журнал GnuPG</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/MailPage.qml" line="77"/>
+        <location filename="../qml/CryptMee/MailPage.qml" line="89"/>
         <source>Received email</source>
         <translation>Полученные</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/MailPage.qml" line="98"/>
+        <location filename="../qml/CryptMee/MailPage.qml" line="110"/>
         <source>Sent email</source>
         <translation>Отправленные</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/MailPage.qml" line="192"/>
+        <location filename="../qml/CryptMee/MailPage.qml" line="201"/>
         <source>Encrypted eMails</source>
         <translation>Зашифрованная почта</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/MailPage.qml" line="220"/>
+        <location filename="../qml/CryptMee/MailPage.qml" line="229"/>
         <source>Newer than: </source>
         <translation>Новее, чем:</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/MailPage.qml" line="233"/>
+        <location filename="../qml/CryptMee/MailPage.qml" line="242"/>
         <source>1 week</source>
         <translation>1 неделя</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/MailPage.qml" line="331"/>
+        <location filename="../qml/CryptMee/MailPage.qml" line="341"/>
         <source>Show only mails
  newer than:</source>
         <translation>Показать почту
@@ -454,27 +478,86 @@
 <context>
     <name>OTRChatWindow</name>
     <message>
-        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="62"/>
         <source>OTR Chat</source>
-        <translation>Чат OTR</translation>
+        <translation type="obsolete">Чат OTR</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="100"/>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="38"/>
+        <source>Error sending message: </source>
+        <translation>Ошибка при отправке: </translation>
+    </message>
+    <message>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="227"/>
+        <source>Black background color</source>
+        <translation>Черный фоновый цвет</translation>
+    </message>
+    <message>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="232"/>
+        <source>Normal background color</source>
+        <translation>Обычный фоновый цвет</translation>
+    </message>
+    <message>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="246"/>
+        <source>Copy text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="254"/>
+        <source>Send again</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="361"/>
         <source>Contact JID (set resource if needed)</source>
         <translation>JID контакта</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="140"/>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="440"/>
+        <source>Verify Fingerprint</source>
+        <translation>Подтвердить Отпечаток</translation>
+    </message>
+    <message>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="449"/>
+        <source>Manually</source>
+        <translation>Вручную</translation>
+    </message>
+    <message>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="455"/>
+        <source>SMP Verification</source>
+        <translation>SMP верификация</translation>
+    </message>
+    <message>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="461"/>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="467"/>
+        <source>Remove Fingerprint</source>
+        <translation>Удалить отпечаток</translation>
+    </message>
+    <message>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="564"/>
+        <source>Write your message here</source>
+        <translation>Введите сообщение</translation>
+    </message>
+    <message>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="607"/>
+        <source>Send</source>
+        <translation>Отправить</translation>
+    </message>
+    <message>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="842"/>
+        <source>Change encryption mode
+ for outgoing messages:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Send encrypted message</source>
-        <translation>Отпр. зашифр. сообщение</translation>
+        <translation type="obsolete">Отпр. зашифр. сообщение</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="153"/>
         <source>Send Message</source>
-        <translation>Отпр. сообщение</translation>
+        <translation type="obsolete">Отпр. сообщение</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="161"/>
+        <location filename="../qml/CryptMee/OTRChatWindow.qml" line="412"/>
         <source>Fingerprint</source>
         <translation>Отпечаток</translation>
     </message>
@@ -482,70 +565,79 @@
 <context>
     <name>OTRConfigPage</name>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="173"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="172"/>
         <source>OTR Settings</source>
         <translation>Настройки OTR</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="211"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="210"/>
         <source>OTR Account Binding</source>
         <translation>Аккаунт OTR</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="224"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="223"/>
         <source>Select Account</source>
         <translation>Выбор аккаунта</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="235"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="234"/>
         <source>Enable OTR</source>
         <translation>Включить OTR</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="252"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="251"/>
         <source>Enable OTR.
 It will run automatically on startup</source>
         <translation>Включить OTR.
 Автоматически вкл. вместе с системой</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="281"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="280"/>
         <source>My fingerprint</source>
         <translation>Мой отпечаток</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="294"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="308"/>
+        <source>Additional Options</source>
+        <translation>Доп. опции</translation>
+    </message>
+    <message>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="325"/>
+        <source>Show incoming messages as system notification</source>
+        <translation>Показывать вх. сообщения как системные уведомления</translation>
+    </message>
+    <message>
         <source>Known fingerprints</source>
-        <translation>Известные отпечатки</translation>
+        <translation type="obsolete">Известные отпечатки</translation>
     </message>
     <message>
         <source>Debug output</source>
         <translation type="obsolete">Вывод отладки</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="331"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="351"/>
         <source>Select account
 for OTR usage:</source>
         <translation>Выбор аккаунта
 для OTR:</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="355"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="375"/>
         <source>Generate Private Key</source>
         <translation>Создать секретный ключ</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="356"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="376"/>
         <source>A private key must be generated first for this account. It will take some time. You can reduce the time by using your phone more intense. Start a game or use the camera!</source>
         <translation>Необходима генерация секретного ключа для аккаунта. Время генерации сократится при увеличении нагрузки на телефон. Поиграйте в игру или сделайте снимок!</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="357"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="377"/>
         <source>Generate!</source>
         <translation>Сгенерировать!</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="358"/>
+        <location filename="../qml/CryptMee/OTRConfigPage.qml" line="378"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
@@ -599,34 +691,52 @@ for OTR usage:</source>
         <translation>Перезапуск сессии OTR для контакта: </translation>
     </message>
     <message>
-        <location filename="../otrlconnector.cpp" line="174"/>
+        <location filename="../otrlconnector.cpp" line="152"/>
+        <source>Restarting OTR session</source>
+        <translation>Перезапуск сессии OTR</translation>
+    </message>
+    <message>
+        <location filename="../otrlconnector.cpp" line="175"/>
         <source>Encrypting message to %1 failed.
 The message was not sent.</source>
         <translation>Сбой зашифрования сообщения для %1.
 Сообщение не отправлено.</translation>
     </message>
     <message>
-        <location filename="../otrlconnector.cpp" line="236"/>
+        <location filename="../otrlconnector.cpp" line="225"/>
+        <location filename="../otrlconnector.cpp" line="226"/>
         <source>OTR session closed for contact </source>
         <translation>Сессия OTR закрыта для контакта </translation>
     </message>
     <message>
-        <location filename="../otrlconnector.cpp" line="315"/>
+        <location filename="../otrlconnector.cpp" line="413"/>
+        <source>New fingerprint received.</source>
+        <translation>Получен новый отпечаток.</translation>
+    </message>
+    <message>
+        <location filename="../otrlconnector.cpp" line="419"/>
+        <location filename="../otrlconnector.cpp" line="420"/>
         <source>Secure OTR session opened.</source>
         <translation>Безопасная сессия OTR открыта.</translation>
     </message>
     <message>
-        <location filename="../otrlconnector.cpp" line="321"/>
+        <location filename="../otrlconnector.cpp" line="426"/>
+        <location filename="../otrlconnector.cpp" line="427"/>
         <source>OTR session closed</source>
         <translation>Сессия OTR закрыта</translation>
     </message>
     <message>
-        <location filename="../imcontrolthread.cpp" line="368"/>
+        <location filename="../otrlconnector.cpp" line="452"/>
+        <source>Starting OTR session...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../imcontrolthread.cpp" line="444"/>
         <source>[starting OTR session]</source>
         <translation>[запуск сессии OTR]</translation>
     </message>
     <message>
-        <location filename="../imcontrolthread.cpp" line="369"/>
+        <location filename="../imcontrolthread.cpp" line="445"/>
         <source>I want to start a secure conversation. However, you do not have a plugin to support that.</source>
         <translation>Я хочу начать защищённый диалог, однако, у Вас отсутствует соответствующий плагин.</translation>
     </message>
@@ -677,64 +787,75 @@ The message was not sent.</source>
 <context>
     <name>StartPage</name>
     <message>
-        <location filename="../qml/CryptMee/StartPage.qml" line="53"/>
+        <location filename="../qml/CryptMee/StartPage.qml" line="60"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/StartPage.qml" line="59"/>
+        <location filename="../qml/CryptMee/StartPage.qml" line="66"/>
         <source>OTR Settings</source>
         <translation>Настройки OTR</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/StartPage.qml" line="65"/>
+        <location filename="../qml/CryptMee/StartPage.qml" line="72"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/StartPage.qml" line="114"/>
+        <location filename="../qml/CryptMee/StartPage.qml" line="121"/>
         <source>Enrypt/decrypt text and email or manage your OpenPGP keys!</source>
         <translation>Шифруйте текст и почту или управляйте ключами OpenPGP!</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/StartPage.qml" line="128"/>
+        <location filename="../qml/CryptMee/StartPage.qml" line="135"/>
         <source>Copyright &amp;copy; 2015 by Christoph Maciejewski (chrm@users.sf.net) &lt;br&gt;&lt;br&gt;  CryptMee is free software licensed under the terms of the GNU General Public License as published by the Free Software Foundation; you can redistribute it and/or modify it under the terms of the GNU General Public License either version 3 of the license, or (at your option) any later version (GPLv3+)</source>
         <translation>Copyright &amp;copy; 2015 by Christoph Maciejewski (chrm@users.sf.net) &lt;br&gt;&lt;br&gt;  CryptMee — свободное программное обеспечение в соответствии с лицензией GNU GPL при поддержке Free Software Foundation; допускается распространение ПО и/или его модификация в соответствии с условиями GNU General Public License версии 3 или любой другой более поздней версии (GPLv3+)</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/StartPage.qml" line="132"/>
+        <location filename="../qml/CryptMee/StartPage.qml" line="139"/>
         <source>Using GnuPG: </source>
         <translation>Использование GnuPG:</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/StartPage.qml" line="162"/>
+        <location filename="../qml/CryptMee/StartPage.qml" line="170"/>
         <source>Encrypt Or Decrypt Text</source>
         <translation>Зашифрование и расшифрование</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/StartPage.qml" line="163"/>
+        <location filename="../qml/CryptMee/StartPage.qml" line="171"/>
         <source>Read Encrypted Emails</source>
         <translation>Чтение зашифрованной почты</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/StartPage.qml" line="164"/>
+        <location filename="../qml/CryptMee/StartPage.qml" line="172"/>
         <source>PGP Key Management</source>
         <translation>Управление ключами PGP</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/StartPage.qml" line="168"/>
+        <location filename="../qml/CryptMee/StartPage.qml" line="173"/>
+        <location filename="../qml/CryptMee/StartPage.qml" line="181"/>
+        <source>Secure Conversations</source>
+        <translation>Безопасные Диалоги</translation>
+    </message>
+    <message>
+        <location filename="../qml/CryptMee/StartPage.qml" line="178"/>
         <source>Encrypt Text</source>
         <translation>Зашифровка текста</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/StartPage.qml" line="169"/>
+        <location filename="../qml/CryptMee/StartPage.qml" line="179"/>
         <source>Read Mails</source>
         <translation>Чтение почты</translation>
     </message>
     <message>
-        <location filename="../qml/CryptMee/StartPage.qml" line="170"/>
+        <location filename="../qml/CryptMee/StartPage.qml" line="180"/>
         <source>Key Management</source>
         <translation>Управление ключами</translation>
+    </message>
+    <message>
+        <location filename="../qml/CryptMee/StartPage.qml" line="253"/>
+        <source>Privacy Software</source>
+        <translation>ПО для обеспечения безопасности</translation>
     </message>
 </context>
 </TS>

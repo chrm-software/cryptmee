@@ -2,7 +2,7 @@
 #define CONFIGURATION_H
 
 // Release
-#define RELEASE "0.3.2"
+#define RELEASE "0.3.3"
 
 // Set Build target
 #define MEEGO_BUILD
@@ -52,5 +52,8 @@
 #define OTR_PRIVKEY_FILE QDir::homePath() + "/.otr/otr_priv_key"
 
 #define ENCRYPT_SYMBOL QString::fromUtf8("\u2611")
+
+// Emojis
+#define EMOJI_DEF "/home/user/.emojis/Emojis-1.0/icondef.xml"
 
 #endif // CONFIGURATION_H

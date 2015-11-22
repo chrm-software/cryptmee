@@ -1,7 +1,16 @@
-cryptmee (0.3.2) unstable; urgency=low
-  * Bugfixes in OTR integration
+cryptmee (0.3.3) unstable; urgency=low
+  * Emojis support for incoming messages (needs package emoji4cryptmee)
+  * Send and receive plain text messages
+  * Many bugfixes
 
- -- Christoph Maciejewski <chrm@users.sf.net>  Tue, 20 Oct 2015 17:33:03 +0200
+ -- Christoph Maciejewski <chrm@users.sf.net>  Wed, 11 Nov 2015 17:17:04 +0100
+
+cryptmee (0.3.2) unstable; urgency=low
+  * Bugfixes in OTR integration - reliable message replacement
+  * Complete chat UI for secure conversations
+  * Fingerprint handling (no smp verification at the moment)
+
+ -- Christoph Maciejewski <chrm@users.sf.net>  Tue, 08 Nov 2015 17:33:03 +0200
 
 cryptmee (0.3.1) unstable; urgency=low
   * OTR integration for instant messaging

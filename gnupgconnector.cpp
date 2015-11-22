@@ -79,6 +79,7 @@ void GnuPGConnector::settingsReset()
     settings.setValue("SETTINGS_USEOWNKEY", "0");
     settings.setValue("SETTINGS_OTR_ACCOUNT1", "|");
     settings.setValue("SETTINGS_OTR_AUTORUN", "0");
+    settings.setValue("SETTINGS_OTR_SHOW_NOTIFICATIONS", "0");
 }
 
 void GnuPGConnector::settingsSetValue(QString _key, QString _value)

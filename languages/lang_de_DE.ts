@@ -2,6 +2,21 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="de_DE">
 <context>
+    <name>ChatContacts</name>
+    <message>
+        <source>Unknown Fingerprints</source>
+        <translation>Unbekannte Fingerabdrücke</translation>
+    </message>
+    <message>
+        <source>Contacts</source>
+        <translation>Kontakte</translation>
+    </message>
+    <message>
+        <source>Search...</source>
+        <translation>Suchen...</translation>
+    </message>
+</context>
+<context>
     <name>GpgHistoryViewPage</name>
     <message>
         <source>Toggle wrap mode</source>
@@ -33,6 +48,10 @@
     <message>
         <source>OTR activated!</source>
         <translation>OTR aktiviert!</translation>
+    </message>
+    <message>
+        <source>Fingerprint changed</source>
+        <translation>Fingerabdruck hat sich geändert</translation>
     </message>
 </context>
 <context>
@@ -404,11 +423,11 @@ die neuer sind als:</translation>
     <name>OTRChatWindow</name>
     <message>
         <source>OTR Chat</source>
-        <translation>OTR Chat</translation>
+        <translation type="obsolete">OTR Chat</translation>
     </message>
     <message>
         <source>Send Message</source>
-        <translation>Nachricht senden</translation>
+        <translation type="obsolete">Nachricht senden</translation>
     </message>
     <message>
         <source>Contact JID (set resource if needed)</source>
@@ -416,11 +435,61 @@ die neuer sind als:</translation>
     </message>
     <message>
         <source>Send encrypted message</source>
-        <translation>Verschlüsselte Nachricht senden</translation>
+        <translation type="obsolete">Verschlüsselte Nachricht senden</translation>
     </message>
     <message>
         <source>Fingerprint</source>
         <translation>Fingerabdruck</translation>
+    </message>
+    <message>
+        <source>Error sending message: </source>
+        <translation>Fehler beim Senden der Nachricht: </translation>
+    </message>
+    <message>
+        <source>Black background color</source>
+        <translation>Schwarzer Hintergrund</translation>
+    </message>
+    <message>
+        <source>Normal background color</source>
+        <translation>Normaler Hintergrund</translation>
+    </message>
+    <message>
+        <source>Verify Fingerprint</source>
+        <translation>Fingerabdruck verifizieren</translation>
+    </message>
+    <message>
+        <source>Remove Fingerprint</source>
+        <translation>Fingerabdruck entfernen</translation>
+    </message>
+    <message>
+        <source>Write your message here</source>
+        <translation>Mitteilung hier eingeben</translation>
+    </message>
+    <message>
+        <source>Send</source>
+        <translation>Senden</translation>
+    </message>
+    <message>
+        <source>Manually</source>
+        <translation>Manuell</translation>
+    </message>
+    <message>
+        <source>SMP Verification</source>
+        <translation>SMP Verifizierung</translation>
+    </message>
+    <message>
+        <source>Copy text</source>
+        <translation>Text kopieren</translation>
+    </message>
+    <message>
+        <source>Send again</source>
+        <translation>Nochmal senden</translation>
+    </message>
+    <message>
+        <source>Change encryption mode
+ for outgoing messages:</source>
+        <translation>Verschlüsselungsmodus
+beim Nachrichtenversand:</translation>
     </message>
 </context>
 <context>
@@ -453,7 +522,7 @@ Wird beim Programmstart autom. gestartet</translation>
     </message>
     <message>
         <source>Known fingerprints</source>
-        <translation>Bekannte Fingerabdrücke</translation>
+        <translation type="obsolete">Bekannte Fingerabdrücke</translation>
     </message>
     <message>
         <source>Debug output</source>
@@ -480,6 +549,14 @@ auswählen</translation>
     <message>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>Additional Options</source>
+        <translation>Weitere Optionen</translation>
+    </message>
+    <message>
+        <source>Show incoming messages as system notification</source>
+        <translation>Kommende Nachrichten als Systemmitteilung anzeigen</translation>
     </message>
 </context>
 <context>
@@ -547,6 +624,18 @@ Es wurde nichts gesendet.</translation>
     <message>
         <source>I want to start a secure conversation. However, you do not have a plugin to support that.</source>
         <translation>Ich möchte einen sicheren Chat starten, leider unterstützt Deine Software das nicht.</translation>
+    </message>
+    <message>
+        <source>Restarting OTR session</source>
+        <translation>OTR-Sitzung wird neu gestartet</translation>
+    </message>
+    <message>
+        <source>New fingerprint received.</source>
+        <translation>Neuen Fingerabdruck erhalten</translation>
+    </message>
+    <message>
+        <source>Starting OTR session...</source>
+        <translation>OTR Sitzung wird gestartet...</translation>
     </message>
 </context>
 <context>
@@ -645,6 +734,14 @@ Es wurde nichts gesendet.</translation>
     <message>
         <source>OTR Settings</source>
         <translation>OTR Einstellungen</translation>
+    </message>
+    <message>
+        <source>Secure Conversations</source>
+        <translation>Sichere Mitteilungen</translation>
+    </message>
+    <message>
+        <source>Privacy Software</source>
+        <translation>Software für Privatsphäre</translation>
     </message>
 </context>
 <context>

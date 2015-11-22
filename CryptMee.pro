@@ -53,6 +53,9 @@ QT += dbus
 # DB
 QT += sql
 
+# Emojis
+QT += xml
+
 # Tracker
 # CONFIG+=qtsparql
 
@@ -78,7 +81,8 @@ SOURCES += main.cpp \
     gnupgconnector.cpp \
     imcontrolthread.cpp \
     otrlconnector.cpp \
-    trackeraccess.cpp
+    trackeraccess.cpp \
+    emojimanager.cpp
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)
@@ -106,7 +110,8 @@ HEADERS += \
     configuration.h \
     imcontrolthread.h \
     otrlconnector.h \
-    trackeraccess.h
+    trackeraccess.h \
+    emojimanager.h
 
 RESOURCES += \
     cryptmeeressource.qrc
@@ -126,7 +131,8 @@ lupdate_only{
         qml/CryptMee/PubKeySelectionPage.qml \
         qml/CryptMee/SettingsPage.qml \
         qml/CryptMee/StartPage.qml \
-        qml/CryptMee/OTRChatWindow.qml
+        qml/CryptMee/OTRChatWindow.qml \
+        qml/CryptMee/ChatContacts.qml
 }
 
 TRANSLATIONS += languages/lang_de_DE.ts \

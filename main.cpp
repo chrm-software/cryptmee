@@ -62,6 +62,9 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     ctxt->setContextProperty("MAIL_DB", MAIL_DB);
     ctxt->setContextProperty("TMP_DIR", TMP_DIR);
 
+    // Install avatar image provider
+    QDeclarativeEngine *engine = ctxt->engine();
+    engine->addImageProvider(QLatin1String("avatars"), new AvatarImageProvider);
 
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
     viewer.setMainQmlFile(QLatin1String("qml/CryptMee/main.qml"));

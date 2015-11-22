@@ -11,7 +11,7 @@ Page {
     property string selectedAccountName: ""
     property int isInitialized: 0
     property alias imControlThread: myImControlThread
-    property alias allFingerprintsList: listViewFingerprints.model
+    //property alias allFingerprintsList: listViewFingerprints.model
     property int accountID: 0
     /////////////////////////////////
 
@@ -32,9 +32,8 @@ Page {
                 if(useKey === "1") {
                     switchEnableOTR.checked = true;
                     startPage.otrIcon = "qrc:/images/pix/otr_active_toolbar.png"
-                }
-
-                isInitialized = 1;
+                    isInitialized = 1;
+                }                
 
             } else {
                 switchEnableOTR.checked = false;
@@ -42,6 +41,11 @@ Page {
 
             // Read Keys here!
             fillAccountsInDialog();
+
+            var showMsgsAsNotification = startPage.gpgConnector.settingsGetValue("SETTINGS_OTR_SHOW_NOTIFICATIONS");
+            if(showMsgsAsNotification === "1") {
+                switchShowMsgNotification.checked = true;
+            }
         }
 
         onOtrErrorOccured: {
@@ -63,16 +67,17 @@ Page {
 
         onOtrIsRunning: {
             initOTR();
-            fillFingerprints();
+            chatContacts.fillContacts();
         }
 
         onOtrHasStopped: {
             startPage.otrIcon = "qrc:/images/pix/otr_inactive_toolbar.png"
             switchEnableOTR.checked = false;
+            isInitialized = 0;
         }
 
         onOtrUpdateFingerprints: {
-            fillFingerprints();
+            chatContacts.fillContacts();
         }
 
         onOtrUpdateChatHistory: {
@@ -104,17 +109,6 @@ Page {
         }
 
         dialogAccount.selectedIndex = 0;
-    }
-
-    function fillFingerprints() {
-        allFingerprintsList.clear();
-        var size = myImControlThread.getNumOfFingerprints();
-
-        for(var i=0; i<size; i++) {
-            var tmpFP = myImControlThread.getFingerprint(i).split("|");
-            allFingerprintsList.append({ name: tmpFP[1], fingerprint: tmpFP[0], onlineState: tmpFP[2] });
-            console.debug("QML: fillFingerprints(): " + tmpFP[1]);
-        }
     }
 
     function createPrivateKey() {
@@ -210,7 +204,7 @@ Page {
                 spacing: 5
                 anchors.fill: parent
                 width: parent.width
-                height: 750
+                height: 700
 
                 GroupSeparator {
                     title: qsTr("OTR Account Binding")
@@ -286,43 +280,63 @@ Page {
                     title: qsTr("My fingerprint")
                 }
 
-                TextArea {
-                    id: fingerprintTextOutput;
-                    text: "EMPTY"
+                Row {
                     width: parent.width
-                    readOnly: true
-                    font.family: "Courier"
-                    font.pixelSize: 21
-                    font.bold: true
+
+                    Image {
+                        id: iconFinger
+                        width: 50
+                        height: fingerprintTextOutput.height
+                        source: "qrc:/images/pix/fingerprint.png"
+                        anchors.margins: 5
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+                    }
+
+                    TextArea {
+                        id: fingerprintTextOutput;
+                        text: "EMPTY"
+                        width: parent.width - iconFinger.width
+                        readOnly: true
+                        font.family: "Courier"
+                        font.pixelSize: 21
+                        font.bold: true
+                    }
                 }
 
                 GroupSeparator {
-                    title: qsTr("Known fingerprints")
+                    title: qsTr("Additional Options")
                 }
 
-                Rectangle {
-                    id: fingerprintsArea
-                    width: parent.width
-                    height: 200
-                    color: "transparent"
+                Row {
+                    width: parent.width;
+                    spacing: 10
 
-                    Flickable {
-                        id: flickArea
-                        width: parent.width
-                        height: 260
-                        flickableDirection: Flickable.VerticalFlick
-                        clip: true
+                    Rectangle {
+                        width: 1
+                        height: labelShowMsgNotification.height
+                        color: "transparent"
+                    }
 
-                        ScrollDecorator {
-                            flickableItem: listViewFingerprints
-                        }
+                    Label {
+                        id: labelShowMsgNotification
+                        wrapMode: Text.Wrap
+                        width: parent.width - switchEnableOTR.width - 21
+                        text: qsTr("Show incoming messages as system notification");
+                    }
 
-                        ListView {
-                            id: listViewFingerprints
-                            width: parent.width; height: parent.height
-                            delegate: delegate
-                            focus: true
-                            model: ListModel { }
+                    Switch {
+                        id: switchShowMsgNotification;
+                        height: labelShowMsgNotification.height
+                        checked: false
+                        enabled: true
+
+                        onCheckedChanged: {
+                            if(switchShowMsgNotification.checked) {
+                                startPage.gpgConnector.settingsSetValue("SETTINGS_OTR_SHOW_NOTIFICATIONS", "1");
+                            } else {
+                                startPage.gpgConnector.settingsSetValue("SETTINGS_OTR_SHOW_NOTIFICATIONS", "0");
+                            }
                         }
                     }
                 }
@@ -371,78 +385,20 @@ Page {
         }
     }
 
-    Component {
-        id: delegate
-
-        Item {
-            height: {
-                return textLabel.height;
-            }
-
-            Rectangle {
-                id: colorRect
-                color: "orange"
-                height: textLabel.height - 3
-                width: 12
-                x: 2
-                anchors.left: parent.left
-            }
-
-            Rectangle {
-                id: colorRect2
-                color: {
-                    if(onlineState === "offline")
-                        return "grey";
-                    else
-                        return "green";
-                }
-                height: textLabel.height - 3
-                width: 12
-                x: colorRect.width + 2
-                anchors.left: colorRect.right
-            }
-
-            Text {
-                id: textLabel
-                text: "<b>"+name+"</b>"
-                font.pixelSize: 26
-                width: parent.width - 28;
-                height: 65
-                anchors.margins: 6
-                anchors.left: colorRect2.right
-
-                MouseArea {
-                    width: listViewFingerprints.width;
-                    height: textLabel.height
-
-                    onClicked: {
-                        parent.color = "red";
-                        var contact = name;
-
-                        // TODO: let user enter a message here!
-                        otrChatWindow.contactName = contact;
-                        otrChatWindow.contactFingerprint = fingerprint;
-                        pageStack.push(otrChatWindow);
-                    }
-                }
-            }
-        }
-    }
-
     state: (screen.currentOrientation === Screen.Portrait) ? "portrait" : "landscape"
 
     states: [
         State {
             name: "landscape"
             PropertyChanges { target: label2; height: {
-                        return 45
+                    return 45
                 }
             }
         },
         State {
             name: "portrait"
             PropertyChanges { target: label2; height: {
-                        return 65
+                    return 65
                 }
             }
         }

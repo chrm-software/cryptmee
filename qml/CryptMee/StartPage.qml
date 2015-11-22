@@ -25,6 +25,13 @@ Page {
         aboutDialog.open();
     }
 
+    function hasNewMsgs(yes) {
+        if(yes) {
+            newMsgIndicator.visible = true;
+        } else
+            newMsgIndicator.visible = false;
+    }
+
     ToolBarLayout {
         id: commonTools
         visible: true
@@ -58,7 +65,7 @@ Page {
 
             MenuItem { text: qsTr("OTR Settings")
                 onClicked: {
-                    pageStack.push(otrConfigPage);                    
+                    pageStack.push(otrConfigPage);
                 }
             }
 
@@ -66,7 +73,7 @@ Page {
                 onClicked: {
                     showAboutDialog();
                 }
-            }            
+            }
         }
     }
 
@@ -159,15 +166,19 @@ Public License either version 3 of the license, or (at your option) any later ve
     states: [
         State {
             name: "landscape"
-            PropertyChanges { target: encDecTextButton; text: qsTr("Encrypt Or Decrypt Text"); width: parent.width -200; height: 90; x: 100 }
-            PropertyChanges { target: decMailsButton; text: qsTr("Read Encrypted Emails"); width: parent.width -200; height: 90; x: 100 }
-            PropertyChanges { target: keyManagementButton; text: qsTr("PGP Key Management"); width: parent.width -200; height: 90; x: 100 }
+            PropertyChanges { target: buttonsGrid; columns: 2; rows: 2 }
+            PropertyChanges { target: encDecTextButton; text: "<html>"+qsTr("Encrypt Or Decrypt Text")+"</html>"; width: parent.width/2-2; height: 150; /*x: 100*/ }
+            PropertyChanges { target: decMailsButton; text: "<html>"+qsTr("Read Encrypted Emails")+"</html>"; width: parent.width/2-2; height: 150; /*x: 100*/ }
+            PropertyChanges { target: keyManagementButton; text: "<html>"+qsTr("PGP Key Management")+"</html>"; width: parent.width/2-2; height: 150; /*x: 100*/ }
+            PropertyChanges { target: otrChatButton; text: "<html>"+qsTr("Secure Conversations")+"</html>"; width: parent.width/2-2; height: 150; /*x: 100*/ }
         },
         State {
             name: "portrait"
-            PropertyChanges { target: encDecTextButton; text: qsTr("Encrypt Text"); width: parent.width-10; height: 150; x: 5 }
-            PropertyChanges { target: decMailsButton; text: qsTr("Read Mails"); width: parent.width-10; height: 150; x: 5 }
-            PropertyChanges { target: keyManagementButton; text: qsTr("Key Management"); width: parent.width-10; height: 150; x: 5 }
+            PropertyChanges { target: buttonsGrid; columns: 1; rows: 4 }
+            PropertyChanges { target: encDecTextButton; text: "<html>"+qsTr("Encrypt Text")+"</html>"; width: parent.width; height: 155; /*x: 5*/ }
+            PropertyChanges { target: decMailsButton; text: "<html>"+qsTr("Read Mails")+"</html>"; width: parent.width; height: 155; /*x: 5*/ }
+            PropertyChanges { target: keyManagementButton; text: "<html>"+qsTr("Key Management")+"</html>"; width: parent.width; height: 155; /*x: 5*/ }
+            PropertyChanges { target: otrChatButton; text: "<html>"+qsTr("Secure Conversations")+"</html>"; width: parent.width; height: 155; /*x: 5*/ }
         }
     ]
 
@@ -177,6 +188,7 @@ Public License either version 3 of the license, or (at your option) any later ve
         NumberAnimation { target: encDecTextButton; property: "opacity"; to: 1.0; duration: 800}
         NumberAnimation { target: decMailsButton; property: "opacity"; to: 1.0; duration: 800}
         NumberAnimation { target: keyManagementButton; property: "opacity"; to: 1.0; duration: 800}
+        NumberAnimation { target: otrChatButton; property: "opacity"; to: 1.0; duration: 800}
     }
 
     ParallelAnimation {
@@ -184,6 +196,7 @@ Public License either version 3 of the license, or (at your option) any later ve
         running: false
         NumberAnimation { target: decMailsButton; property: "opacity"; to: 0.0; duration: 300}
         NumberAnimation { target: keyManagementButton; property: "opacity"; to: 0.0; duration: 300}
+        NumberAnimation { target: otrChatButton; property: "opacity"; to: 0.0; duration: 300}
         onCompleted: pageStack.push(mainPage)
     }
 
@@ -192,6 +205,7 @@ Public License either version 3 of the license, or (at your option) any later ve
         running: false
         NumberAnimation { target: encDecTextButton; property: "opacity"; to: 0.0; duration: 300}
         NumberAnimation { target: keyManagementButton; property: "opacity"; to: 0.0; duration: 300}
+        NumberAnimation { target: otrChatButton; property: "opacity"; to: 0.0; duration: 300}
         onCompleted: pageStack.push(mailPage)
     }
 
@@ -200,7 +214,22 @@ Public License either version 3 of the license, or (at your option) any later ve
         running: false
         NumberAnimation { target: encDecTextButton; property: "opacity"; to: 0.0; duration: 300}
         NumberAnimation { target: decMailsButton; property: "opacity"; to: 0.0; duration: 300}
+        NumberAnimation { target: otrChatButton; property: "opacity"; to: 0.0; duration: 300}
         onCompleted: pageStack.push(keyPage)
+    }
+
+    ParallelAnimation {
+        id: fadeOut4
+        running: false
+        NumberAnimation { target: encDecTextButton; property: "opacity"; to: 0.0; duration: 300}
+        NumberAnimation { target: decMailsButton; property: "opacity"; to: 0.0; duration: 300}
+        NumberAnimation { target: keyManagementButton; property: "opacity"; to: 0.0; duration: 300}        
+        onCompleted: {
+            if(otrConfigPage.isInitialized === 1)
+                pageStack.push(chatContacts)
+            else
+                pageStack.push(otrConfigPage)
+        }
     }
 
     Rectangle {
@@ -218,10 +247,10 @@ Public License either version 3 of the license, or (at your option) any later ve
             id: label2
             x: 10
             y: 0
-            width: parent.width - 40
+            width: parent.width
             height: 65
             color: "#ffffff"
-            text: "CryptMee <font size='-5'>GnuPG Frontend</font>"
+            text: "CryptMee <font size='-5'>"+qsTr("Privacy Software")+"</font>"
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignLeft
             font.pixelSize: 32
@@ -229,35 +258,76 @@ Public License either version 3 of the license, or (at your option) any later ve
         }
     }
 
-    Button {
-        id: encDecTextButton
-        height: 90
+    Grid {
+        id: buttonsGrid
+        columns: 1
+        rows: 4
         y: topDecoartion.height + 10
-        iconSource: "qrc:/images/pix/gpg-text.png"
-        opacity: 0.0
+        x: 5
+        width: parent.width - 10
+        spacing: 5
 
-        onPressedChanged: fadeOut1.start()
+        Button {
+            id: encDecTextButton
+            height: 90
+            width: parent.width/2
+            iconSource: "qrc:/images/pix/gpg-text.png"
+            opacity: 0.0
 
-    }
+            onPressedChanged: fadeOut1.start()
 
-    Button {
-        id: decMailsButton
-        height: 90
-        y: encDecTextButton.y + encDecTextButton.height + 10
-        iconSource: "qrc:/images/pix/gpg-mail.png"
-        opacity: 0.0
+        }
 
-        onPressedChanged: fadeOut2.start()
-    }
+        Button {
+            id: decMailsButton
+            height: 90
+            width: parent.width/2
+            iconSource: "qrc:/images/pix/gpg-mail.png"
+            opacity: 0.0
 
-    Button {
-        id: keyManagementButton
-        height: 90
-        y: decMailsButton.y + decMailsButton.height + 10
-        iconSource: "qrc:/images/pix/gpg-keys.png"
-        opacity: 0.0
+            onPressedChanged: fadeOut2.start()
+        }
 
-        onPressedChanged: fadeOut3.start()
+        Button {
+            id: keyManagementButton
+            height: 90
+            width: parent.width/2
+            iconSource: "qrc:/images/pix/gpg-keys.png"
+            opacity: 0.0
+
+            onPressedChanged: fadeOut3.start()
+        }
+
+        Button {
+            id: otrChatButton
+            height: 90
+            width: parent.width/2
+            iconSource: "qrc:/images/pix/gpg-chat.png"
+            opacity: 0.0
+
+            onPressedChanged: fadeOut4.start()
+
+            Image {
+                id: newMsgIndicator
+                visible: false
+                x: parent.width - 48
+                width: 48
+                height: 48
+                source: "image://theme/icon-m-common-blue"
+
+                Text {
+                    width: parent.width
+                    height: parent.height
+                    x: 18
+                    y: 10
+                    color: "#ffffff"
+                    text: "1"
+                    font.bold: true
+                    font.pointSize: 14
+                    styleColor: "#000000"
+                }
+            }
+        }
     }
 
 
@@ -341,7 +411,7 @@ Public License either version 3 of the license, or (at your option) any later ve
 
             } else {
                 currentGpgVersion = myGPGConnector.getGPGVersionString();
-            }            
+            }
         }
 
         onErrorOccured: {
@@ -389,7 +459,7 @@ Public License either version 3 of the license, or (at your option) any later ve
                 currentGpgVersion = myGPGConnector.getGPGVersionString();
 
             } else if(currentState === "IMPORTKEYS") {
-                // Keys imported                
+                // Keys imported
                 keyPage.keyImported(false);
 
             } else if(currentState === "DELETEKEY") {

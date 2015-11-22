@@ -30,11 +30,16 @@ ImControlThread::ImControlThread(QDeclarativeItem *parent)
 
     this->otrConnector = NULL;
     this->myTrackerAccess = NULL;
+    this->emojiManager = new EmojiManager(this);
 
     this->initializeObjects();
 
+    this->updateContactsLaterTimer = new QTimer(this);
+    this->updateContactsLaterTimer->setSingleShot(true);
+    connect(this->updateContactsLaterTimer, SIGNAL(timeout()), this, SLOT(updateXMPPContactsLater()));
+
     // Autostart
-    QTimer::singleShot(2500, this, SLOT(autoStart()));
+    QTimer::singleShot(3500, this, SLOT(autoStart()));
 }
 
 ImControlThread::~ImControlThread()
@@ -59,6 +64,9 @@ ImControlThread::~ImControlThread()
 
     if(this->myTrackerAccess != NULL)
         delete this->myTrackerAccess;
+
+    if(this->emojiManager != NULL)
+        delete this->emojiManager;
 }
 
 QString ImControlThread::getLibOTRVersion()
@@ -83,8 +91,10 @@ void ImControlThread::initializeObjects() {
     privKeyFile.open(QIODevice::ReadWrite);
     privKeyFile.close();
 
-    if(this->myTrackerAccess == NULL)
+    if(this->myTrackerAccess == NULL) {
         this->myTrackerAccess = new TrackerAccess(this);
+        connect(this->myTrackerAccess, SIGNAL(gotUserList()), this, SLOT(gotAllXMPPContacts()));
+    }
 
     if(this->otrConnector == NULL)
         this->otrConnector = new OTRLConnector(this);
@@ -101,9 +111,14 @@ void ImControlThread::guiConnector(int _action, QString _value)
     else if(_action == ACTION_ERROR_OCCURED)
         emit otrErrorOccured();
     else if(_action == ACTION_NEW_FINGERPRINT) {
-        this->allKnownFingerprints = this->otrConnector->getFingerprints();
-        emit otrUpdateFingerprints();
+        // Update contact list here, may be a new contact trying to contact us.
+        this->myTrackerAccess->loadXMPPContacts(this->accountName);
     }
+}
+
+void ImControlThread::gotAllXMPPContacts()
+{
+    this->updateContactList();
 }
 
 QString ImControlThread::getAllXMPPAccounts()
@@ -129,6 +144,11 @@ QString ImControlThread::getFingerprint(int _num)
 QStringList ImControlThread::getKnownOTRPartners()
 {
     return this->knownOTRPartners;
+}
+
+bool ImControlThread::isFingerprintVerified(QString _account, QString _contact)
+{
+    return this->otrConnector->isVerified(_account, _contact);
 }
 
 QString ImControlThread::getReadableAccountName(QString _account)
@@ -160,6 +180,20 @@ QString ImControlThread::getFingerprintForAccount(QString _account)
     }
 }
 
+void ImControlThread::verifyFingerprint(QString _account, QString _contact, QString _fingerprint, bool _verified)
+{
+    this->otrConnector->verifyFingerprint(_account, _contact, _fingerprint, _verified);
+    this->updateContactList();
+    this->meegoNotification(tr("Fingerprint changed"));
+}
+
+void ImControlThread::deleteFingerprint(QString _account, QString _contact, QString _fingerprint)
+{
+    this->otrConnector->deleteFingerprint(_account, _contact, _fingerprint);
+    this->updateContactList();
+    this->meegoNotification(tr("Fingerprint changed"));
+}
+
 bool ImControlThread::sendOTRMessage(QString _account, QString _contact, QString _message)
 {
     qDebug() << "ImControlThread::sendOTRMessage(): encrypt message first...";
@@ -167,16 +201,17 @@ bool ImControlThread::sendOTRMessage(QString _account, QString _contact, QString
     if(_message == "")
         return false;
 
-    QString encMsg = this->otrConnector->encryptMessage(_account, _contact, _message);
-
     // Check for resource extended contact and remember it.
     if(_contact.contains("/")) {
         qDebug() << "ImControlThread::sendOTRMessage(): contact has resource. Remember it: " << _contact;
         this->resourceOverwrites[_contact.split("/").at(0)] = _contact;
+        _contact = _contact.split("/").at(0);
     } else {
         if(this->resourceOverwrites.contains(_contact))
             this->resourceOverwrites.remove(_contact);
     }
+
+    QString encMsg = this->otrConnector->encryptMessage(_account, _contact, _message);
 
     if(encMsg != "") {
         return this->sendXMPPMessage(_contact, _account, ENCRYPT_SYMBOL + " " + _message, encMsg);
@@ -187,6 +222,27 @@ bool ImControlThread::sendOTRMessage(QString _account, QString _contact, QString
     this->otrConnector->endSession(this->accountName, _contact);
 
     return false;
+}
+
+bool ImControlThread::sendPlainTextMessage(QString _account, QString _contact, QString _message)
+{
+    qDebug() << "ImControlThread::sendPlainTextMessage()";
+
+    if(_message == "")
+        return false;
+
+    // Check for resource extended contact and remember it.
+    if(_contact.contains("/")) {
+        qDebug() << "ImControlThread::sendPlainTextMessage(): contact has resource. Remember it: " << _contact;
+        this->resourceOverwrites[_contact.split("/").at(0)] = _contact;
+        _contact = _contact.split("/").at(0);
+    } else {
+        if(this->resourceOverwrites.contains(_contact))
+            this->resourceOverwrites.remove(_contact);
+    }
+
+    // Set enc == dec this will do not start replacement in tracker
+    return this->sendXMPPMessage(_contact, _account, _message, _message);
 }
 
 void ImControlThread::mctoolFinished(int _retVal)
@@ -262,12 +318,12 @@ void ImControlThread::stopOTR(bool _onExit)
                                              this,
                                              SLOT(telepathyMessageReceived(QDBusMessage)));
 
-    /*QDBusConnection::sessionBus().disconnect(QString(),
+    QDBusConnection::sessionBus().disconnect(QString(),
                                              QString(),
-                                             "org.freedesktop.Telepathy.Channel.Interface.Messages" ,
-                                             "MessageSent",
+                                             "org.freedesktop.Telepathy.Connection.Interface.SimplePresence" ,
+                                             "PresencesChanged",
                                              this,
-                                             SLOT(telepathyMessageSent(QDBusMessage)));*/
+                                             SLOT(telepathyPresenceChanged(QDBusMessage)));
 
     this->isActive = false;
 
@@ -348,6 +404,16 @@ bool ImControlThread::startOTR(QString _account)
     this->meegoNotification(tr("OTR activated!"));
     this->allKnownFingerprints = this->otrConnector->getFingerprints();
 
+    // Read all xmpp accounts
+    this->myTrackerAccess->loadXMPPContacts(this->accountName);
+
+    // Init emoji manager
+    if(!this->emojiManager->initEmojis(EMOJI_DEF)) {
+        qWarning() << "ImControlThread::startOTR(): Unable to initialize emojis.";
+        this->useEmojis = false;
+    } else
+        this->useEmojis = true;
+
     emit otrIsRunning();
 
     return true;
@@ -380,7 +446,7 @@ bool ImControlThread::sendXMPPMessage(QString _receiver,
 {
     // OTR init message, replace telepathy account name.
     if(_contentEncrypted.startsWith("?OTR?v")) {
-        qDebug() << "ImControlThread::sendXMPPMessage(): Fount ?OTR?v... init string. make some secial replacements";
+        qDebug() << "ImControlThread::sendXMPPMessage(): Found ?OTR?v... init string. make some secial replacements";
         _contentOriginal = ENCRYPT_SYMBOL + " " + QObject::tr("[starting OTR session]");
         _contentEncrypted = "?OTR?v2? " + QObject::tr("I want to start a secure conversation. However, you do not have a plugin to support that.");
     }
@@ -402,41 +468,82 @@ bool ImControlThread::replaceMsgInTracker(QString _origMsg, QString _replacement
     return this->myTrackerAccess->replaceMsgInTracker(_origMsg, _replacement);
 }
 
-void ImControlThread::addChatMessage(QString _contact, QString _message, bool _remote, bool _system)
+void ImControlThread::addChatMessage(QString _contact, QString _message, bool _remote, bool _system, bool _sendEncrypted)
 {
+    // Check for HTML first
+    _message.replace("<", "&lt;");
+
+    if(this->useEmojis)
+        _message = this->emojiManager->replaceEmojisInMsg(_message);
+
     ChatMessage* cm = new ChatMessage();
     cm->content = _message;
     cm->date = QDateTime::currentDateTime();
     cm->remote = _remote;
     cm->systemMessage = _system;
+    cm->encrypted = _sendEncrypted;
+
+    if(_sendEncrypted)
+        cm->content = ENCRYPT_SYMBOL + " " + _message;
 
     this->chatHistory[_contact].append(cm);
 
     qDebug() << "ImControlThread::addChatMessage(): " << cm->toString();
 
-    if(this->chatHistory[_contact].size() > 60) {
-        qDebug() << "ImControlThread::addChatMessage(): more then 60 messages in history, delete oldest...";
-        // hold only last 60 messages per contact
+    if(this->chatHistory[_contact].size() > 50) {
+        qDebug() << "ImControlThread::addChatMessage(): more then 50 messages in history, delete oldest...";
+        // hold only last 50 messages per contact
         delete this->chatHistory[_contact].takeFirst();
     }
 
-    if(_remote || _system)
-        emit otrUpdateChatHistory(_contact);
+    // Update pending message state
+    if(!this->hasPendingMessages.value(_contact, false)) {
+        this->hasPendingMessages[_contact] = true;
+        qDebug() << "ImControlThread::addChatMessage(): Set new msg flag for: " << _contact << this->hasPendingMessages[_contact];
+        this->updateContactList();
+    } else {
+        qDebug() << "ImControlThread::addChatMessage(): has already pending msgs. Do not set new msg flag for: " << _contact;
+    }
+
+    emit otrUpdateChatHistory(_contact);
 }
 
 QString ImControlThread::getChatHistoryMessageFor(QString _contact, int _index)
 {
-    return this->chatHistory[_contact].at(_index)->toString();
+    if(this->chatHistory[_contact].size() > _index)
+        return this->chatHistory[_contact].at(_index)->toString();
+    else
+        return "";
 }
 
 int ImControlThread::getChatHistorySizeFor(QString _contact)
 {
+    // Update pending message state
+    if(this->hasPendingMessages.value(_contact, true)) {
+        this->hasPendingMessages[_contact] = false;
+        qDebug() << "ImControlThread::getChatHistorySizeFor(): unset new msg flag for contact: " << _contact;
+        this->updateContactList();
+    }
+
     return this->chatHistory[_contact].size();
 }
 
 QString ImControlThread::getNewestChatMessageFor(QString _contact)
 {
+    // Update pending message state
+    if(this->hasPendingMessages.value(_contact, true)) {
+        this->hasPendingMessages[_contact] = false;
+        qDebug() << "ImControlThread::getNewestChatMessageFor(): unset new msg flag for contact: " << _contact;
+        this->updateContactList();
+    }
+
+    qDebug() << "ImControlThread::getNewestChatMessageFor()";
     return this->chatHistory[_contact].last()->toString();
+}
+
+bool ImControlThread::hasPendingMessageFor(QString _contact)
+{
+    return hasPendingMessages.value(_contact, false);
 }
 
 //////////////////////////////////////////////////////
@@ -463,14 +570,14 @@ bool ImControlThread::registerListeners()
                                           this,
                                           SLOT(telepathyMessageReceived(QDBusMessage)));
 
-    // Message sent - not needed for now.
-    /*QDBusConnection::sessionBus().connect(QString(),
+    // Presence change
+    QDBusConnection::sessionBus().connect(QString(),
                                           QString(),
-                                          "org.freedesktop.Telepathy.Channel.Interface.Messages" ,
-                                          "MessageSent",
+                                          "org.freedesktop.Telepathy.Connection.Interface.SimplePresence" ,
+                                          "PresencesChanged",
                                           this,
-                                          SLOT(telepathyMessageSent(QDBusMessage)));
-                                          */
+                                          SLOT(telepathyPresenceChanged(QDBusMessage)));
+
 
 
     qDebug() << "ImControlThread::initialize(): DBUS initialized.";
@@ -478,27 +585,32 @@ bool ImControlThread::registerListeners()
     return true;
 }
 
-void ImControlThread::telepathyMessageSent(const QDBusMessage &reply)
+void ImControlThread::telepathyPresenceChanged(const QDBusMessage &reply)
 {
-    qDebug() << "ImControlThread::telepathyMessageSent() ....";
+    Q_UNUSED(reply);
+    qDebug() << "ImControlThread::telepathyPresenceChanged() reload contacts later...";
 
-    QList<QVariant> args = reply.arguments();
+    // Give tracker time for updating presence status
+    this->updateContactsLaterTimer->start(4000);
+}
 
-    qDebug() << "--> List size:" << args.size(); // 3
-    /*
-    [Argument: aa{sv} {
-        [Argument: a{sv}
-            {"message-type" = [Variant(int): 0],
-             "message-token" = [Variant(QString): "c7ec240b-aabd-42cb-abfa-fafbfcab4fe1"],
-             "message-sent" = [Variant(qulonglong): 1442501592],
-             "message-sender" = [Variant(uint): 1],
-             "message-sender-id" = [Variant(QString): "chrm@XXX.de"]
-        }],
-        [Argument: a{sv}
-            {"content" = [Variant(QString): "?OTR ..."], "content-type" = [Variant(QString): "text/plain"]
-        }]}
-     ]
-     */
+void ImControlThread::updateXMPPContactsLater()
+{
+    this->myTrackerAccess->loadXMPPContacts(this->accountName);
+}
+
+QString ImControlThread::getDBUSConnectionStringForAccount(QString _account)
+{
+    // path includes also '_2f<resource>' and '/channel'.
+    QString tmp = _account;
+
+    if(tmp.endsWith("0")) {
+        tmp.remove(QRegExp("0$"));
+    }
+
+    tmp.replace("/Account/", "/Connection/");
+
+    return tmp;
 }
 
 void ImControlThread::telepathyMessageReceived(const QDBusMessage &reply)
@@ -514,33 +626,27 @@ void ImControlThread::telepathyMessageReceived(const QDBusMessage &reply)
     // Now message is stored in this->lastMessage
     this->lastMessage.receivedMessagePath = reply.path();
 
-    if(this->lastMessage.receivedMessageContent.startsWith("?OTR")) {
+    // Receive any message for this account
 
-        // Process only messages for the active account!
-        // compare path with this->accountName
-        // path includes also '_2f<resource>' and '/channel'.
-        QString tmp = this->accountName;
-        if(tmp.endsWith("0")) {
-            tmp.remove(QRegExp("0$"));
-        }
-        tmp.replace("/Account/", "/Connection/");
+    // Process only messages for the active account!
+    // compare path with this->accountName
+    // path includes also '_2f<resource>' and '/channel'.
+    QString tmp = this->getDBUSConnectionStringForAccount(this->accountName);
 
-        // DEBUG
-        qDebug() << "ImControlThread::telepathyMessageReceived() --> my account:      " << tmp;
-        qDebug() << "ImControlThread::telepathyMessageReceived() --> msg for account: " << this->lastMessage.receivedMessagePath;
+    // DEBUG
+    qDebug() << "ImControlThread::telepathyMessageReceived() --> my account:      " << tmp;
+    qDebug() << "ImControlThread::telepathyMessageReceived() --> msg for account: " << this->lastMessage.receivedMessagePath;
 
-        if(this->lastMessage.receivedMessagePath.startsWith(tmp)) {
-            qDebug() << "ImControlThread::telepathyMessageReceived() >>>>>>>> Got OTR message for right account! <<<<<<<";
+    if(this->lastMessage.receivedMessagePath.startsWith(tmp)) {
+        qDebug() << "ImControlThread::telepathyMessageReceived() >>>>>>>>>>>> Got message for right account! <<<<<<<";
 
-            if(this->resourceOverwrites.contains(this->lastMessage.receivedMessageSender)) {
-                // Replace with resource extension.
-                this->lastMessage.receivedMessageSender = this->resourceOverwrites[this->lastMessage.receivedMessageSender];
-            }
+        if(this->lastMessage.receivedMessageContent.startsWith("?OTR")) {
+            qDebug() << "ImControlThread::telepathyMessageReceived() >>>>>>>> Got OTR message! <<<<<<<";
 
             // Remember all encrypted conversations partners
             if(!this->knownOTRPartners.contains(this->lastMessage.receivedMessageSender)) {
                 this->knownOTRPartners.append(this->lastMessage.receivedMessageSender);
-                emit otrUpdateFingerprints();
+                this->updateContactList();
             }
 
             // Do OTR decrypt stuff here.
@@ -552,12 +658,16 @@ void ImControlThread::telepathyMessageReceived(const QDBusMessage &reply)
             if(this->lastMessage.replacedMessageContent != NULL && this->lastMessage.replacedMessageContent.size() > 0) {
                 this->myTrackerAccess->replaceMsgInTracker(this->lastMessage.receivedMessageContent, this->lastMessage.replacedMessageContent);
             }
-        } else {
-            qDebug() << "ImControlThread::telepathyMessageReceived() Got OTR message for wrong account. Do nothing. Account: " << tmp;
+
+        } else {            
+            qDebug() << "ImControlThread::telepathyMessageReceived() >>>>>> Got plaintext message. Account: " << tmp;
+
+            // Just add to msg storage
+            this->addChatMessage(this->lastMessage.receivedMessageSender, this->lastMessage.receivedMessageContent, true, false, false);
         }
 
     } else {
-        qDebug() << "ImControlThread::telepathyMessageReceived(): No OTR init string found. Do nothing";
+        qDebug() << "ImControlThread::telepathyMessageReceived(): Got message for wrong account. Ignore.";
     }
 
     // Leave mutex
@@ -578,6 +688,10 @@ bool ImControlThread::telepathySendDBusMessage(QString _receiver, QString _accou
                                                     dbus_interface,
                                                     "SendMessage");
 
+    // TODO: add ressource to contact name!
+    if(this->resourceOverwrites.contains(_receiver)) {
+        _receiver = this->resourceOverwrites[_receiver];
+    }
 
     QList<QVariant> args;
 
@@ -618,8 +732,14 @@ bool ImControlThread::telepathySendDBusMessage(QString _receiver, QString _accou
     return true;
 }
 
-bool ImControlThread::meegoNotification(QString _message)
+bool ImControlThread::meegoNotification(QString _message, bool _isUserMsg)
 {
+    QSettings settings;
+    if(_isUserMsg && settings.value("SETTINGS_OTR_SHOW_NOTIFICATIONS", "0").toString() == "0") {
+        // Do not show (decrypted) messages as notification
+        return false;
+    }
+
     QString dbus_service = "com.meego.core.MNotificationManager";
     QString dbus_path = "/notificationmanager";
     QString dbus_interface = "com.meego.core.MNotificationManager";
@@ -651,6 +771,114 @@ bool ImControlThread::meegoNotification(QString _message)
     return true;
 }
 
+int ImControlThread::getNumOfAllContacts()
+{
+    return this->completeContactList.size();
+}
+
+QString ImControlThread::getContact(int _num)
+{
+    return this->completeContactList.at(_num);
+}
+
+void ImControlThread::updateContactList()
+{
+    qDebug() << "ImControlThread::updateContactList()";
+
+    QString jid, lastDate;
+    int collectionCnt = 0;
+
+    this->completeContactList.clear();
+    this->allKnownFingerprints = this->otrConnector->getFingerprints();
+
+    for(int i=0; i<this->myTrackerAccess->getAllXMPPContacts().keys().size(); i++) {
+        jid = this->myTrackerAccess->getAllXMPPContacts().keys().at(i);
+
+        if(this->chatHistory.contains(jid) && !this->chatHistory[jid].isEmpty())
+            lastDate = this->chatHistory[jid].last()->date.toString("yyyy-MM-dd &#124; hh:mm:ss") + " &#124; <i>" + this->chatHistory[jid].last()->content.left(8) + "...</i>";
+        else
+            lastDate = "---";
+
+        this->completeContactList << "-|" + jid + "|offline|zunknown|" + QString::number(hasPendingMessages.value(jid, false)) + "|" + this->myTrackerAccess->getAllXMPPContacts().value(jid) + "|" + lastDate;
+
+        for(int j=0; j<this->allKnownFingerprints.size(); j++) {
+            if(this->allKnownFingerprints.at(j).split("|").at(1) == jid) {
+                collectionCnt++;
+                this->completeContactList[i] = this->allKnownFingerprints.at(j) + "|" + QString::number(hasPendingMessages.value(jid, false)) + "|" + this->myTrackerAccess->getAllXMPPContacts().value(jid) + "|" + lastDate;
+                continue;
+            }
+        }
+    }
+
+    // Check if all fingerprints are in xmpp-contacts list
+    if(collectionCnt != this->allKnownFingerprints.size()) {
+        qWarning() << "ImControlThread::updateContactList(): not all fingerprints in list! Something went wrong!";
+    }
+
+    // Sort list
+    this->sortContactListByOnlineState();
+
+    emit otrUpdateFingerprints();
+}
+
+void ImControlThread::sortContactListByOnlineState()
+{
+    qSort(this->completeContactList.begin(), this->completeContactList.end(), lessThenComperator);
+}
+
+bool ImControlThread::lessThenComperator(QString _left, QString _right)
+{
+    QStringList leftList = _left.split("|");
+    QStringList rightList = _right.split("|");
+
+    if(leftList.size() != 9 || rightList.size() != 9) {
+        qWarning() << "ImControlThread::lessThenComperator() wrong string format!";
+        return _left < _right;
+    }
+
+    QString new1 = leftList.at(4);
+    QString name1 = leftList.at(5);
+    QString verify1 = leftList.at(3);
+    QString onlineState1 = leftList.at(2);
+    QString date1 = leftList.at(8);
+    if(verify1 == "") verify1 = "y";
+
+    QString new2 = rightList.at(4);
+    QString name2 = rightList.at(5);
+    QString verify2 = rightList.at(3);
+    QString onlineState2 = rightList.at(2);
+    QString date2 = rightList.at(8);
+    if(verify2 == "") verify2 = "y";
+
+    // Sort first by new message state
+    if(new1 != new2) {
+        return new1 > new2;
+    }
+
+    // Sort by last message date
+    if(date1 != date2) {
+        return date1 > date2;
+    }
+
+    // Sort by open session ('online') state
+    if(onlineState1 != onlineState2) {
+        return onlineState1 > onlineState2;
+    }
+
+    // Sort second by verified keys
+    if(verify1 != verify2) {
+        return verify1 < verify2;
+    }
+
+    // Sort by name
+    return name1.toLower() < name2.toLower();
+}
+
+QString ImControlThread::makeLinksClickableInMsg(QString _msg)
+{
+    _msg.replace(QRegExp("((?:https?|ftp)://\\S+)"), "<a href=\"\\1\">\\1</a>");
+    return _msg;
+}
 
 
 ////// DBUS helper methods ////////

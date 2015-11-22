@@ -2,6 +2,7 @@ import QtQuick 1.1
 import com.nokia.meego 1.1
 import com.nokia.extras 1.1
 import ImControlThread 1.0
+import QtMobility.feedback 1.1
 
 Page {
     id: otrChatWindow
@@ -10,37 +11,53 @@ Page {
     /////////////////////////////////
     property alias contactName: contactNameLabel.text
     property alias contactFingerprint: fingerprintTextOutput.text
+    property alias contactAvatar: avatarImage.source
+    property bool chatSendEncrypted: true
+    property string currentChatEntry: ""
     /////////////////////////////////
 
     //////////////////////////////////////// Functions ////////////////////////////////
     function sendMessage(message) {
+        if(message === "")
+            return;
+
         var contactJID = contactName;
 
+        // TODO: change JID if resource is in use!
+        // Otherwise the message will not be visible - (user@server/res != user@server).
         if(resource.text != "")
             contactJID = contactJID + "/" + resource.text;
 
         console.debug("QML: OTR chat: Sending message to " + contactJID + ", from: " + otrConfigPage.selectedAccountName);
 
-        if(otrConfigPage.imControlThread.sendOTRMessage(otrConfigPage.selectedAccountName, contactJID, message)) {
-            // Add on success
-            addMessage(message, false, Qt.formatTime(new Date(),"hh:mm"), false);
-            typeMsgField.text = "";
-            otrConfigPage.imControlThread.addChatMessage(contactJID, message, false, false);
+        if(chatSendEncrypted) {
+            if(otrConfigPage.imControlThread.sendOTRMessage(otrConfigPage.selectedAccountName, contactJID, message)) {                
+                typeMsgField.text = "";
+                otrConfigPage.imControlThread.addChatMessage(contactJID, message, false, false, chatSendEncrypted);
+            } else {
+                addMessage("*** " + qsTr("Error sending message: ") + message, false, Qt.formatTime(new Date(),"hh:mm"), true, false);
+            }
         } else {
-            addMessage(qsTr("Error sending message: " + message), false, Qt.formatTime(new Date(),"hh:mm"), true);
+            console.debug("QML: OTR chat: Sending message UNENCRYPTED!");
+            if(otrConfigPage.imControlThread.sendPlainTextMessage(otrConfigPage.selectedAccountName, contactJID, message)) {
+                typeMsgField.text = "";
+                otrConfigPage.imControlThread.addChatMessage(contactJID, message, false, false, chatSendEncrypted);
+            }
         }
     }
 
-    function addMessage(text, remote, date, system) {
-        chatListView.model.insert(0, { chatEntry: text, remoteText: remote, date: date, systemInfo: system });
+    function addMessage(text, remote, date, system, encrypted) {
+        chatListView.model.insert(0, { chatEntry: text, remoteText: remote, date: date, systemInfo: system, isEncrypted: encrypted });
     }
 
-    function showPage(page) {
+    function showPage(page, reloadContacts) {
         if(page === "CHAT_PAGE") {
             chatRect.stateVisible = true;
             propsRect.stateVisible = false;
             buttonRow.checkedButton = b1;
-            getAllMessages();
+
+            if(reloadContacts)
+                getAllMessages();
         } else {
             chatRect.stateVisible = false;
             propsRect.stateVisible = true;
@@ -62,34 +79,105 @@ Page {
 
         for(var i=0; i<size; i++) {
             var values = otrConfigPage.imControlThread.getChatHistoryMessageFor(contactName, i).split("|");
-            addMessage(values[0], getBoolForInt(values[1]), values[2], getBoolForInt(values[3]));
+            addMessage(values[0], getBoolForInt(values[1]), values[2], getBoolForInt(values[3]), getBoolForInt(values[4]));
         }
     }
 
     function getMessageFor(_contactName) {
-
         // Do not draw message for other users
         if(_contactName !== contactName)
             return;
 
+        // Get latest unread message
         var values = otrConfigPage.imControlThread.getNewestChatMessageFor(_contactName).split("|");
-        addMessage(values[0], getBoolForInt(values[1]), values[2], getBoolForInt(values[3]));
+        addMessage(values[0], getBoolForInt(values[1]), values[2], getBoolForInt(values[3]), getBoolForInt(values[4]));
+
+        checkIfChatVerified();
     }
 
     function getContactNameHeader() {
-        return "CryptMee <font size='-5'>" + contactName + "</font>" ;
+        return contactName;
     }
 
     function chatBackground(_color) {
         chatRect.color = _color;
     }
+
+    function verifyFingerprint() {
+        var contactJID = contactName;
+
+        if(resource.text != "")
+            contactJID = contactJID + "/" + resource.text;
+
+        otrConfigPage.imControlThread.verifyFingerprint(otrConfigPage.selectedAccountName, contactJID, contactFingerprint, true);
+        checkIfChatVerified();
+    }
+
+    function deleteFingerprint() {
+        var contactJID = contactName;
+
+        if(resource.text != "")
+            contactJID = contactJID + "/" + resource.text;
+
+        otrConfigPage.imControlThread.deleteFingerprint(otrConfigPage.selectedAccountName, contactJID, contactFingerprint);
+        checkIfChatVerified();
+    }
+
+    function checkIfChatVerified() {
+        var isChatSecure = otrConfigPage.imControlThread.isFingerprintVerified(otrConfigPage.selectedAccountName, contactName);
+        console.debug("QML: OTRChatWindow: isChatSecure: " + isChatSecure);
+
+        // No FP, no encryption
+        if(contactFingerprint === "-") {
+            changeTextSendingMode(false);
+            return;
+        }
+
+        // Do not change to encrypted if user sets plaintext
+        if(chatSendEncrypted === false)
+            return;
+
+        if(!isChatSecure) {
+            logoImage.source = "image://theme/icon-m-common-locked";
+            changeTextSendingMode(true);
+        } else {
+            logoImage.source = "qrc:/images/pix/icon-m-common-locked-verified.png";
+            changeTextSendingMode(true);
+        }
+    }
+
+    function changeTextSendingMode(mode) {
+        if(chatSendEncrypted === mode) {
+            // Nothing to do
+        } else {
+            if(mode === false) {
+                // Disable encryption for outgoing messages
+                chatSendEncrypted = false;
+                logoImage.source = "qrc:/images/pix/icon-m-common-locked-plaintext.png";
+            } else {
+                chatSendEncrypted = true;
+                checkIfChatVerified();
+            }
+        }
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////
 
     onStatusChanged: {
         if(status === DialogStatus.Open){
-            getAllMessages();
-            showPage("CHAT_PAGE");
+            showPage("CHAT_PAGE", true);
+            checkIfChatVerified();
         }
+    }
+
+    HapticsEffect {
+        id: rumbleEffect
+        attackIntensity: 1.0
+        attackTime: 20
+        intensity: 1.0
+        duration: 30
+        fadeTime: 20
+        fadeIntensity: 1.0
     }
 
     ToolBarLayout {
@@ -103,6 +191,7 @@ Page {
             enabled: true
 
             onClicked: {
+                contactName = "";
                 pageStack.pop();
             }
         }
@@ -114,13 +203,13 @@ Page {
             Button {
                 id: b1
                 iconSource: "image://theme/icon-m-toolbar-new-chat"
-                onClicked: otrChatWindow.showPage("CHAT_PAGE")
+                onClicked: otrChatWindow.showPage("CHAT_PAGE", false)
             }
 
             Button {
                 id: b2
                 iconSource: "image://theme/icon-m-toolbar-addressbook"
-                onClicked: otrChatWindow.showPage("PROPS_PAGE")
+                onClicked: otrChatWindow.showPage("PROPS_PAGE", false)
             }
         }
 
@@ -148,6 +237,29 @@ Page {
         }
     }
 
+    Menu {
+        id: entryContextMenu
+        visualParent: otrChatWindow
+        MenuLayout {
+            MenuItem {
+                id: menuCopyText
+                text: qsTr("Copy text")
+                onClicked: {
+                    startPage.gpgConnector.setToClipboard(currentChatEntry);
+                }
+            }
+
+            MenuItem {
+                id: menuSendAgain
+                text: qsTr("Send again")
+                visible: false
+                onClicked: {
+                    sendMessage(currentChatEntry);
+                }
+            }
+        }
+    }
+
     Rectangle {
         id: topDecoartion
         color: "#0000b0"
@@ -160,18 +272,50 @@ Page {
             GradientStop {color: "#0069a0"; position: 0.9}
         }
 
+        ToolIcon {
+            id: backButtonTop
+            x: 0
+            y: 0
+            platformIconId: "toolbar-back";
+            onClicked: {
+                pageStack.pop();
+            }
+            opacity: 0.5
+            height: label2.height
+        }
+
         Label {
             id: label2
             x: 10
             y: 0
-            width: parent.width
+            width: parent.width - 72 - label2.height
             height: 65
             color: "#ffffff"
             text: { return getContactNameHeader(); }
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignLeft
-            font.pixelSize: 32
+            font.pixelSize: 26
             font.bold: false
+            anchors.left: backButtonTop.right
+        }
+
+        Image {
+            id: avatarImage
+            anchors.left: label2.right
+            height: {
+                if(label2.height == 0)
+                    return 0;
+                else
+                    return label2.height - 20;
+            }
+            width: label2.height - 20
+            y: {
+                if(label2.height == 0)
+                    return 0;
+                else
+                    return 10;
+            }
+            source: "image://theme/icon-m-content-avatar-placeholder"
         }
     }
 
@@ -224,7 +368,7 @@ Page {
                 Text {
                     id: jidLabel
                     height: 50
-                    text: " JID: ";
+                    text: " ";
                     verticalAlignment: Text.AlignVCenter
                     font.pixelSize: 22
                 }
@@ -235,6 +379,7 @@ Page {
                     text: "";
                     verticalAlignment: Text.AlignVCenter
                     font.pixelSize: 22
+                    font.bold: true
 
                     onTextChanged: {
                         if(contactNameLabel.text.indexOf("/") > -1) {
@@ -267,18 +412,32 @@ Page {
                 title: qsTr("Fingerprint")
             }
 
-            TextArea {
-                id: fingerprintTextOutput;
-                text: "EMPTY"
+            Row {
                 width: parent.width
-                readOnly: true
-                font.family: "Courier"
-                font.pixelSize: 21
-                font.bold: true
+
+                Image {
+                    id: iconFinger
+                    width: 50
+                    height: fingerprintTextOutput.height
+                    source: "qrc:/images/pix/fingerprint.png"
+                    anchors.margins: 5
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                }
+
+                TextArea {
+                    id: fingerprintTextOutput;
+                    text: "EMPTY"
+                    width: parent.width - iconFinger.width
+                    readOnly: true
+                    font.family: "Courier"
+                    font.pixelSize: 21
+                    font.bold: true
+                }
             }
 
             GroupSeparator {
-                title: qsTr("Trust Fingerprint")
+                title: qsTr("Verify Fingerprint")
             }
 
             Row {
@@ -287,12 +446,13 @@ Page {
                 Button {
                     id: trustFP
                     width: parent.width/2
-                    text: "Manually"
+                    text: qsTr("Manually")
+                    onClicked: verifyFingerprint();
                 }
                 Button {
                     id: trustFPSMP
                     width: parent.width/2
-                    text: "SMP Verification"
+                    text: qsTr("SMP Verification")
                     enabled: false
                 }
             }
@@ -304,7 +464,8 @@ Page {
             Button {
                 id: removeFP
                 width: parent.width
-                text: "Remove Fingerprint"
+                text: qsTr("Remove Fingerprint")
+                onClicked: deleteFingerprint();
             }
 
         }
@@ -343,7 +504,7 @@ Page {
         Flickable {
             id: flickAreaChat
             width: parent.width
-            height: parent.height - 50
+            height: parent.height - rectTextInput.height - rectAdditionlInput.height
             flickableDirection: Flickable.VerticalFlick
 
             ListView {
@@ -366,8 +527,9 @@ Page {
 
 
         Rectangle {
+            id: rectTextInput
             anchors.top: flickAreaChat.bottom
-            height: 50
+            height: typeMsgField.height
             width: parent.width
             color: "white"
 
@@ -376,36 +538,97 @@ Page {
                 source: "image://theme/icon-m-common-locked"
                 width: 48
                 height: 48
+
+                MouseArea {
+                    id: encryptionModeMouseArea
+                    width: parent.width
+                    height: parent.height
+
+                    onClicked: {
+                        if(chatSendEncrypted)
+                            dialogEncryptionMode.selectedIndex = 0;
+                        else
+                            dialogEncryptionMode.selectedIndex = 1;
+
+                        dialogEncryptionMode.open();
+                    }
+                }
             }
 
-            TextField {
+            TextArea {
                 id: typeMsgField
+                platformStyle: myTextFieldStyle
                 anchors.left: logoImage.right
-                width: parent.width - 150
-                height: 50
-                placeholderText: qsTr("Type your message here")
+                width: parent.width - logoImage.width
+                height: 55
+                placeholderText: qsTr("Write your message here")
+
+                onActiveFocusChanged: {
+                    if(typeMsgField.focus) {
+                        rectAdditionlInput.height = 55;
+                        sendSmileyButton.height = 45;
+                        sendSmileyButton.visible = true;
+                    } else {
+                        rectAdditionlInput.height = 0;
+                        sendSmileyButton.height = 0;
+                        sendSmileyButton.visible = false;
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            id: rectAdditionlInput
+            anchors.top: rectTextInput.bottom
+            height: 0
+            width: parent.width
+            color: "white"
+            border.width: 1
+            border.color: "#eeeeee"
+
+            Button {
+                id: sendSmileyButton
+                visible: false;
+                text: ""
+                width: 45
+                height: 0
+                y: 5
+                x: 10
+                iconSource: "image://theme/icon-s-messaging-smiley-happy"
+
+                onClicked: {
+                    console.debug("QML: Smiley clicked");
+                }
             }
 
             Button {
                 id: sendMsgButton
-                anchors.left: typeMsgField.right
-                text: "Send"
-                width: 100
-                height: 40
-                y: 5
+                anchors.right: parent.right
+                text: qsTr("Send")
+                width: parent.width / 3
+                height: rectAdditionlInput.height - 10
+                y: rectAdditionlInput.height / 2 - 20
 
                 platformStyle: ButtonStyle {
                     background: "image://theme/meegotouch-button-inverted-background"
-                    pressedBackground: "image://theme/color7-meegotouch-button-accent-background-pressed"
+                    pressedBackground: "image://theme/color4-meegotouch-button-accent-background-pressed"
                     textColor: "white"
                 }
 
                 onClicked: {
-                    //addMessage(typeMsgField.text, true, "01.01.1970", false);
+                    rumbleEffect.running = true;
                     sendMessage(typeMsgField.text);
                     chatListView.positionViewAtBeginning();
                 }
             }
+        }
+
+        TextFieldStyle {
+            id: myTextFieldStyle
+            backgroundSelected: ""
+            background: ""
+            backgroundDisabled: ""
+            backgroundError: ""
         }
 
         Component {
@@ -476,24 +699,55 @@ Page {
                                 return 1.0;
                         }
 
+                        onClicked: {
+                            rumbleEffect.running = true;
+                            currentChatEntry = chatEntry;
+
+                            if(remoteText)
+                                menuSendAgain.visible = false;
+                            else
+                                menuSendAgain.visible = true;
+
+                            console.debug("QML: Clicked message: " + currentChatEntry);
+                            entryContextMenu.open();
+                        }
+
                         platformStyle: ButtonStyle {
                             background: {
-                                if(systemInfo)
-                                    return "image://theme/color16-meegotouch-button-background-selected";
+                                if(systemInfo) {
+                                    if(chatEntry.indexOf("***") < 0)
+                                        return "image://theme/color10-meegotouch-button-background-selected";
+                                    else
+                                        return "image://theme/color12-meegotouch-button-background-selected";
+                                }
 
-                                if(remoteText)
-                                    return "qrc:/images/pix/bubble-out.png";
-                                else
-                                    return "qrc:/images/pix/bubble-in.png";
+                                if(remoteText) {
+                                    if(isEncrypted)
+                                        return "qrc:/images/pix/bubble-out.png";
+                                    else
+                                        return "qrc:/images/pix/bubble-out-plaintext.png";
+                                } else {
+                                    if(isEncrypted)
+                                        return "qrc:/images/pix/bubble-in.png";
+                                    else
+                                        return "qrc:/images/pix/bubble-in-plaintext.png";
+                                }
                             }
                             pressedBackground: {
                                 if(systemInfo)
                                     return "image://theme/color16-meegotouch-button-background-selected";
 
-                                if(remoteText)
-                                    return "qrc:/images/pix/bubble-out.png";
-                                else
-                                    return "qrc:/images/pix/bubble-in.png";
+                                if(remoteText) {
+                                    if(!isEncrypted)
+                                        return "qrc:/images/pix/bubble-out.png";
+                                    else
+                                        return "qrc:/images/pix/bubble-out-plaintext.png";
+                                } else {
+                                    if(!isEncrypted)
+                                        return "qrc:/images/pix/bubble-in.png";
+                                    else
+                                        return "qrc:/images/pix/bubble-in-plaintext.png";
+                                }
                             }
                         }
 
@@ -540,12 +794,16 @@ Page {
                             }
 
                             text: {
-                                var content = "";
+                                var content = "<html>";
 
-                                content += "" + chatEntry + "<br>";
-                                content += "<font size='-2'>" + date + "</font>";
+                                content += (otrConfigPage.imControlThread.makeLinksClickableInMsg(chatEntry).replace("\n", "<br>") + "<br>");
+                                content += "<font size='-2'>" + date + "</font></html>";
 
                                 return content;
+                            }
+
+                            onLinkActivated: {
+                                Qt.openUrlExternally(link);
                             }
                         }
                     }
@@ -578,5 +836,19 @@ Page {
             }
         }
     ]
+
+    SelectionDialog {
+        id: dialogEncryptionMode
+        titleText: qsTr("Change encryption mode\n for outgoing messages:")
+        selectedIndex: 0
+        model: ListModel {
+            ListElement { name: "OTR"; value: true }
+            ListElement { name: "Plain Text"; value: false }
+        }
+
+        onAccepted: {
+            changeTextSendingMode(dialogEncryptionMode.model.get(dialogEncryptionMode.selectedIndex).value);
+        }
+    }
 }
 

@@ -130,7 +130,7 @@ Page {
             id: label2
             x: 10
             y: 0
-            width: parent.width - 40
+            width: parent.width
             height: 65
             color: "#ffffff"
             text: "CryptMee <font size='-5'>" + qsTr("Encrypt Or Decrypt Text") + "</font>"

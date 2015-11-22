@@ -10,6 +10,7 @@ Page {
     id: page_Mail
 
     property alias prop_mailReader: myMailReader
+    property int showMailsTimeWindow: 7
 
     ToolBarLayout {
         id: commonTools
@@ -18,7 +19,7 @@ Page {
         ToolIcon {
             id: backButton
             platformIconId: "toolbar-back";
-            anchors.left: (parent === undefined) ? undefined : parent.left
+            //anchors.left: (parent === undefined) ? undefined : parent.left
             enabled: true
             onClicked: {
                 myMenu.close();
@@ -27,8 +28,19 @@ Page {
         }
 
         ToolIcon {
+            id: reloadButton
+            platformIconId: "toolbar-refresh";
+            enabled: true
+            onClicked: {
+                myMailReader.readMails(showMailsTimeWindow);
+                busy01.running = true;
+                busy01.visible = true;
+            }
+        }
+
+        ToolIcon {
             platformIconId: "toolbar-view-menu"
-            anchors.right: (parent === undefined) ? undefined : parent.right
+            //anchors.right: (parent === undefined) ? undefined : parent.right
             onClicked: (myMenu.status === DialogStatus.Closed) ? myMenu.open() : myMenu.close()
         }
     }
@@ -171,11 +183,8 @@ Page {
     Rectangle {
         id: topDecoartion
         color: "#0000b0"
-        anchors.bottom: filterAgeArea.top
-        anchors.top: parent.top
-        anchors.topMargin: 0
         width: parent.width
-        height: 65
+        height: childrenRect.height
 
         gradient: Gradient {
             GradientStop {color: "#0093dd"; position: 0.0}
@@ -210,8 +219,8 @@ Page {
     Rectangle {
         id: filterAgeArea
         width: parent.width
-        anchors.bottom: allMailsArea.top
-        y: topDecoartion.height
+        anchors.top: topDecoartion.bottom
+        //anchors.bottom: allMailsArea.top
         height: 65
         color: "#dddddd"
 
@@ -244,9 +253,10 @@ Page {
     Rectangle {
         id: allMailsArea
         width: parent.width
+        height: parent.height - topDecoartion.height - filterAgeArea.height
         anchors.top: filterAgeArea.bottom
-        anchors.bottom: parent.bottom
-        y: topDecoartion.height + filterAgeArea.height
+        //anchors.bottom: parent.bottom
+        //y: topDecoartion.height + filterAgeArea.height
 
 
         Flickable {
@@ -346,10 +356,38 @@ Page {
             var age = dialogAge.model.get(dialogAge.selectedIndex).value;
             buttonAge.text = dialogAge.model.get(dialogAge.selectedIndex).name
             myMailReader.readMails(age);
+            showMailsTimeWindow = age;
 
             busy01.running = true;
             busy01.visible = true;
         }
     }
+
+    state: (screen.currentOrientation === Screen.Portrait) ? "portrait" : "landscape"
+
+    states: [
+        State {
+            name: "landscape"
+            PropertyChanges {
+                target: label2;
+                height: { return 45 }
+            }
+            PropertyChanges {
+                target: busy01;
+                y: { return 5 }
+            }
+        },
+        State {
+            name: "portrait"
+            PropertyChanges {
+                target: label2;
+                height: { return 65 }
+            }
+            PropertyChanges {
+                target: busy01;
+                y: { return 15 }
+            }
+        }
+    ]
 
 }

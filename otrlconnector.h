@@ -34,6 +34,9 @@ public:
     void endSession(const QString& _account, const QString& _contact);
     QStringList getFingerprints();
     QString getLibOTRVersion();
+    void verifyFingerprint(QString _account, QString _contact, QString _fingerprint, bool _verified);
+    void deleteFingerprint(QString _account, QString _contact, QString _fingerprint);
+    bool isVerified(const QString& _account, const QString& _contact);
 
 private:
     QString otrAccountName;
@@ -41,11 +44,13 @@ private:
     OtrlUserState otrUserState;
     OtrlMessageAppOps ui_ops;
     QString libOTRVersion;
+    QHash<QString, unsigned char*> fpMappingList;
 
     bool isGeneratingPrivKey;
 
     OtrlUserState get_userstate(const char* username);
     QString humanFingerprint(const unsigned char* fingerprint);
+    bool isVerified(ConnContext* context);
 
     // Static libotr callbacks
     static OtrlPolicy policy_cb(void *opdata, ConnContext *context);

@@ -473,6 +473,10 @@ void ImControlThread::addChatMessage(QString _contact, QString _message, bool _r
     // Check for HTML first
     _message.replace("<", "&lt;");
 
+    // Remove resource
+    if(_contact.contains("/"))
+        _contact = _contact.split("/").at(0);
+
     if(this->useEmojis)
         _message = this->emojiManager->replaceEmojisInMsg(_message);
 
@@ -502,7 +506,7 @@ void ImControlThread::addChatMessage(QString _contact, QString _message, bool _r
         qDebug() << "ImControlThread::addChatMessage(): Set new msg flag for: " << _contact << this->hasPendingMessages[_contact];
         this->updateContactList();
     } else {
-        qDebug() << "ImControlThread::addChatMessage(): has already pending msgs. Do not set new msg flag for: " << _contact;
+        qDebug() << "ImControlThread::addChatMessage(): has already pending msgs or is sending one. Do not set new msg flag for: " << _contact;
     }
 
     emit otrUpdateChatHistory(_contact);
@@ -519,7 +523,7 @@ QString ImControlThread::getChatHistoryMessageFor(QString _contact, int _index)
 int ImControlThread::getChatHistorySizeFor(QString _contact)
 {
     // Update pending message state
-    if(this->hasPendingMessages.value(_contact, true)) {
+    if(this->hasPendingMessages.contains(_contact) && this->hasPendingMessages.value(_contact, true)) {
         this->hasPendingMessages[_contact] = false;
         qDebug() << "ImControlThread::getChatHistorySizeFor(): unset new msg flag for contact: " << _contact;
         this->updateContactList();
@@ -531,14 +535,18 @@ int ImControlThread::getChatHistorySizeFor(QString _contact)
 QString ImControlThread::getNewestChatMessageFor(QString _contact)
 {
     // Update pending message state
-    if(this->hasPendingMessages.value(_contact, true)) {
+    if(this->hasPendingMessages.contains(_contact) && this->hasPendingMessages.value(_contact, true)) {
         this->hasPendingMessages[_contact] = false;
         qDebug() << "ImControlThread::getNewestChatMessageFor(): unset new msg flag for contact: " << _contact;
         this->updateContactList();
     }
 
-    qDebug() << "ImControlThread::getNewestChatMessageFor()";
-    return this->chatHistory[_contact].last()->toString();
+    qDebug() << "ImControlThread::getNewestChatMessageFor(" << _contact << ")";
+
+    if(this->chatHistory[_contact].size() > 0)
+        return this->chatHistory[_contact].last()->toString();
+    else
+        return "";
 }
 
 bool ImControlThread::hasPendingMessageFor(QString _contact)
@@ -681,17 +689,17 @@ bool ImControlThread::telepathySendDBusMessage(QString _receiver, QString _accou
     QString dbus_path = "/org/freedesktop/Telepathy/ChannelDispatcher";
     QString dbus_interface = "org.freedesktop.Telepathy.ChannelDispatcher.Interface.Messages.DRAFT";
 
-    qDebug() << "ImControlThread::telepathySendDBusMessage(): " << _content.left(30) + "[...]";
-
     QDBusMessage m = QDBusMessage::createMethodCall(dbus_service,
                                                     dbus_path,
                                                     dbus_interface,
                                                     "SendMessage");
 
-    // TODO: add ressource to contact name!
+    // Add ressource to contact name!
     if(this->resourceOverwrites.contains(_receiver)) {
         _receiver = this->resourceOverwrites[_receiver];
     }
+
+    qDebug() << "ImControlThread::telepathySendDBusMessage(): " << _receiver << _content.left(30) + "[...]";
 
     QList<QVariant> args;
 
@@ -724,7 +732,7 @@ bool ImControlThread::telepathySendDBusMessage(QString _receiver, QString _accou
 
     m.setArguments(args);
 
-    qDebug() << "ImControlThread::telepathySendDBusMessage(): Sending message...";
+    qDebug() << "ImControlThread::telepathySendDBusMessage(): Calling DBUS...";
     QDBusMessage retVal = QDBusConnection::sessionBus().call(m);
 
     qDebug() << "ImControlThread::telepathySendDBusMessage(): Message sent: " << retVal;
@@ -878,6 +886,16 @@ QString ImControlThread::makeLinksClickableInMsg(QString _msg)
 {
     _msg.replace(QRegExp("((?:https?|ftp)://\\S+)"), "<a href=\"\\1\">\\1</a>");
     return _msg;
+}
+
+int ImControlThread::getNumOfEmojis()
+{
+    return this->emojiManager->getNumOfEmojis();
+}
+
+QString ImControlThread::getEmojiPath(int _index)
+{
+    return this->emojiManager->getEmojiPath(_index);
 }
 
 

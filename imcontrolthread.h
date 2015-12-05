@@ -130,6 +130,9 @@ public:
     Q_INVOKABLE bool isFingerprintVerified(QString _account, QString _contact);
 
     Q_INVOKABLE QString makeLinksClickableInMsg(QString _msg);
+
+    Q_INVOKABLE int getNumOfEmojis();
+    Q_INVOKABLE QString getEmojiPath(int _index);
     ////////////////////////////////////////////////////
 
     // public interface

@@ -14,10 +14,14 @@ public:
 
     Q_INVOKABLE bool initEmojis(QString _descriptionFile);
     Q_INVOKABLE QString replaceEmojisInMsg(QString _msg);
+    Q_INVOKABLE int getNumOfEmojis();
+    Q_INVOKABLE QString getEmoji(int _index);
+    Q_INVOKABLE QString getEmojiPath(int _index);
 
 private:
     QString emojiPath;
     QHash<QString, QString> emojiHash;
+    QStringList sendEmojiHash;
     QDomDocument domDocument;
     bool read(QIODevice *device);
     QString getEmojiImgForCode(QString _code);

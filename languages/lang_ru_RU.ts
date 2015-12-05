@@ -499,12 +499,12 @@
     <message>
         <location filename="../qml/CryptMee/OTRChatWindow.qml" line="246"/>
         <source>Copy text</source>
-        <translation type="unfinished"></translation>
+        <translation>Скопировать</translation>
     </message>
     <message>
         <location filename="../qml/CryptMee/OTRChatWindow.qml" line="254"/>
         <source>Send again</source>
-        <translation type="unfinished"></translation>
+        <translation>Переслать</translation>
     </message>
     <message>
         <location filename="../qml/CryptMee/OTRChatWindow.qml" line="361"/>
@@ -546,7 +546,8 @@
         <location filename="../qml/CryptMee/OTRChatWindow.qml" line="842"/>
         <source>Change encryption mode
  for outgoing messages:</source>
-        <translation type="unfinished"></translation>
+        <translation>Сменить режим шифрования
+ для исходящих сообщений:</translation>
     </message>
     <message>
         <source>Send encrypted message</source>
@@ -728,7 +729,7 @@ The message was not sent.</source>
     <message>
         <location filename="../otrlconnector.cpp" line="452"/>
         <source>Starting OTR session...</source>
-        <translation type="unfinished"></translation>
+        <translation>Запуск сессии OTR...</translation>
     </message>
     <message>
         <location filename="../imcontrolthread.cpp" line="444"/>

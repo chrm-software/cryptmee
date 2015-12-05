@@ -1,3 +1,9 @@
+cryptmee (0.3.4) unstable; urgency=low
+  * Sending emojis
+  * UI improvements
+
+ -- Christoph Maciejewski <chrm@users.sf.net>  Wed, 02 Dec 2015 17:12:09 +0100
+
 cryptmee (0.3.3) unstable; urgency=low
   * Emojis support for incoming messages (needs package emoji4cryptmee)
   * Send and receive plain text messages

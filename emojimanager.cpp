@@ -74,20 +74,31 @@ bool EmojiManager::read(QIODevice *device)
     QDomNodeList innerList;
     QDomElement element;
     QString currentKey = "";
+    QString uniqueKey = "";
+    this->sendEmojiHash.clear();
 
     while (!child.isNull()) {
         innerList = child.childNodes();
 
         currentKey = "";
+        uniqueKey = "";
+
         for(int i=0; i<innerList.size(); i++) {
             element = innerList.at(i).toElement();
 
             if(!element.isNull()) {
                 if(element.tagName() == "text") {
                     currentKey += (element.text() + "_#_");
+
+                    // Fill unique send List
+                    if(uniqueKey == "")
+                        uniqueKey = element.text();
+
                 } else if(element.tagName() == "object" && currentKey != "") {
                     for(int j=0; j<currentKey.split("_#_").size(); j++)
                         this->emojiHash[currentKey.split("_#_").at(j)] = element.text();
+
+                    this->sendEmojiHash << element.text() + "|" + uniqueKey;
                 }
             }
         }
@@ -96,4 +107,35 @@ bool EmojiManager::read(QIODevice *device)
 
     this->emojiHash.remove("");
     return true;
+}
+
+int EmojiManager::getNumOfEmojis()
+{
+    return this->sendEmojiHash.size();
+}
+
+QString EmojiManager::getEmoji(int _index)
+{
+    QString img, code;
+
+    if(this->sendEmojiHash.at(_index).contains("|")) {
+        img = this->sendEmojiHash.at(_index).split("|").at(0);
+        code = this->sendEmojiHash.at(_index).split("|").at(1);
+        return "<img src='file:/" + this->emojiPath + "/" + img + "'>|" + code;
+    }
+
+    return "<img src='file:/" + this->emojiPath + "/" + "UNKNOWN" + "'>|";
+}
+
+QString EmojiManager::getEmojiPath(int _index)
+{
+    QString img, code;
+
+    if(this->sendEmojiHash.at(_index).contains("|")) {
+        img = this->sendEmojiHash.at(_index).split("|").at(0);
+        code = this->sendEmojiHash.at(_index).split("|").at(1);
+        return "file:/" + this->emojiPath + "/" + img + "|" + code;
+    }
+
+    return "file:/" + this->emojiPath + "/" + "UNKNOWN" + "|";
 }

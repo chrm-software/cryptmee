@@ -14,6 +14,7 @@ Page {
     property alias contactAvatar: avatarImage.source
     property bool chatSendEncrypted: true
     property string currentChatEntry: ""
+    property int animDurationIncoming: 250
     /////////////////////////////////
 
     //////////////////////////////////////// Functions ////////////////////////////////
@@ -31,7 +32,7 @@ Page {
         console.debug("QML: OTR chat: Sending message to " + contactJID + ", from: " + otrConfigPage.selectedAccountName);
 
         if(chatSendEncrypted) {
-            if(otrConfigPage.imControlThread.sendOTRMessage(otrConfigPage.selectedAccountName, contactJID, message)) {                
+            if(otrConfigPage.imControlThread.sendOTRMessage(otrConfigPage.selectedAccountName, contactJID, message)) {
                 typeMsgField.text = "";
                 otrConfigPage.imControlThread.addChatMessage(contactJID, message, false, false, chatSendEncrypted);
             } else {
@@ -73,14 +74,26 @@ Page {
     }
 
     function getAllMessages() {
+        // Load last pending message only
+        getMessageFor(contactName);
+
+        // Load all other messages later, so GUI will switch fast to this chat view
+        loadAllMessagesLaterTimer.start();
+    }
+
+    function getAllMessagesLater() {
         chatListView.model.clear();
 
+        animDurationIncoming = 0;
         var size = otrConfigPage.imControlThread.getChatHistorySizeFor(contactName);
 
         for(var i=0; i<size; i++) {
             var values = otrConfigPage.imControlThread.getChatHistoryMessageFor(contactName, i).split("|");
-            addMessage(values[0], getBoolForInt(values[1]), values[2], getBoolForInt(values[3]), getBoolForInt(values[4]));
+            if(values[0] !== "")
+                addMessage(values[0], getBoolForInt(values[1]), values[2], getBoolForInt(values[3]), getBoolForInt(values[4]));
         }
+
+        animDurationIncoming = 250;
     }
 
     function getMessageFor(_contactName) {
@@ -90,7 +103,9 @@ Page {
 
         // Get latest unread message
         var values = otrConfigPage.imControlThread.getNewestChatMessageFor(_contactName).split("|");
-        addMessage(values[0], getBoolForInt(values[1]), values[2], getBoolForInt(values[3]), getBoolForInt(values[4]));
+
+        if(values[0] !== "")
+            addMessage(values[0], getBoolForInt(values[1]), values[2], getBoolForInt(values[3]), getBoolForInt(values[4]));
 
         checkIfChatVerified();
     }
@@ -167,6 +182,13 @@ Page {
         if(status === DialogStatus.Open){
             showPage("CHAT_PAGE", true);
             checkIfChatVerified();
+
+            if(emojiSelectionGrid.model.count === 0) {
+                for(var i=0; i<otrConfigPage.imControlThread.getNumOfEmojis(); i++) {
+                    var emojiData = otrConfigPage.imControlThread.getEmojiPath(i);
+                    emojiSelectionGrid.model.append({ emojiPath: emojiData.split("|")[0], emojiCode: emojiData.split("|")[1] });
+                }
+            }
         }
     }
 
@@ -192,6 +214,7 @@ Page {
 
             onClicked: {
                 contactName = "";
+                chatListView.model.clear();
                 pageStack.pop();
             }
         }
@@ -278,6 +301,7 @@ Page {
             y: 0
             platformIconId: "toolbar-back";
             onClicked: {
+                chatListView.model.clear();
                 pageStack.pop();
             }
             opacity: 0.5
@@ -566,12 +590,12 @@ Page {
                 onActiveFocusChanged: {
                     if(typeMsgField.focus) {
                         rectAdditionlInput.height = 55;
-                        sendSmileyButton.height = 45;
-                        sendSmileyButton.visible = true;
+                        //sendSmileyButton.height = 45;
+                        //sendSmileyButton.visible = true;
                     } else {
                         rectAdditionlInput.height = 0;
-                        sendSmileyButton.height = 0;
-                        sendSmileyButton.visible = false;
+                        //sendSmileyButton.height = 0;
+                        //sendSmileyButton.visible = false;
                     }
                 }
             }
@@ -588,16 +612,17 @@ Page {
 
             Button {
                 id: sendSmileyButton
-                visible: false;
+                visible: true;
                 text: ""
                 width: 45
-                height: 0
+                height: 45
                 y: 5
                 x: 10
                 iconSource: "image://theme/icon-s-messaging-smiley-happy"
 
                 onClicked: {
-                    console.debug("QML: Smiley clicked");
+                    if(otrConfigPage.imControlThread.getNumOfEmojis() > 0)
+                        selectEmojiDialog.open();
                 }
             }
 
@@ -638,14 +663,15 @@ Page {
 
                 ListView.onAdd: SequentialAnimation {
                     PropertyAction { target: textButton; property: "height"; value: 0 }
-                    NumberAnimation { target: textButton; property: "height"; to: (systemInfo) ? (my_text.height + 10) : (my_text.height + 40); duration: 250; easing.type: Easing.InOutQuad }
+                    NumberAnimation { target: textButton; property: "height"; to: (systemInfo) ? (my_text.height + 10) : (my_text.height + 40); duration: animDurationIncoming; easing.type: Easing.InOutQuad }
 
                     onCompleted: {
                         my_text.visible = true
                     }
 
                     onStarted: {
-                        my_text.visible = false
+                        if(animDurationIncoming > 0)
+                            my_text.visible = false
                     }
                 }
 
@@ -849,6 +875,66 @@ Page {
         onAccepted: {
             changeTextSendingMode(dialogEncryptionMode.model.get(dialogEncryptionMode.selectedIndex).value);
         }
+    }
+
+    Component {
+        id: contactDelegate
+        Item {
+            width: emojiSelectionGrid.cellWidth; height: emojiSelectionGrid.cellHeight
+            Column {
+                anchors.fill: parent
+                Image {
+                    width: parent.width; height: parent.height;
+                    source: emojiPath;
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    MouseArea {
+                        id: emojiMouseArea
+                        width: parent.width
+                        height: parent.height
+                        onClicked: {
+                            console.debug("Emoji Mouse Event: " + emojiCode);
+                            typeMsgField.text = typeMsgField.text + " " + emojiCode + " "
+                            selectEmojiDialog.accept();
+                            typeMsgField.focus = true;
+                            typeMsgField.cursorPosition = typeMsgField.text.length;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Dialog {
+        id: selectEmojiDialog
+        opacity: 0.8
+        anchors.fill: parent
+
+        content:
+            GridView {
+            id: emojiSelectionGrid
+            anchors.fill: parent
+            height: 500
+            cellWidth: 80; cellHeight: 80
+
+            model: ListModel {}
+            delegate: contactDelegate
+            //highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
+            focus: true
+        }
+
+        onAccepted: {
+            console.debug("Emoji: " + emojiSelectionGrid.currentIndex);
+        }
+
+    }
+
+    Timer {
+        id: loadAllMessagesLaterTimer
+        interval: 460;
+        running: false;
+        repeat: false;
+        onTriggered: getAllMessagesLater();
     }
 }
 

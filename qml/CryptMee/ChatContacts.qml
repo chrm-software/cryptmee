@@ -243,10 +243,12 @@ Page {
 
                         console.debug("QML: ChatContacts: opening chat for: " + contactJID + ", " + fingerprint);
 
-                        otrChatWindow.contactName = contactJID;
-                        otrChatWindow.contactFingerprint = fingerprint;
-                        otrChatWindow.contactAvatar = avatarImage.source;
-                        pageStack.push(otrChatWindow);
+                        if(contactJID !== "--SEARCH--" && contactJID !== "--SEPARATOR--") {
+                            otrChatWindow.contactName = contactJID;
+                            otrChatWindow.contactFingerprint = fingerprint;
+                            otrChatWindow.contactAvatar = avatarImage.source;
+                            pageStack.push(otrChatWindow);
+                        }
 
                         //chatContacts.searchWord = "";
                     }

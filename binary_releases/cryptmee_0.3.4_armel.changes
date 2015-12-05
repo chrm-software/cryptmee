@@ -1,0 +1,24 @@
+Format: 1.8
+Date: Wed, 02 Dec 2015 17:12:09 +0100
+Source: cryptmee
+Binary: cryptmee
+Architecture: armel
+Version: 0.3.4
+Distribution: unstable
+Urgency: low
+Maintainer: Christoph Maciejewski <chrm@users.sf.net>
+Changed-By: Christoph Maciejewski <chrm@users.sf.net>
+Description: 
+ cryptmee   - Encrypt and decrypt using GnuPG or OTR!
+Changes: 
+ cryptmee (0.3.4) unstable; urgency=low
+ .
+   * Sending emojis
+   * UI improvements
+Checksums-Sha1: 
+ 1c8a9e272e7d796d9ff0bcc49b9e50f8370ef702 374722 cryptmee_0.3.4_armel.deb
+Checksums-Sha256: 
+ 8dcc778f82d3bf346424469d3eb0f0657b6aa71dbcb67c950f29133701a0471d 374722 cryptmee_0.3.4_armel.deb
+Files: 
+ 232dbcce52dc1dca89a651d25be4cd17 374722 user/other optional cryptmee_0.3.4_armel.deb
+Maemo-Display-Name: CryptMee

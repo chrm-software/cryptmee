@@ -102,7 +102,7 @@ QString OTRLConnector::getFingerprintForAccount(QString _account)
 // Initial key management
 bool OTRLConnector::setUpKeys()
 {
-    qDebug() << "OTRLConnector::setUpKeys(): load private key...";
+    qDebug() << "OTRLConnector::setUpKeys(): load private key for account: " << this->otrAccountName;
 
     if (!this->hasPrivKeyForAccount(this->otrAccountName))
     {
@@ -345,7 +345,9 @@ OtrlUserState OTRLConnector::get_userstate(const char* username){
 
 void OTRLConnector::create_privkey(const char* accountname, const char* protocol)
 {
-    qDebug() << "OTRLConnector()::create_privkey(): generate private key (will take a while...) for: " << accountname;
+    QByteArray privKeyFile = QFile::encodeName(OTR_PRIVKEY_FILE);
+
+    qDebug() << "OTRLConnector()::create_privkey(): generate private key (will take a while...) for: " << accountname << ", to file: " << privKeyFile.constData();
 
     if(this->isGeneratingPrivKey)
         return;
@@ -359,7 +361,7 @@ void OTRLConnector::create_privkey(const char* accountname, const char* protocol
 
     QFuture<gcry_error_t> future = QtConcurrent::run(otrl_privkey_generate,
                                                      this->otrUserState,
-                                                     QString(OTR_PRIVKEY_FILE).toLatin1().constData(),
+                                                     privKeyFile.constData(),
                                                      accountname,
                                                      protocol);
     watcher.setFuture(future);
@@ -367,10 +369,7 @@ void OTRLConnector::create_privkey(const char* accountname, const char* protocol
 
     this->isGeneratingPrivKey = false;
 
-    // Old code
-    // otrl_privkey_generate(this->otrUserState, QString(OTR_PRIVKEY_FILE).toLatin1().constData(), accountname, protocol);
-
-    otrl_privkey_read(this->otrUserState, QString(OTR_PRIVKEY_FILE).toLatin1().constData());
+    otrl_privkey_read(this->otrUserState, privKeyFile.constData());
 
     qDebug("OTRLConnector()::create_privkey(): key generated");
 }

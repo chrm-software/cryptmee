@@ -142,8 +142,8 @@ Page {
         var isChatSecure = otrConfigPage.imControlThread.isFingerprintVerified(otrConfigPage.selectedAccountName, contactName);
         console.debug("QML: OTRChatWindow: isChatSecure: " + isChatSecure);
 
-        // No FP, no encryption
         if(contactFingerprint === "-") {
+            // Set back to plain text as long as we don't know if key exchange worked.
             changeTextSendingMode(false);
             return;
         }
@@ -171,6 +171,15 @@ Page {
                 logoImage.source = "qrc:/images/pix/icon-m-common-locked-plaintext.png";
             } else {
                 chatSendEncrypted = true;
+
+                if(contactFingerprint === "-") {
+                    // We have no key, start keyexchange first
+                    var contactJID = contactName;
+                    if(resource.text != "")
+                        contactJID = contactJID + "/" + resource.text;
+                    otrConfigPage.imControlThread.sendPlainTextMessage(otrConfigPage.selectedAccountName, contactJID, "?OTR?v");
+                }
+
                 checkIfChatVerified();
             }
         }
@@ -822,7 +831,7 @@ Page {
                             text: {
                                 var content = "<html>";
 
-                                content += (otrConfigPage.imControlThread.makeLinksClickableInMsg(chatEntry).replace("\n", "<br>") + "<br>");
+                                content += (otrConfigPage.imControlThread.makeLinksClickableInMsg(chatEntry).replace(/\n/g, "<br>") + "<br>");
                                 content += "<font size='-2'>" + date + "</font></html>";
 
                                 return content;

@@ -1,0 +1,26 @@
+Format: 1.8
+Date: Fri, 14 Oct 2016 16:48:55 +0200
+Source: cryptmee
+Binary: cryptmee
+Architecture: armel
+Version: 0.3.5
+Distribution: unstable
+Urgency: low
+Maintainer: Christoph Maciejewski <chrm@users.sf.net>
+Changed-By: Christoph Maciejewski <chrm@users.sf.net>
+Description: 
+ cryptmee   - Encrypt and decrypt using GnuPG or OTR!
+Changes: 
+ cryptmee (0.3.5) unstable; urgency=low
+ .
+   * Try to get fingerprint for a contact if user selects OTR for the first time
+   * Bugfix: Creating private key for the first time did not fails anymore
+   * Bugfix: Correct linefeeds in messages
+   * New feature: Picture preview
+Checksums-Sha1: 
+ 00ebb23aa054cac4b551be0b628fc235ae1fd12e 377188 cryptmee_0.3.5_armel.deb
+Checksums-Sha256: 
+ b0a089e1d4523f45f6fc5cb1bd60152948c4ab9856211a0bb4e5a3c079707d4a 377188 cryptmee_0.3.5_armel.deb
+Files: 
+ 48a193f0eb1a22eeb8a0e2a202b93db9 377188 user/other optional cryptmee_0.3.5_armel.deb
+Maemo-Display-Name: CryptMee

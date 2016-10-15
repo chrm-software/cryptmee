@@ -884,7 +884,15 @@ bool ImControlThread::lessThenComperator(QString _left, QString _right)
 
 QString ImControlThread::makeLinksClickableInMsg(QString _msg)
 {
-    _msg.replace(QRegExp("((?:https?|ftp)://\\S+)"), "<a href=\"\\1\">\\1</a>");
+    // replace images with a small preview
+    if((_msg.startsWith("http://") || _msg.startsWith("https://") || _msg.startsWith(ENCRYPT_SYMBOL + " http://") || _msg.startsWith(ENCRYPT_SYMBOL + " https://")) &&
+            (_msg.endsWith(".jpg") || _msg.endsWith(".JPG")) &&
+            !_msg.contains(" ")) {
+            _msg.replace(QRegExp("((?:https?|ftp)://\\S+)"), "<a href=\"\\1\"><img src=\"\\1\" width=\"200\" height=\"150\"></a>");
+
+    } else {
+        _msg.replace(QRegExp("((?:https?|ftp)://\\S+)"), "<a href=\"\\1\">\\1</a>");
+    }
     return _msg;
 }
 

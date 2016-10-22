@@ -29,9 +29,6 @@ GnuPGConnector::GnuPGConnector(QDeclarativeItem *parent)
     if(!settings.contains("SETTINGS_RELEASE")) {
         // First start, fill values
         this->settingsReset();
-
-        // TODO:
-        // Do something after the first start...
     }
 
     //settings.remove("SETTINGS_RELEASE");

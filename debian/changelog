@@ -1,3 +1,16 @@
+cryptmee (0.4.0) unstable; urgency=low
+  * Picture upload to a webservice
+
+ -- Christoph Maciejewski <chrm@users.sf.net>  Mon, 17 Oct 2016 17:09:41 +0200
+
+cryptmee (0.3.5) unstable; urgency=low
+  * Try to get fingerprint for a contact if user selects OTR for the first time
+  * Bugfix: Creating private key for the first time did not fails anymore
+  * Bugfix: Correct linefeeds in messages
+  * New feature: Picture preview
+
+ -- Christoph Maciejewski <chrm@users.sf.net>  Fri, 14 Oct 2016 16:48:55 +0200
+
 cryptmee (0.3.4) unstable; urgency=low
   * Sending emojis
   * UI improvements

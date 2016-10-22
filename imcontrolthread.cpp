@@ -889,6 +889,7 @@ QString ImControlThread::makeLinksClickableInMsg(QString _msg)
             (_msg.endsWith(".jpg") || _msg.endsWith(".JPG")) &&
             !_msg.contains(" ")) {
             _msg.replace(QRegExp("((?:https?|ftp)://\\S+)"), "<a href=\"\\1\"><img src=\"\\1\" width=\"200\" height=\"150\"></a>");
+            qDebug() << "ImControlThread::makeLinksClickableInMsg(): create picture preview";
 
     } else {
         _msg.replace(QRegExp("((?:https?|ftp)://\\S+)"), "<a href=\"\\1\">\\1</a>");

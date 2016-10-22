@@ -59,6 +59,10 @@ PageStackWindow {
         id: chatContacts
     }
 
+    PictureSelectionPage {
+        id: pictureSelectionPage
+    }
+
     /////////////////////////////////////////////////////////////
 
 

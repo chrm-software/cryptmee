@@ -46,6 +46,11 @@ Page {
             if(showMsgsAsNotification === "1") {
                 switchShowMsgNotification.checked = true;
             }
+
+            // Read upload service settings
+            uploadServiceURLText.text = startPage.gpgConnector.settingsGetValue("UPLOAD_SERVICE_URL");
+            uploadServiceAuthUser.text = startPage.gpgConnector.settingsGetValue("UPLOAD_SERVICE_AUTH_USER");
+            uploadServiceAuthPass.text = startPage.gpgConnector.settingsGetValue("UPLOAD_SERVICE_AUTH_PASS");
         }
 
         onOtrErrorOccured: {
@@ -204,7 +209,7 @@ Page {
                 spacing: 5
                 anchors.fill: parent
                 width: parent.width
-                height: 700
+                height: 780
 
                 GroupSeparator {
                     title: qsTr("OTR Account Binding")
@@ -338,6 +343,50 @@ Page {
                                 startPage.gpgConnector.settingsSetValue("SETTINGS_OTR_SHOW_NOTIFICATIONS", "0");
                             }
                         }
+                    }
+                }
+
+                GroupSeparator {
+                    title: qsTr("Picture Upload Service")
+                }
+
+                Row {
+                    width: parent.width;
+                    spacing: 10
+
+                    TextArea {
+                        id: uploadServiceURLText;
+                        placeholderText: "https://..."
+                        width: parent.width
+                        readOnly: false
+                        font.family: "Courier"
+                        font.pixelSize: 21
+                        font.bold: true
+                        onTextChanged: startPage.gpgConnector.settingsSetValue("UPLOAD_SERVICE_URL", uploadServiceURLText.text);
+                    }
+                }
+
+                Row {
+                    width: parent.width;
+                    spacing: 10
+
+                    TextField {
+                        id: uploadServiceAuthUser;
+                        placeholderText: qsTr("Upload service user name")
+                        width: parent.width
+                        onTextChanged: startPage.gpgConnector.settingsSetValue("UPLOAD_SERVICE_AUTH_USER", uploadServiceAuthUser.text);
+                    }
+                }
+
+                Row {
+                    width: parent.width;
+                    spacing: 10
+
+                    TextField {
+                        id: uploadServiceAuthPass;
+                        placeholderText: qsTr("Upload service user password")
+                        width: parent.width
+                        onTextChanged: startPage.gpgConnector.settingsSetValue("UPLOAD_SERVICE_AUTH_PASS", uploadServiceAuthPass.text);
                     }
                 }
             }

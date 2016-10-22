@@ -3,6 +3,7 @@ import com.nokia.meego 1.1
 import com.nokia.extras 1.1
 import ImControlThread 1.0
 import QtMobility.feedback 1.1
+import PictureUploader 1.0
 
 Page {
     id: otrChatWindow
@@ -15,6 +16,7 @@ Page {
     property bool chatSendEncrypted: true
     property string currentChatEntry: ""
     property int animDurationIncoming: 250
+    property bool reloadChatContent: true
     /////////////////////////////////
 
     //////////////////////////////////////// Functions ////////////////////////////////
@@ -185,18 +187,50 @@ Page {
         }
     }
 
+    function uploadImage(imagePath) {
+        addMessage(qsTr("Uploading file..."), false, Qt.formatTime(new Date(),"hh:mm"), true, false);
+        pictureUploader.uploadFile(imagePath);
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////
 
     onStatusChanged: {
         if(status === DialogStatus.Open){
-            showPage("CHAT_PAGE", true);
+            showPage("CHAT_PAGE", reloadChatContent);
             checkIfChatVerified();
+            reloadChatContent = true;
 
             if(emojiSelectionGrid.model.count === 0) {
                 for(var i=0; i<otrConfigPage.imControlThread.getNumOfEmojis(); i++) {
                     var emojiData = otrConfigPage.imControlThread.getEmojiPath(i);
                     emojiSelectionGrid.model.append({ emojiPath: emojiData.split("|")[0], emojiCode: emojiData.split("|")[1] });
                 }
+            }
+        }
+    }
+
+    PictureUploader {
+        id: pictureUploader
+        onUploadCompleted: {
+            // Send download URL to your contact
+            rumbleEffect.running = true;
+            sendMessage(_downloadURL);
+            chatListView.positionViewAtBeginning();
+            uploadProgress.visible = false;
+        }
+
+        onErrorOccured: {
+            uploadProgress.visible = false;
+            addMessage("*** " + qsTr("Error uploading file: ") + _message, false, Qt.formatTime(new Date(),"hh:mm"), true, false);
+        }
+
+        onUploadStep: {
+            uploadProgress.visible = true;
+
+            if(_step > uploadProgress.value) {
+                if(uploadProgress.maximumValue !== _total*1.2) uploadProgress.maximumValue = _total*1.2;
+                uploadProgress.value = _step;
+                console.debug("progress: " + _step + " / " + _total);
             }
         }
     }
@@ -599,14 +633,22 @@ Page {
                 onActiveFocusChanged: {
                     if(typeMsgField.focus) {
                         rectAdditionlInput.height = 55;
-                        //sendSmileyButton.height = 45;
-                        //sendSmileyButton.visible = true;
                     } else {
                         rectAdditionlInput.height = 0;
-                        //sendSmileyButton.height = 0;
-                        //sendSmileyButton.visible = false;
                     }
                 }
+            }
+
+            ProgressBar {
+                id: uploadProgress
+                x: typeMsgField.x
+                y: typeMsgField.y
+                height: 6
+                width: typeMsgField.width
+                minimumValue: 0
+                maximumValue: 10
+                value: 0
+                visible: false
             }
         }
 
@@ -632,6 +674,21 @@ Page {
                 onClicked: {
                     if(otrConfigPage.imControlThread.getNumOfEmojis() > 0)
                         selectEmojiDialog.open();
+                }
+            }
+
+            Button {
+                id: sendPictureButton
+                visible: true;
+                text: ""
+                width: 45
+                height: 45
+                y: 5
+                x: 20 + sendSmileyButton.width
+                iconSource: "image://theme/icon-s-conversation-attachment"
+
+                onClicked: {
+                    pageStack.push(pictureSelectionPage);
                 }
             }
 

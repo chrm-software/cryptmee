@@ -15,6 +15,7 @@
 #include "mailreader.h"
 #include "configuration.h"
 #include "imcontrolthread.h"
+#include "pictureuploader.h"
 
 
 Q_DECL_EXPORT int main(int argc, char *argv[])
@@ -51,6 +52,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     qmlRegisterType<GnuPGConnector>("GnuPGConnector", 1, 0, "GnuPGConnector");
     qmlRegisterType<MailReader>("MailReader", 1, 0, "MailReader");
     qmlRegisterType<ImControlThread>("ImControlThread", 1, 0, "ImControlThread");
+    qmlRegisterType<PictureUploader>("PictureUploader", 1, 0, "PictureUploader");
 
     QmlApplicationViewer viewer;
     QDeclarativeContext *ctxt = viewer.rootContext();

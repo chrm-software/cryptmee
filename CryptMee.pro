@@ -56,6 +56,9 @@ QT += sql
 # Emojis
 QT += xml
 
+# Picture upload
+QT += network
+
 # Tracker
 # CONFIG+=qtsparql
 
@@ -82,7 +85,8 @@ SOURCES += main.cpp \
     imcontrolthread.cpp \
     otrlconnector.cpp \
     trackeraccess.cpp \
-    emojimanager.cpp
+    emojimanager.cpp \
+    pictureuploader.cpp
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)
@@ -111,7 +115,8 @@ HEADERS += \
     imcontrolthread.h \
     otrlconnector.h \
     trackeraccess.h \
-    emojimanager.h
+    emojimanager.h \
+    pictureuploader.h
 
 RESOURCES += \
     cryptmeeressource.qrc
@@ -132,7 +137,8 @@ lupdate_only{
         qml/CryptMee/SettingsPage.qml \
         qml/CryptMee/StartPage.qml \
         qml/CryptMee/OTRChatWindow.qml \
-        qml/CryptMee/ChatContacts.qml
+        qml/CryptMee/ChatContacts.qml \
+        qml/CryptMee/PictureSelectionPage.qml
 }
 
 TRANSLATIONS += languages/lang_de_DE.ts \

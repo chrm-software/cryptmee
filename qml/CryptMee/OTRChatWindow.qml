@@ -647,7 +647,7 @@ Page {
                 width: typeMsgField.width
                 minimumValue: 0
                 maximumValue: 10
-                value: 0
+                value: 4
                 visible: false
             }
         }

@@ -1,5 +1,6 @@
 #include <QTimer>
 #include <QDateTime>
+#include <QSettings>
 //#include <QSparqlConnection>
 #include "trackeraccess.h"
 
@@ -14,6 +15,8 @@ TrackerAccess::TrackerAccess(QObject *parent) :
 
     this->trackerStdOutput = "";
     this->trackerErrOutput = "No Errors";
+
+    this->doNotSaveDecryptedMessagesInTracker = false;
 
     connect(this->process_tracker, SIGNAL(finished(int)), this, SLOT(trackerFinished(int)));
     connect(this->process_tracker, SIGNAL(error(QProcess::ProcessError)), this, SLOT(trackerError(QProcess::ProcessError)));
@@ -72,6 +75,13 @@ bool TrackerAccess::replaceMsgInTracker(QString _origMsg, QString _replacement, 
 
     // Replace last message in tracker later
     QTimer::singleShot(1500, this, SLOT(trackerGetMsgNumber()));
+
+    // Get privacy settings
+    QSettings settings;
+    if(settings.value("SETTINGS_OTR_DO_NOT_SAVE", "0").toString() == "1")
+        this->doNotSaveDecryptedMessagesInTracker = true;
+    else
+        this->doNotSaveDecryptedMessagesInTracker = false;
 
     return true;
 }
@@ -176,7 +186,7 @@ void TrackerAccess::trackerFinished(int _retVal)
 
             this->trackerCurrentMsgID = msgId;
 
-            if(this->trackerMsgReplacement.startsWith(ENCRYPT_SYMBOL)) {
+            if(this->trackerMsgReplacement.startsWith(ENCRYPT_SYMBOL) && !this->doNotSaveDecryptedMessagesInTracker) {
                 //qDebug() << "TrackerAccess::trackerFinished(): Calling DELETE TEXT now for msgID:" << this->trackerCurrentMsgID;
                 // human readable message: just delete text
                 this->callTracker(QString(TRACKER_BINARY) +
@@ -197,7 +207,7 @@ void TrackerAccess::trackerFinished(int _retVal)
         }
 
     } else if(this->trackerCurrentState == TRACKER_DELETEMSGTXT && _retVal == 0) {        
-        if(this->trackerMsgReplacement.startsWith(ENCRYPT_SYMBOL)) {
+        if(this->trackerMsgReplacement.startsWith(ENCRYPT_SYMBOL) && !this->doNotSaveDecryptedMessagesInTracker) {
             //qDebug() << "TrackerAccess::trackerFinished(): Calling INSERT now for msg:" << this->trackerCurrentMsgID;
             this->callTracker(QString(TRACKER_BINARY) +
                               QString(" -qu \"INSERT { <" + this->trackerCurrentMsgID + "> nie:plainTextContent '" + this->trackerMsgReplacement.replace("\n", "\\n").replace("'", "\\'") + "' }\""),
@@ -293,6 +303,9 @@ bool TrackerAccess::parseXMPPContacts(QString _trackerRetVal)
 
                 this->allXMPPContacts[key2] = entry;
             }
+        } else {
+            qWarning() << "*** TrackerAccess::parseXMPPContacts(): unable to parse this line: " << line;
+            qWarning() << "*** TrackerAccess::parseXMPPContacts(): Size != 6. Check name of the contact";
         }
     }
 

@@ -27,6 +27,16 @@ Page {
         }
 
         ToolIcon {
+            id: clearText
+            iconSource: "image://theme/icon-m-toolbar-backspace"
+
+            onClicked: {
+                startPage.gpgConnector.clearHistory();
+                textarea1.text = startPage.gpgConnector.getHistory();
+            }
+        }
+
+        ToolIcon {
             platformIconId: "toolbar-view-menu"
             anchors.right: (parent === undefined) ? undefined : parent.right
             onClicked: (myMenu.status === DialogStatus.Closed) ? myMenu.open() : myMenu.close()
@@ -91,6 +101,7 @@ Page {
 
     onStatusChanged: {
         if(status === DialogStatus.Open){
+            textarea1.text = "";
             textarea1.text = startPage.gpgConnector.getHistory();
         }
     }

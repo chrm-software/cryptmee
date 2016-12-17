@@ -501,9 +501,6 @@ QStringList OTRLConnector::getFingerprints()
                        onlineState + "|" +
                        QString::fromUtf8(fingerprint->trust));
 
-                       /*QString::fromUtf8(fingerprint->trust) + "|" +
-                       QString::number(this->myImControl->hasPendingMessageFor(tmpUsername)));*/
-
             fpList.append(fp);
             this->fpMappingList[QString(fpHash)] = fingerprint->fingerprint;
 

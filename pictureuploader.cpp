@@ -7,15 +7,17 @@
 #include <QDebug>
 #include <QImage>
 #include <QSettings>
+#include <QStringList>
 
 PictureUploader::PictureUploader(QObject *parent) : QObject(parent)
 {
     qDebug() << "PictureUploader::PictureUploader() initialized";
 }
 
-bool PictureUploader::uploadFile(QString _localPath)
+bool PictureUploader::uploadFile(QString _localPath, bool _rescale)
 {
     this->destFilePath = _localPath;
+    this->rescaleImage = _rescale;
 
     QSettings settings;
 
@@ -77,35 +79,71 @@ QByteArray PictureUploader::buildUploadString()
     QByteArray data(QString("--" + this->boundary + "\r\n").toAscii());
     data.append(QString("--" + this->boundary + "\r\n").toAscii());
     data.append("Content-Disposition: form-data; name=\"" + this->fileInputTagName + "\"; filename=\"");
-    data.append("image.jpg");
+
+    if(this->rescaleImage)
+        data.append("image.jpg");
+    else
+        data.append(QString("file.") + this->destFilePath.split("/").last());
+
     data.append("\"\r\n");
-    data.append("Content-Type: image/jpeg\r\n\r\n");
+
+    if(this->rescaleImage)
+        data.append("Content-Type: image/jpeg\r\n\r\n");
+    else
+        data.append("Content-Type: application/octet-stream\r\n\r\n");
 
     QFile file(this->destFilePath);
+    bool rotateImage = false;
 
     if (!file.open(QIODevice::ReadOnly)) {
-        qDebug() << "QFile Error: File not found!";
+        qWarning() << "PictureUploader::buildUploadString(): File not found!";
         emit errorOccured("Could not open selected file");
         return QByteArray();
+
     } else {
-        qDebug() << "Orig file found, proceed as planned";
+        if(!this->rescaleImage) {
+            // Do not touch this file, just upload
+            data.append(file.readAll());
+            data.append("\r\n");
+            data.append("--" + this->boundary + "--\r\n");
+
+            file.close();
+            return data;
+        }
+
+        // Get orientation
+        // This is a little hack for finding the EXIF data in N9's images
+        // 06 means: image schould be rotated
+        file.seek(50);
+        QByteArray bytes = file.read(11);
+
+        if(bytes.toHex().startsWith("0100000006")) {
+            qDebug() << "PictureUploader::buildUploadString(): Rotate image first.";
+            rotateImage = true;
+        }
     }
 
     file.close();
 
-    // Resize image
     QImage img1(this->destFilePath);
     QImage img2 = img1.scaled(1024, 1024, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    img2.save("/tmp/tmp_cryptmee_img.jpg", "JPG", 80);
 
+    if(rotateImage) {
+        QTransform rotation;
+        rotation.translate(img2.width()/2, -img2.height()/2);
+        rotation.rotate(90);
+        img2 = img2.transformed(rotation, Qt::SmoothTransformation);
+    }
+
+    img2.save("/tmp/tmp_cryptmee_img.jpg", "JPG", 80);
     QFile file2("/tmp/tmp_cryptmee_img.jpg");
 
     if (!file2.open(QIODevice::ReadOnly)) {
-        qDebug() << "QFile Error: Resized file not found!";
+        qWarning() << "PictureUploader::buildUploadString(): QFile Error: Resized file not found!";
         emit errorOccured("Could not open resized file");
         return QByteArray();
     } else {
-        qDebug() << "Resized file found, proceed as planned";
+        qDebug() << "PictureUploader::buildUploadString(): Resized file found, proceed as planned";
     }
 
     data.append(file2.readAll());

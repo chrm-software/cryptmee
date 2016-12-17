@@ -47,6 +47,12 @@ QString GnuPGConnector::getHistory()
     return this->gpgHistory.join("\n");
 }
 
+void GnuPGConnector::clearHistory()
+{
+    this->gpgHistory.clear();
+    this->gpgHistory.append("[CLEARED BY USER]");
+}
+
 bool GnuPGConnector::saveHistory(QString _filename)
 {
     QString outputFilename = _filename;
@@ -115,8 +121,9 @@ bool GnuPGConnector::callGnuPG(QString _cmd, int _state)
     this->process_gpg->start(_cmd);
 
     // Remove passwords from log
-    if(_state == GPG_DECRYPT || _state == GPG_SIGN) {
-        _cmd.replace(QRegExp("--passphrase \"[^\"]\" "), "--passphrase \"#######\" ");
+    if(_state == GPG_DECRYPT || _state == GPG_SIGN || _state == GPG_DECRYPT_FILE ) {
+        qDebug() << "GnuPGConnector::callGnuPG() - try to replace passphrase...";
+        _cmd.replace(QRegExp("--passphrase \"[^\"]*\" "), "--passphrase \"#######\" ");
     }
 
     this->gpgHistory.append("\n=== Starting new gpg command at " + QDateTime::currentDateTime().toString());
@@ -211,6 +218,40 @@ QString GnuPGConnector::decrypt(QString _input, QString _passphrase)
     return "";
 }
 
+QString GnuPGConnector::encryptFile(QString _filename, QString _recipient)
+{
+    qDebug() << "GnuPGConnector::encryptFile(" << _filename << ")";
+
+    if(_filename.startsWith("file://"))
+        _filename.replace("file://", "");
+
+    if(!_filename.startsWith("/"))
+        return "";
+
+    this->filenameInProgress = TMP_DIR + _filename.split("/").last() + ".gpg";
+
+    if(this->useOwnKey == "1")
+        _recipient += " " + this->myKeyReader->getAllPrivateKeyIDs(true);
+
+    QString gpgIn = this->gpgBinaryPath + QString(" --batch --no-tty --yes --always-trust -r ") + _recipient + " -o " + this->filenameInProgress + " --encrypt " + _filename;
+    this->callGnuPG(gpgIn, GPG_ENCRYPT_FILE);
+
+    return "";
+}
+
+QString GnuPGConnector::decryptFile(QString _filename, QString _passphrase)
+{
+    qDebug() << "GnuPGConnector::decryptFile(" << _filename << "," << "***" << ")";
+    QString filenameOrig = _filename.replace(".gpg", "");
+    this->filenameInProgress = filenameOrig;
+
+    QString gpgIn = this->gpgBinaryPath + QString(" --batch --no-tty --yes --always-trust --charset utf-8 --display-charset utf-8 --passphrase \"") + _passphrase + "\" -o " + filenameOrig + " --decrypt " + _filename;
+    this->callGnuPG(gpgIn, GPG_DECRYPT_FILE);
+
+    return "";
+
+}
+
 QString GnuPGConnector::showKeys()
 {
     qDebug() << "GnuPGConnector::showKeys()";
@@ -259,7 +300,7 @@ void GnuPGConnector::gpgFinished(int _retVal)
     QString error = this->process_gpg->readAllStandardError().simplified();
 
     qDebug() << "GnuPGConnector::gpgFinished(): State finished: " << this->currentState;
-    qDebug() << "GnuPGConnector::gpgFinished(): stdout: " << output;
+    qDebug() << "GnuPGConnector::gpgFinished(): stdout: " << output.left(100) << "...";
     qDebug() << "GnuPGConnector::gpgFinished(): stderr: " << error;
 
     if(this->currentState == GPG_KEYS) {
@@ -310,6 +351,9 @@ void GnuPGConnector::gpgFinished(int _retVal)
     } else if(this->currentState == GPG_EXPORT) {
         this->gpgStdOutput = output;
 
+    } else if(this->currentState == GPG_ENCRYPT_FILE) {
+        this->gpgStdOutput = output;
+
     } else {
         // Decrypted content form StdOut
         this->gpgStdOutput = this->readFromTmpFile(1);
@@ -321,7 +365,11 @@ void GnuPGConnector::gpgFinished(int _retVal)
     QFile::remove(QString(TMPFILE) + ".txt");
     QFile::remove(QString(TMPFILE));
 
-    this->gpgHistory.append("stdout: " + output);
+    if(output.length() > 200)
+        this->gpgHistory.append("stdout: " + output.left(150) + " [...] " + output.right(50));
+    else
+        this->gpgHistory.append("stdout: " + output);
+
     this->gpgHistory.append("stderr: " + error);
 
     this->currentState = GPG_IDLE;
@@ -532,6 +580,11 @@ bool GnuPGConnector::exportKeys(int _mode, QString _path)
     }
 
     return this->callGnuPG(gpgIn, GPG_EXPORT);
+}
+
+QString GnuPGConnector::getLastEncryptedFilename()
+{
+    return this->filenameInProgress;
 }
 
 

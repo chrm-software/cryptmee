@@ -4,7 +4,13 @@ import com.nokia.meego 1.0
 PageStackWindow {
     id: appWindow
 
-    initialPage: startPage    
+    initialPage: {
+        // TODO: handle arguments
+        if(ARG_C === 1)
+            return startPage;
+        else
+            return keyDialog;
+    }
 
     /////////////////////// Init all pages ///////////////////
     MainPage {
@@ -61,6 +67,10 @@ PageStackWindow {
 
     PictureSelectionPage {
         id: pictureSelectionPage
+    }
+
+    FileSelectionPage {
+        id: fileSelectionPage
     }
 
     /////////////////////////////////////////////////////////////

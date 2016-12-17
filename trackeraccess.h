@@ -52,6 +52,8 @@ private:
     QList<ImControlMessage*> receivedMessages;
     QHash<QString, QString> allXMPPContacts;
 
+    bool doNotSaveDecryptedMessagesInTracker;
+
 private slots:
     void trackerFinished(int _retVal);
     void trackerError(QProcess::ProcessError _pe);

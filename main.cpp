@@ -22,6 +22,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
 {
     QScopedPointer<QApplication> app(createApplication(argc, argv));
 
+    qDebug() << "--- Starting --- [" << argc << ", " << QString(argv[0]) << "]";
+
     // i18n stuff
     qDebug() << "I18N: local:" << QLocale::system().name();
     QString locale = QLocale::system().name();
@@ -63,6 +65,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     ctxt->setContextProperty("MAIL_PATH", MAIL_PATH);
     ctxt->setContextProperty("MAIL_DB", MAIL_DB);
     ctxt->setContextProperty("TMP_DIR", TMP_DIR);
+    ctxt->setContextProperty("ARG_C", argc);
 
     // Install avatar image provider
     QDeclarativeEngine *engine = ctxt->engine();

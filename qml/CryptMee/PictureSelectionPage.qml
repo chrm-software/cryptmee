@@ -6,7 +6,7 @@ Page {
     id: pictureSelectionPage
     anchors.fill: parent
 
-    property string selected_picture_path: ""
+    property string action_prop: "CHAT"
 
     Rectangle {
         width: parent.width
@@ -45,10 +45,15 @@ Page {
                     id: mouseAre1
                     anchors.fill: parent
                     onClicked: {
-                        otrChatWindow.reloadChatContent = false;
-                        selected_picture_path = url;
-                        otrChatWindow.uploadImage(url);
-                        pageStack.pop(); }
+                        if(action_prop == "CHAT") {
+                            otrChatWindow.reloadChatContent = false;
+                            otrChatWindow.uploadImage(url, true);
+                        } else if(action_prop == "MAIL") {
+                            mainPage.attachEncryptedFile(url);
+                        }
+
+                        pageStack.pop();
+                    }
                 }
             }
         }

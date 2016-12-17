@@ -125,32 +125,6 @@ Page {
         }
     }
 
-    /*Rectangle {
-        id: topDecoartion
-        color: "#0000b0"
-        width: parent.width
-        height: childrenRect.height
-        anchors.top: parent.top
-
-        gradient: Gradient {
-            GradientStop {color: "#0093dd"; position: 0.0}
-            GradientStop {color: "#0069a0"; position: 0.9}
-        }
-
-        Label {
-            id: label2
-            x: 10
-            y: 0
-            width: parent.width - 40
-            height: 65
-            color: "#ffffff"
-            text: "CryptMee <font size='-5'>eMail</font>"
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignLeft
-            font.pixelSize: 32
-            font.bold: false
-        }
-    }*/
 
     Rectangle {
         id: errorMessage

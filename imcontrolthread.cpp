@@ -21,6 +21,7 @@ ImControlThread::ImControlThread(QDeclarativeItem *parent)
 {
     qDebug() << "ImControlThread::ImControlThread()!";
     this->isActive = false;
+    this->parsingUnreadFlag = false;
 
     // Use mc-tool to get account list
     this->process_mctool = new QProcess(this);
@@ -522,26 +523,16 @@ QString ImControlThread::getChatHistoryMessageFor(QString _contact, int _index)
 
 int ImControlThread::getChatHistorySizeFor(QString _contact)
 {
-    // Update pending message state
-    if(this->hasPendingMessages.contains(_contact) && this->hasPendingMessages.value(_contact, true)) {
-        this->hasPendingMessages[_contact] = false;
-        qDebug() << "ImControlThread::getChatHistorySizeFor(): unset new msg flag for contact: " << _contact;
-        this->updateContactList();
-    }
+    qDebug() << "ImControlThread::getChatHistorySizeFor(): unset new msg flag for contact: " << _contact;
+    this->clearUnreadMsgFlag(_contact);
 
     return this->chatHistory[_contact].size();
 }
 
 QString ImControlThread::getNewestChatMessageFor(QString _contact)
 {
-    // Update pending message state
-    if(this->hasPendingMessages.contains(_contact) && this->hasPendingMessages.value(_contact, true)) {
-        this->hasPendingMessages[_contact] = false;
-        qDebug() << "ImControlThread::getNewestChatMessageFor(): unset new msg flag for contact: " << _contact;
-        this->updateContactList();
-    }
-
-    qDebug() << "ImControlThread::getNewestChatMessageFor(" << _contact << ")";
+    qDebug() << "ImControlThread::getNewestChatMessageFor(): unset new msg flag for contact: " << _contact;
+    this->clearUnreadMsgFlag(_contact);
 
     if(this->chatHistory[_contact].size() > 0)
         return this->chatHistory[_contact].last()->toString();
@@ -549,10 +540,30 @@ QString ImControlThread::getNewestChatMessageFor(QString _contact)
         return "";
 }
 
-bool ImControlThread::hasPendingMessageFor(QString _contact)
+bool ImControlThread::clearUnreadMsgFlag(QString _contact)
 {
-    return hasPendingMessages.value(_contact, false);
+    // Update pending message state
+    if(this->hasPendingMessages.contains(_contact) && this->hasPendingMessages.value(_contact, true)) {
+        this->hasPendingMessages[_contact] = false;
+        qDebug() << "ImControlThread::clearUnreadMsgFlag(): unset new msg flag for contact: " << _contact;
+        this->updateContactList();
+        return true;
+    }
+
+    return false;
 }
+
+void ImControlThread::clearMessageHistoryFor(QString _contact)
+{
+    for(int j=0; j<this->chatHistory[_contact].size(); j++) {
+        ChatMessage* cm = this->chatHistory[_contact].takeFirst();
+        if(cm != NULL)
+            delete cm;
+    }
+
+    this->chatHistory[_contact].clear();
+}
+
 
 //////////////////////////////////////////////////////
 
@@ -586,6 +597,14 @@ bool ImControlThread::registerListeners()
                                           this,
                                           SLOT(telepathyPresenceChanged(QDBusMessage)));
 
+    // Got ObservedConversation (reset unread flag)
+    QDBusConnection::sessionBus().connect(QString(),
+                                          "/org/maemo/contextkit/Messaging/ObservedConversation",
+                                          "org.maemo.contextkit.Property" ,
+                                          "ValueChanged",
+                                          this,
+                                          SLOT(telepathyConversationOpened(QDBusMessage)));
+
 
 
     qDebug() << "ImControlThread::initialize(): DBUS initialized.";
@@ -600,6 +619,23 @@ void ImControlThread::telepathyPresenceChanged(const QDBusMessage &reply)
 
     // Give tracker time for updating presence status
     this->updateContactsLaterTimer->start(4000);
+}
+
+void ImControlThread::telepathyConversationOpened(const QDBusMessage &reply)
+{
+    Q_UNUSED(reply);
+    qDebug() << "ImControlThread::telepathyConversationOpened()";
+
+    this->parsingUnreadFlag = true;
+
+    QVariantList allArgsList = reply.arguments();
+    QVariantList::ConstIterator it = allArgsList.constBegin();
+    QVariantList::ConstIterator end = allArgsList.constEnd();
+    for ( ; it != end; ++it) {
+        qDebug() << "ImControlThread::telepathyConversationOpened(): DBUS-Object: " + this->argumentToString(*it);
+    }
+
+    this->parsingUnreadFlag = false;
 }
 
 void ImControlThread::updateXMPPContactsLater()
@@ -667,7 +703,7 @@ void ImControlThread::telepathyMessageReceived(const QDBusMessage &reply)
                 this->myTrackerAccess->replaceMsgInTracker(this->lastMessage.receivedMessageContent, this->lastMessage.replacedMessageContent);
             }
 
-        } else {            
+        } else {
             qDebug() << "ImControlThread::telepathyMessageReceived() >>>>>> Got plaintext message. Account: " << tmp;
 
             // Just add to msg storage
@@ -803,7 +839,7 @@ void ImControlThread::updateContactList()
         jid = this->myTrackerAccess->getAllXMPPContacts().keys().at(i);
 
         if(this->chatHistory.contains(jid) && !this->chatHistory[jid].isEmpty())
-            lastDate = this->chatHistory[jid].last()->date.toString("yyyy-MM-dd &#124; hh:mm:ss") + " &#124; <i>" + this->chatHistory[jid].last()->content.left(8) + "...</i>";
+            lastDate = this->chatHistory[jid].last()->date.toString("yyyy-MM-dd &#124; hh:mm:ss") + " &#124; <i>" + this->chatHistory[jid].last()->content.left(14) + "...</i>";
         else
             lastDate = "---";
 
@@ -886,10 +922,10 @@ QString ImControlThread::makeLinksClickableInMsg(QString _msg)
 {
     // replace images with a small preview
     if((_msg.startsWith("http://") || _msg.startsWith("https://") || _msg.startsWith(ENCRYPT_SYMBOL + " http://") || _msg.startsWith(ENCRYPT_SYMBOL + " https://")) &&
-            (_msg.endsWith(".jpg") || _msg.endsWith(".JPG")) &&
+            (_msg.endsWith(".jpg", Qt::CaseInsensitive)) &&
             !_msg.contains(" ")) {
-            _msg.replace(QRegExp("((?:https?|ftp)://\\S+)"), "<a href=\"\\1\"><img src=\"\\1\" width=\"200\" height=\"150\"></a>");
-            qDebug() << "ImControlThread::makeLinksClickableInMsg(): create picture preview";
+        _msg.replace(QRegExp("((?:https?|ftp)://\\S+)"), "<a href=\"\\1\"><img src=\"\\1\" width=\"200\"></a>");
+        qDebug() << "ImControlThread::makeLinksClickableInMsg(): create picture preview";
 
     } else {
         _msg.replace(QRegExp("((?:https?|ftp)://\\S+)"), "<a href=\"\\1\">\\1</a>");
@@ -968,8 +1004,9 @@ bool ImControlThread::variantToString(const QVariant &arg, QString &out)
     if (argType == QVariant::StringList) {
         out += QLatin1Char('{');
         QStringList list = arg.toStringList();
-        foreach (QString item, list)
+        foreach (QString item, list) {
             out += QLatin1Char('\"') + item + QLatin1String("\", ");
+        }
         if (!list.isEmpty())
             out.chop(2);
         out += QLatin1Char('}');
@@ -1020,6 +1057,9 @@ bool ImControlThread::variantToString(const QVariant &arg, QString &out)
             return false;
     } else if (arg.canConvert(QVariant::String)) {
         out += QLatin1Char('\"') + arg.toString() + QLatin1Char('\"');
+        if(arg.toString().contains("@") && this->parsingUnreadFlag) {
+            this->clearUnreadMsgFlag(arg.toString());
+        }
     } else {
         out += QLatin1Char('[');
         out += QLatin1String(arg.typeName());

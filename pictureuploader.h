@@ -8,7 +8,7 @@ class PictureUploader : public QObject
     Q_OBJECT
 public:
     explicit PictureUploader(QObject *parent = 0);
-    Q_INVOKABLE bool uploadFile(QString _localPath);
+    Q_INVOKABLE bool uploadFile(QString _localPath, bool _rescale = true);
 
 private:
     QByteArray buildUploadString();
@@ -19,6 +19,7 @@ private:
     QString uploaderURL;
     QString boundary;
     QString fileInputTagName;
+    bool rescaleImage;
 
 private slots:
     void printScriptReply(QNetworkReply* _reply);

@@ -46,9 +46,11 @@ symbian:TARGET.CAPABILITY += NetworkServices
 
 # If your application uses the Qt Mobility libraries, uncomment the following
 # lines and add the respective components to the MOBILITY variable.
-QT += dbus
 #CONFIG += mobility
-#MOBILITY += messaging
+#MOBILITY += messaging contacts
+
+# DBus
+QT += dbus
 
 # DB
 QT += sql
@@ -66,7 +68,6 @@ QT += network
 CONFIG += link_pkgconfig
 PKGCONFIG += libotr
 LIBS += -lotr -lgcrypt -lgpg-error
-
 
 # Speed up launching on MeeGo/Harmattan when using applauncherd daemon
 CONFIG += qdeclarative-boostable
@@ -138,7 +139,8 @@ lupdate_only{
         qml/CryptMee/StartPage.qml \
         qml/CryptMee/OTRChatWindow.qml \
         qml/CryptMee/ChatContacts.qml \
-        qml/CryptMee/PictureSelectionPage.qml
+        qml/CryptMee/PictureSelectionPage.qml \
+        qml/CryptMee/FileSelectionPage.qml
 }
 
 TRANSLATIONS += languages/lang_de_DE.ts \

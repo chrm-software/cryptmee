@@ -23,6 +23,8 @@
 #define GPG_SEARCH 10
 #define GPG_DELETE 11
 #define GPG_SECRET_KEYS 12
+#define GPG_ENCRYPT_FILE 13
+#define GPG_DECRYPT_FILE 14
 
 
 
@@ -41,6 +43,7 @@ public:
     Q_INVOKABLE QString getData(bool _errors);
     Q_INVOKABLE QString getFromClipboard();
     Q_INVOKABLE void setToClipboard(QString _data);
+    Q_INVOKABLE QString getLastEncryptedFilename();
 
     Q_INVOKABLE QString getKey(int _i, int _type = 0);
     Q_INVOKABLE QString getKeyByID(QString _id);
@@ -52,6 +55,9 @@ public:
     Q_INVOKABLE bool checkGPGVersion(QString _path);
     Q_INVOKABLE QString getGPGVersionString();
 
+    Q_INVOKABLE QString encryptFile(QString _filename, QString _recipient);
+    Q_INVOKABLE QString decryptFile(QString _filename, QString _passphrase);
+
     Q_INVOKABLE bool importKeysFromFile(QString _path);
     Q_INVOKABLE bool importKeysFromClipboard();
     Q_INVOKABLE bool searchKeysOnKeyserver(QString _keyword);
@@ -61,6 +67,8 @@ public:
     Q_INVOKABLE bool exportKeys(int _mode, QString _path);
 
     Q_INVOKABLE QString getHistory();
+    Q_INVOKABLE void clearHistory();
+
     Q_INVOKABLE bool saveHistory(QString _filename);
 
     // Settings interface
@@ -86,6 +94,7 @@ private:
     bool writeToTmpFile(QString _content);
     QString readFromTmpFile(int _type);
 
+    QString filenameInProgress;
 
     bool callGnuPG(QString _cmd, int _state);
 

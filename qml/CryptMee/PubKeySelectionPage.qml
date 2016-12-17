@@ -106,10 +106,22 @@ Page {
                             parent.color = "red";                            
                             selectedKeyID = name + "|" + isSecret;
 
-                            if(stateAfterExit == "TXT_ENCRYPT")
+                            if(stateAfterExit == "TXT_ENCRYPT") {
+                                mainPage.setTargetKeyID(name, ids.split("<br>"));
                                 startPage.pgpEncrypt(name, stateAfterExit);
-                            else if(stateAfterExit == "SHOWKEY")
+
+                            } else if(stateAfterExit == "SHOWKEY") {
                                 keyPage.showOneKey();
+
+                            } else if(stateAfterExit == "FILE_ENCRYPT") {
+                                mainPage.setTargetKeyID(name, ids.split("<br>"));
+                                startPage.pgpEncryptFile(mainPage.selectedFile, name, stateAfterExit);
+
+                            } else if(stateAfterExit == "CHAT_PROFILE_ATTACH") {
+                                otrChatWindow.setPGPKeyForJID(name);
+                            }
+
+                            stateAfterExit = "";
 
                             pageStack.pop()
                         }

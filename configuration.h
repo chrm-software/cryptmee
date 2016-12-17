@@ -2,7 +2,7 @@
 #define CONFIGURATION_H
 
 // Release
-#define RELEASE "0.4.0"
+#define RELEASE "0.5.0"
 
 // Set Build target
 #define MEEGO_BUILD

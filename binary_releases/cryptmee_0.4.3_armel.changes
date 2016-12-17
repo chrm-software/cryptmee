@@ -1,0 +1,23 @@
+Format: 1.8
+Date: Wed, 09 Nov 2016 21:45:50 +0100
+Source: cryptmee
+Binary: cryptmee
+Architecture: armel
+Version: 0.4.3
+Distribution: unstable
+Urgency: low
+Maintainer: Christoph Maciejewski <chrm@users.sf.net>
+Changed-By: Christoph Maciejewski <chrm@users.sf.net>
+Description: 
+ cryptmee   - Encrypt and decrypt using GnuPG or OTR!
+Changes: 
+ cryptmee (0.4.3) unstable; urgency=low
+ .
+   * Preserve image orientation for resized and uploaded pictures
+Checksums-Sha1: 
+ 7dde9612d96df5ae7d94622a7d5014fdd1a4b47c 399062 cryptmee_0.4.3_armel.deb
+Checksums-Sha256: 
+ d005c5adf3e758693901afd17c1fe717ed616f2458999ade7c2f9b95e3a7d098 399062 cryptmee_0.4.3_armel.deb
+Files: 
+ 1faff4b67d7891a8346e999fba1ab38b 399062 user/other optional cryptmee_0.4.3_armel.deb
+Maemo-Display-Name: CryptMee

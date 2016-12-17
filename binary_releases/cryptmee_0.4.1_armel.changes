@@ -1,0 +1,25 @@
+Format: 1.8
+Date: Tue, 01 Nov 2016 23:19:33 +0100
+Source: cryptmee
+Binary: cryptmee
+Architecture: armel
+Version: 0.4.1
+Distribution: unstable
+Urgency: low
+Maintainer: Christoph Maciejewski <chrm@users.sf.net>
+Changed-By: Christoph Maciejewski <chrm@users.sf.net>
+Description: 
+ cryptmee   - Encrypt and decrypt using GnuPG or OTR!
+Changes: 
+ cryptmee (0.4.1) unstable; urgency=low
+ .
+   * Option for not saving decrypted messages in tracker
+   * Let user clear the conversation history
+   * Bugfixes
+Checksums-Sha1: 
+ 0d8ae095f3c4d9e8cf9a7f7fc05c32b36ed38bb9 392378 cryptmee_0.4.1_armel.deb
+Checksums-Sha256: 
+ b615d943f033e41b4b024ce512a893ecd783e552cc18188942137ed2fb92e88a 392378 cryptmee_0.4.1_armel.deb
+Files: 
+ 90ebbe473a687bde8704296f4870cfd0 392378 user/other optional cryptmee_0.4.1_armel.deb
+Maemo-Display-Name: CryptMee

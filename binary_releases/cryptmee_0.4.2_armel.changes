@@ -1,0 +1,23 @@
+Format: 1.8
+Date: Mon, 07 Nov 2016 14:39:17 +0100
+Source: cryptmee
+Binary: cryptmee
+Architecture: armel
+Version: 0.4.2
+Distribution: unstable
+Urgency: low
+Maintainer: Christoph Maciejewski <chrm@users.sf.net>
+Changed-By: Christoph Maciejewski <chrm@users.sf.net>
+Description: 
+ cryptmee   - Encrypt and decrypt using GnuPG or OTR!
+Changes: 
+ cryptmee (0.4.2) unstable; urgency=low
+ .
+   * Mark messages as read if already opened in stock chat UI
+Checksums-Sha1: 
+ 0546ed229370bb7ed16476b2f3d2a495b9066711 393964 cryptmee_0.4.2_armel.deb
+Checksums-Sha256: 
+ ef554df03cf4739864f0209d627ae3a8e13e962242891d05b0b06ad38275e7ec 393964 cryptmee_0.4.2_armel.deb
+Files: 
+ b4db8f15f1023a6581d7127823ed74d4 393964 user/other optional cryptmee_0.4.2_armel.deb
+Maemo-Display-Name: CryptMee

@@ -35,7 +35,7 @@ Page {
         }
 
         // Add entry
-        console.debug("QML: addContactEntry(): [" + name + "], verified: [" + verified + "], presence: [" + isOnline + "], fp: " + fp + ", hasNewMsg: [" + newMsg + "]");
+        //console.debug("QML: addContactEntry(): [" + name + "], verified: [" + verified + "], presence: [" + isOnline + "], fp: " + fp + ", hasNewMsg: [" + newMsg + "]");
         contactsListView.model.append({ contactName: name, fingerprint: fp, contactJID: jid, contactIcon: icon, contactVerified: verified, hasNewMsg: newMsg, onlineState: isOnline, lastDate: lastMsgDate });
     }
 

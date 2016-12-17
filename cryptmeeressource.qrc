@@ -23,6 +23,7 @@
         <file>pix/bubble-out-plaintext.png</file>
         <file>pix/icon-m-common-locked-verified.png</file>
         <file>pix/icon-m-common-locked-plaintext.png</file>
+        <file>pix/icon-s-notes-white.png</file>
     </qresource>
     <qresource prefix="/languages">
         <file>languages/lang_de_DE.qm</file>

@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'mailreader.h'
 **
-** Created: Mon 9. Nov 17:02:14 2015
+** Created: Tue 29. Nov 23:48:47 2016
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.4)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_MailReader[] = {
        5,       // revision
        0,       // classname
        0,    0, // classinfo
-      11,   14, // methods
+      12,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -46,6 +46,7 @@ static const uint qt_meta_data_MailReader[] = {
      159,  153,   78,   11, 0x02,
      185,   11,  102,   11, 0x02,
      210,   86,   78,   11, 0x02,
+     229,   11,   78,   11, 0x02,
 
        0        // eod
 };
@@ -57,6 +58,7 @@ static const char qt_meta_stringdata_MailReader[] = {
     "getContent(int)\0getHeader(int)\0_mail\0"
     "parseMailContent(QString)\0"
     "getAttachmentListCount()\0getAttachment(int)\0"
+    "getMIMEMailContent()\0"
 };
 
 const QMetaObject MailReader::staticMetaObject = {
@@ -106,9 +108,11 @@ int MailReader::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
             if (_a[0]) *reinterpret_cast< int*>(_a[0]) = _r; }  break;
         case 10: { QString _r = getAttachment((*reinterpret_cast< int(*)>(_a[1])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
+        case 11: { QString _r = getMIMEMailContent();
+            if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
         default: ;
         }
-        _id -= 11;
+        _id -= 12;
     }
     return _id;
 }

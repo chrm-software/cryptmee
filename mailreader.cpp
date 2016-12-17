@@ -6,8 +6,17 @@
 #include <QTextCodec>
 #include <QtAlgorithms>
 
+/*#include <qcontactdetailfilter.h>
+#include <qcontactemailaddress.h>
+#include <qcontactmanager.h>
+#include <qcontactphonenumber.h>
+#include <qmessage.h>
+#include <qmessageservice.h>*/
+
 #include "mailreader.h"
 #include "configuration.h"
+
+//QTM_USE_NAMESPACE
 
 MailReader::MailReader(QDeclarativeItem *parent)
     : QDeclarativeItem(parent)
@@ -26,6 +35,12 @@ MailReader::MailReader(QDeclarativeItem *parent)
     }
 
     qDebug() << "MailReader::MailReader: LOCALE: " << QLocale::system().country();
+}
+
+MailReader::~MailReader()
+{
+    qDebug() << "MailReader::~MailReader(): destroy object";
+    this->cleanUpAttachments();
 }
 
 void MailReader::threadReady()
@@ -620,6 +635,46 @@ bool MailReader::readMailDB()
         qDebug() << "MailReader::readMailDB(): *** Error: could not open DB!" << db.lastError().text();
         return false;
     }
+}
+
+QString MailReader::getMIMEMailContent()
+{
+    QFile file(QDir::homePath() + "/MyDocs/13020062.jpg.gpg");
+
+    qDebug() << "MailReader::getMIMEMailContent(): create QMessage...";
+
+    /*QMessage message;
+    message.setType(QMessage::Email);
+    message.setFrom(QMessageAddress(QMessageAddress::Email, "chrmac@gmx.de"));
+    QMessageAddressList toList;
+    toList.append(QMessageAddress(QMessageAddress::Email, "chrmac@gmx.de"));
+    message.setTo(toList);
+    message.setSubject("Test");
+
+    qDebug() << "MailReader::getMIMEMailContent(): read mail content...";*/
+
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        return "---> ERROR opening file: " + file.fileName();
+    }
+
+    //this->mimeMailContent = file.readAll();
+    file.close();
+
+    //message.setBody(this->mimeMailContent, "multipart/encrypted; protocol=\"application/pgp-encrypted\"; boundary=\"Rwr5TqLVqi6PMWsDb1gSjJt7bbJcenMcv\"");
+
+    //QStringList attachedFiles;
+    //attachedFiles.append(TMP_DIR + "sent_encrypted_mime_mail.txt");
+    //message.appendAttachments(attachedFiles);
+
+    //qDebug() << "MailReader::getMIMEMailContent(): send...";
+
+    //QMessageService service;
+    //service.send(message);
+
+    qDebug() << "MailReader::getMIMEMailContent(): DONE.";
+
+    return file.fileName();
 }
 
 

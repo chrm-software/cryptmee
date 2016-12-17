@@ -18,9 +18,9 @@ Changes:
    * Bugfix: Correct linefeeds in messages
    * New feature: Picture preview
 Checksums-Sha1: 
- 00ebb23aa054cac4b551be0b628fc235ae1fd12e 377188 cryptmee_0.3.5_armel.deb
+ 7fbb14960ee60fcb7a2d45e1ca02e22ee8fb5171 383144 cryptmee_0.3.5_armel.deb
 Checksums-Sha256: 
- b0a089e1d4523f45f6fc5cb1bd60152948c4ab9856211a0bb4e5a3c079707d4a 377188 cryptmee_0.3.5_armel.deb
+ e0087026578cd0494b9658f7ee385aefbfc7a4f2cc8def32723612166a689328 383144 cryptmee_0.3.5_armel.deb
 Files: 
- 48a193f0eb1a22eeb8a0e2a202b93db9 377188 user/other optional cryptmee_0.3.5_armel.deb
+ 63065ce4d156aa4e90313ae92783c909 383144 user/other optional cryptmee_0.3.5_armel.deb
 Maemo-Display-Name: CryptMee

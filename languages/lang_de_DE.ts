@@ -5,7 +5,7 @@
     <name>ChatContacts</name>
     <message>
         <source>Unknown Fingerprints</source>
-        <translation>Unbekannte Fingerabdrücke</translation>
+        <translation type="obsolete">Unbekannte Fingerabdrücke</translation>
     </message>
     <message>
         <source>Contacts</source>
@@ -14,6 +14,13 @@
     <message>
         <source>Search...</source>
         <translation>Suchen...</translation>
+    </message>
+</context>
+<context>
+    <name>FileSelectionPage</name>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
     </message>
 </context>
 <context>
@@ -418,6 +425,30 @@ die neuer sind als:</translation>
         <source>Enter Text...</source>
         <translation>Text eingeben...</translation>
     </message>
+    <message>
+        <source>File to encrypt: </source>
+        <translation>Datei zum Verschlüsseln: </translation>
+    </message>
+    <message>
+        <source>Select public key first!</source>
+        <translation>Zuerst öffentlichen Schlüssel auswählen!</translation>
+    </message>
+    <message>
+        <source>Encrypted file name: </source>
+        <translation>Verschlüsselte Datei: </translation>
+    </message>
+    <message>
+        <source>Encrypt file</source>
+        <translation>Datei Verschlüsseln</translation>
+    </message>
+    <message>
+        <source></source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Select identity:</source>
+        <translation>Identität auswählen:</translation>
+    </message>
 </context>
 <context>
     <name>OTRChatWindow</name>
@@ -491,6 +522,40 @@ die neuer sind als:</translation>
         <translation>Verschlüsselungsmodus
 beim Nachrichtenversand:</translation>
     </message>
+    <message>
+        <source>Uploading file...</source>
+        <translation>Upload läuft...</translation>
+    </message>
+    <message>
+        <source>Error uploading file: </source>
+        <translation>Fehler beim Upload: </translation>
+    </message>
+    <message>
+        <source>Clear message history</source>
+        <translation>Nachrichtenchronik löschen</translation>
+    </message>
+    <message>
+        <source>GnuPG public key</source>
+        <translation>GnuPG öffentlicher Schlüssel</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Auswählen</translation>
+    </message>
+    <message>
+        <source>Encrypt attachment
+ using GnuPG?</source>
+        <translation>Anhang mittels
+ GnuPG verschlüsseln?</translation>
+    </message>
+    <message>
+        <source>YES, use GnuPG</source>
+        <translation>JA, benutze GnuPG</translation>
+    </message>
+    <message>
+        <source>NO</source>
+        <translation>NEIN</translation>
+    </message>
 </context>
 <context>
     <name>OTRConfigPage</name>
@@ -558,6 +623,22 @@ auswählen</translation>
         <source>Show incoming messages as system notification</source>
         <translation>Kommende Nachrichten als Systemmitteilung anzeigen</translation>
     </message>
+    <message>
+        <source>Picture Upload Service</source>
+        <translation>Bilder Upload Service</translation>
+    </message>
+    <message>
+        <source>Upload service user name</source>
+        <translation>Upload Service Benutzername</translation>
+    </message>
+    <message>
+        <source>Upload service user password</source>
+        <translation>Upload Service Passwort</translation>
+    </message>
+    <message>
+        <source>Do not save decrypted messages in tracker (message database)</source>
+        <translation>Entschlüsselte Nachrichten nicht im Tracker (Datenbank) speichern</translation>
+    </message>
 </context>
 <context>
     <name>PasswordInputPage</name>
@@ -573,6 +654,13 @@ auswählen</translation>
         <source>OK</source>
         <translation>OK</translation>
     </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+</context>
+<context>
+    <name>PictureSelectionPage</name>
     <message>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
@@ -677,7 +765,7 @@ Es wurde nichts gesendet.</translation>
     <name>StartPage</name>
     <message>
         <source>Encrypt Or Decrypt Text</source>
-        <translation>Text Ver- oder Entschlüsseln</translation>
+        <translation type="obsolete">Text Ver- oder Entschlüsseln</translation>
     </message>
     <message>
         <source>Read Encrypted Emails</source>
@@ -701,7 +789,7 @@ Es wurde nichts gesendet.</translation>
     </message>
     <message>
         <source>Copyright &amp;copy; 2015 by Christoph Maciejewski (chrm@users.sf.net) &lt;br&gt;&lt;br&gt;  CryptMee is free software licensed under the terms of the GNU General Public License as published by the Free Software Foundation; you can redistribute it and/or modify it under the terms of the GNU General Public License either version 3 of the license, or (at your option) any later version (GPLv3+)</source>
-        <translation>Copyright &amp;copy; 2015 by Christoph Maciejewski (http://chrm.info) &lt;br&gt;&lt;br&gt; CryptMee ist Freie Software lizenzsiert unter den Bediengungen der GNU General Public License, herausgegeben durch die Free Software Foundation. Sie dürfen diese Software verteilen und modifizieren unter den Bedingungen der GNU General Public License, Version 3 oder einer Nachfolgeversion (GPLv3+)</translation>
+        <translation type="obsolete">Copyright &amp;copy; 2015 by Christoph Maciejewski (http://chrm.info) &lt;br&gt;&lt;br&gt; CryptMee ist Freie Software lizenzsiert unter den Bediengungen der GNU General Public License, herausgegeben durch die Free Software Foundation. Sie dürfen diese Software verteilen und modifizieren unter den Bedingungen der GNU General Public License, Version 3 oder einer Nachfolgeversion (GPLv3+)</translation>
     </message>
     <message>
         <source>Using GnuPG: </source>
@@ -717,7 +805,7 @@ Es wurde nichts gesendet.</translation>
     </message>
     <message>
         <source>Encrypt Text</source>
-        <translation>Text Verschlüsseln</translation>
+        <translation type="obsolete">Text Verschlüsseln</translation>
     </message>
     <message>
         <source>Read Mails</source>
@@ -742,6 +830,22 @@ Es wurde nichts gesendet.</translation>
     <message>
         <source>Privacy Software</source>
         <translation>Software für Privatsphäre</translation>
+    </message>
+    <message>
+        <source>Copyright &amp;copy; 2016 by Christoph Maciejewski (chrm.info) &lt;br&gt;&lt;br&gt;  CryptMee is free software licensed under the terms of the GNU General Public License as published by the Free Software Foundation; you can redistribute it and/or modify it under the terms of the GNU General Public License either version 3 of the license, or (at your option) any later version (GPLv3+)</source>
+        <translation>Copyright (c) 2016 by Christoph Maciejewski (http://chrm.info) &lt;br&gt;&lt;br&gt; CryptMee ist Freie Software lizenzsiert unter den Bediengungen der GNU General Public License, herausgegeben durch die Free Software Foundation. Sie dürfen diese Software verteilen und modifizieren unter den Bedingungen der GNU General Public License, Version 3 oder einer Nachfolgeversion (GPLv3+)</translation>
+    </message>
+    <message>
+        <source>Encrypt Or Decrypt Content</source>
+        <translation>Inhalte Ver- oder Entschlüsseln</translation>
+    </message>
+    <message>
+        <source>Encrypt Content</source>
+        <translation>Inhalte Verschlüsseln</translation>
+    </message>
+    <message>
+        <source>Unable to encrypt file using GnuPG</source>
+        <translation>Konnte Datei mittels GnuPG nicht verschlüsseln</translation>
     </message>
 </context>
 <context>

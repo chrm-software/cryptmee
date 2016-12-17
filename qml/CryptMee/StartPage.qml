@@ -132,7 +132,7 @@ Page {
                 height: 65
                 width: parent.width
                 color: "white"
-                text: qsTr("Copyright &copy; 2015 by Christoph Maciejewski (chrm@users.sf.net) <br><br> \
+                text: qsTr("Copyright &copy; 2016 by Christoph Maciejewski (chrm.info) <br><br> \
  CryptMee is free software licensed under the terms of the GNU General Public License as published by \
 the Free Software Foundation; you can redistribute it and/or modify it under the terms of the GNU General \
 Public License either version 3 of the license, or (at your option) any later version (GPLv3+)") + "<br><br>" +
@@ -167,7 +167,7 @@ Public License either version 3 of the license, or (at your option) any later ve
         State {
             name: "landscape"
             PropertyChanges { target: buttonsGrid; columns: 2; rows: 2 }
-            PropertyChanges { target: encDecTextButton; text: "<html>"+qsTr("Encrypt Or Decrypt Text")+"</html>"; width: parent.width/2-2; height: 150; /*x: 100*/ }
+            PropertyChanges { target: encDecTextButton; text: "<html>"+qsTr("Encrypt Or Decrypt Content")+"</html>"; width: parent.width/2-2; height: 150; /*x: 100*/ }
             PropertyChanges { target: decMailsButton; text: "<html>"+qsTr("Read Encrypted Emails")+"</html>"; width: parent.width/2-2; height: 150; /*x: 100*/ }
             PropertyChanges { target: keyManagementButton; text: "<html>"+qsTr("PGP Key Management")+"</html>"; width: parent.width/2-2; height: 150; /*x: 100*/ }
             PropertyChanges { target: otrChatButton; text: "<html>"+qsTr("Secure Conversations")+"</html>"; width: parent.width/2-2; height: 150; /*x: 100*/ }
@@ -175,7 +175,7 @@ Public License either version 3 of the license, or (at your option) any later ve
         State {
             name: "portrait"
             PropertyChanges { target: buttonsGrid; columns: 1; rows: 4 }
-            PropertyChanges { target: encDecTextButton; text: "<html>"+qsTr("Encrypt Text")+"</html>"; width: parent.width; height: 155; /*x: 5*/ }
+            PropertyChanges { target: encDecTextButton; text: "<html>"+qsTr("Encrypt Content")+"</html>"; width: parent.width; height: 155; /*x: 5*/ }
             PropertyChanges { target: decMailsButton; text: "<html>"+qsTr("Read Mails")+"</html>"; width: parent.width; height: 155; /*x: 5*/ }
             PropertyChanges { target: keyManagementButton; text: "<html>"+qsTr("Key Management")+"</html>"; width: parent.width; height: 155; /*x: 5*/ }
             PropertyChanges { target: otrChatButton; text: "<html>"+qsTr("Secure Conversations")+"</html>"; width: parent.width; height: 155; /*x: 5*/ }
@@ -361,8 +361,14 @@ Public License either version 3 of the license, or (at your option) any later ve
                 fillPublicKeysModel();
 
             } else if(currentState === "TXT_ENCRYPT") {
-                // coming from key selection dialog - show enrypted text
-                mainPage.textField = dataOutput;
+                // coming from key selection dialog - show enrypted text                
+                mainPage.textEncrypted(dataOutput)
+
+            } else if(currentState === "FILE_ENCRYPT") {                
+                mainPage.attachmentEncrypted(myGPGConnector.getLastEncryptedFilename());
+
+            } else if(currentState === "FILE_ENCRYPT_CHAT") {
+                otrChatWindow.attachmentEncrypted(myGPGConnector.getLastEncryptedFilename());
 
             } else if(currentState === "TXT_DECRYPT") {
                 // Show decrypted text
@@ -422,11 +428,15 @@ Public License either version 3 of the license, or (at your option) any later ve
 
             if(dataErrOutput !== "No Errors") {
                 // Error occured reset PGP passphrase
+                passwordDialog.prop_passwd = "xxxxxxxxxxxxxxx";
                 passwordDialog.prop_passwd = "";
             }
 
-            if(currentState === "TXT_ENCRYPT" || currentState === "TXT_DECRYPT") {
-                mainPage.errorField = dataErrOutput;
+            if(currentState === "TXT_ENCRYPT" || currentState === "TXT_DECRYPT" || currentState === "FILE_ENCRYPT") {
+                mainPage.errorOccured(dataErrOutput);
+
+            } else if(currentState === "FILE_ENCRYPT_CHAT") {
+                otrChatWindow.errorOccuredInfo(qsTr("Unable to encrypt file using GnuPG"));
 
             } else if(currentState === "MAIL_DECRYPT") {
                 mailViewPage.setErrorMessage("ERROR: " + dataErrOutput);
@@ -498,6 +508,25 @@ Public License either version 3 of the license, or (at your option) any later ve
         } else {
             currentState = _state;
             myGPGConnector.encrypt(mainPage.textField, _pubKey);
+        }
+    }
+
+    function pgpEncryptFile(_filename, _pubKey, _state) {
+        console.debug("pubKey:" + _pubKey);
+
+        // Clear error output
+        mainPage.errorField = "";
+
+        console.debug("[MainPage]pgpEncryptFile(): file to encrypt: " + _filename);
+
+        if(_pubKey === undefined) {
+            updatePublicKeys();
+            keyDialog.stateAfterExit = "FILE_ENCRYPT";
+            pageStack.push(keyDialog);
+
+        } else {
+            currentState = _state;
+            myGPGConnector.encryptFile(_filename, _pubKey);
         }
     }
 

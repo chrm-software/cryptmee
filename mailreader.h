@@ -19,6 +19,7 @@ class MailReader : public QDeclarativeItem
 
 public:
     explicit MailReader(QDeclarativeItem *parent = 0);
+    ~MailReader();
 
     Q_INVOKABLE void readMails(int _fromLastDays);
     Q_INVOKABLE QString getMail(int _i);
@@ -28,6 +29,10 @@ public:
     Q_INVOKABLE QString parseMailContent(QString _mail);
     Q_INVOKABLE int getAttachmentListCount();
     Q_INVOKABLE QString getAttachment(int _i);
+
+    // DEBUG function
+    Q_INVOKABLE QString getMIMEMailContent();
+    QString mimeMailContent;
 
     QString quotedPrintableDecode(QString &input, QString _codec = "");
     QString encodeMIMEString(QString _input);

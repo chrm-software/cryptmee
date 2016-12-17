@@ -47,10 +47,16 @@ Page {
                 switchShowMsgNotification.checked = true;
             }
 
+            var doNotSaveDecrypted = startPage.gpgConnector.settingsGetValue("SETTINGS_OTR_DO_NOT_SAVE");
+            if(doNotSaveDecrypted === "1") {
+                switchDoNotSaveEncrypted.checked = true;
+            }
+
             // Read upload service settings
             uploadServiceURLText.text = startPage.gpgConnector.settingsGetValue("UPLOAD_SERVICE_URL");
             uploadServiceAuthUser.text = startPage.gpgConnector.settingsGetValue("UPLOAD_SERVICE_AUTH_USER");
             uploadServiceAuthPass.text = startPage.gpgConnector.settingsGetValue("UPLOAD_SERVICE_AUTH_PASS");
+            uploadServiceAuthPass.echoMode = TextInput.Password;
         }
 
         onOtrErrorOccured: {
@@ -205,11 +211,11 @@ Page {
             Grid {
                 id: settingsGrid
                 columns: 1
-                rows: 12
+                rows: 14
                 spacing: 5
                 anchors.fill: parent
                 width: parent.width
-                height: 780
+                height: 860
 
                 GroupSeparator {
                     title: qsTr("OTR Account Binding")
@@ -319,7 +325,12 @@ Page {
 
                     Rectangle {
                         width: 1
-                        height: labelShowMsgNotification.height
+                        height: {
+                            if(labelShowMsgNotification.height > switchDoNotSaveEncrypted.height)
+                                return labelShowMsgNotification.height;
+                            else
+                                return switchShowMsgNotification.height;
+                        }
                         color: "transparent"
                     }
 
@@ -332,7 +343,7 @@ Page {
 
                     Switch {
                         id: switchShowMsgNotification;
-                        height: labelShowMsgNotification.height
+                        //height: labelShowMsgNotification.height
                         checked: false
                         enabled: true
 
@@ -341,6 +352,44 @@ Page {
                                 startPage.gpgConnector.settingsSetValue("SETTINGS_OTR_SHOW_NOTIFICATIONS", "1");
                             } else {
                                 startPage.gpgConnector.settingsSetValue("SETTINGS_OTR_SHOW_NOTIFICATIONS", "0");
+                            }
+                        }
+                    }
+                }
+
+                Row {
+                    width: parent.width;
+                    spacing: 10
+
+                    Rectangle {
+                        width: 1
+                        height: {
+                            if(labelDoNotSaveEncrypted.height > switchDoNotSaveEncrypted.height)
+                                return labelDoNotSaveEncrypted.height;
+                            else
+                                return switchDoNotSaveEncrypted.height;
+                        }
+                        color: "transparent"
+                    }
+
+                    Label {
+                        id: labelDoNotSaveEncrypted
+                        wrapMode: Text.Wrap
+                        width: parent.width - switchEnableOTR.width - 21
+                        text: qsTr("Do not save decrypted messages in tracker (message database)");
+                    }
+
+                    Switch {
+                        id: switchDoNotSaveEncrypted;
+                        //height: labelDoNotSaveEncrypted.height
+                        checked: false
+                        enabled: true
+
+                        onCheckedChanged: {
+                            if(switchDoNotSaveEncrypted.checked) {
+                                startPage.gpgConnector.settingsSetValue("SETTINGS_OTR_DO_NOT_SAVE", "1");
+                            } else {
+                                startPage.gpgConnector.settingsSetValue("SETTINGS_OTR_DO_NOT_SAVE", "0");
                             }
                         }
                     }
@@ -383,7 +432,7 @@ Page {
                     spacing: 10
 
                     TextField {
-                        id: uploadServiceAuthPass;
+                        id: uploadServiceAuthPass;                        
                         placeholderText: qsTr("Upload service user password")
                         width: parent.width
                         onTextChanged: startPage.gpgConnector.settingsSetValue("UPLOAD_SERVICE_AUTH_PASS", uploadServiceAuthPass.text);

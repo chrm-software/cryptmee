@@ -17,7 +17,15 @@ Page {
     property string currentChatEntry: ""
     property int animDurationIncoming: 250
     property bool reloadChatContent: true
+    property alias assignedPgpKey: pgpPublicKey.text
+    property string lastAttachmentPath: ""
+    property bool lastAttachmentIsPicture: true
     /////////////////////////////////
+
+    Component.onCompleted: {
+        dialogAttachmentSendMethodModel.get(0).name = qsTr("YES, use GnuPG");
+        dialogAttachmentSendMethodModel.get(1).name = qsTr("NO");
+    }
 
     //////////////////////////////////////// Functions ////////////////////////////////
     function sendMessage(message) {
@@ -47,6 +55,10 @@ Page {
                 otrConfigPage.imControlThread.addChatMessage(contactJID, message, false, false, chatSendEncrypted);
             }
         }
+    }
+
+    function errorOccuredInfo(_msg) {
+        addMessage("*** " + _msg, false, Qt.formatTime(new Date(),"hh:mm"), true, false);
     }
 
     function addMessage(text, remote, date, system, encrypted) {
@@ -100,6 +112,7 @@ Page {
 
     function getMessageFor(_contactName) {
         // Do not draw message for other users
+        console.debug("QML: getMessageFor(" + _contactName + "). Current user: " + contactName);
         if(_contactName !== contactName)
             return;
 
@@ -118,6 +131,11 @@ Page {
 
     function chatBackground(_color) {
         chatRect.color = _color;
+    }
+
+    function clearMessageHistory() {
+        otrConfigPage.imControlThread.clearMessageHistoryFor(contactName);
+        getAllMessages();
     }
 
     function verifyFingerprint() {
@@ -187,10 +205,37 @@ Page {
         }
     }
 
-    function uploadImage(imagePath) {
-        addMessage(qsTr("Uploading file..."), false, Qt.formatTime(new Date(),"hh:mm"), true, false);
-        pictureUploader.uploadFile(imagePath);
+    function uploadImage(_imagePath, _askForEncryption) {
+        lastAttachmentPath = _imagePath;
+
+        if(assignedPgpKey != "" && _askForEncryption) {
+            // TODO: Ask for additional encryption with PGP if key is available
+            dialogAttachmentSendMethod.open();
+        } else {
+            addMessage(qsTr("Uploading file..."), false, Qt.formatTime(new Date(),"hh:mm"), true, false);
+
+            if(lastAttachmentIsPicture)
+                pictureUploader.uploadFile(_imagePath);
+            else
+                pictureUploader.uploadFile(_imagePath, false);
+        }
     }
+
+    function uploadAttachmentWithPGP() {
+        startPage.pgpEncryptFile(lastAttachmentPath, assignedPgpKey, "FILE_ENCRYPT_CHAT");
+    }
+
+    function setPGPKeyForJID(_keyID) {
+        startPage.gpgConnector.settingsSetValue("SETTINGS_ASSIGNED_PGP_" + contactName, _keyID);
+        assignedPgpKey = _keyID;
+    }
+
+    function attachmentEncrypted(_filePath) {
+        lastAttachmentIsPicture = false;
+        uploadImage(_filePath, false);
+    }
+
+
 
     ///////////////////////////////////////////////////////////////////////////////////
 
@@ -199,6 +244,7 @@ Page {
             showPage("CHAT_PAGE", reloadChatContent);
             checkIfChatVerified();
             reloadChatContent = true;
+            assignedPgpKey = startPage.gpgConnector.settingsGetValue("SETTINGS_ASSIGNED_PGP_" + contactName);
 
             if(emojiSelectionGrid.model.count === 0) {
                 for(var i=0; i<otrConfigPage.imControlThread.getNumOfEmojis(); i++) {
@@ -257,6 +303,7 @@ Page {
 
             onClicked: {
                 contactName = "";
+                console.debug("QML: backButton clicked, contactName=" + contactName);
                 chatListView.model.clear();
                 pageStack.pop();
             }
@@ -290,6 +337,11 @@ Page {
         id: myMenu
         visualParent: otrChatWindow
         MenuLayout {
+            MenuItem { text: qsTr("Clear message history")
+                onClicked: {
+                    clearMessageHistory();
+                }
+            }
             MenuItem { text: qsTr("Black background color")
                 onClicked: {
                     chatBackground("black");
@@ -344,6 +396,7 @@ Page {
             y: 0
             platformIconId: "toolbar-back";
             onClicked: {
+                contactName = "";
                 chatListView.model.clear();
                 pageStack.pop();
             }
@@ -418,11 +471,11 @@ Page {
         Grid {
             id: settingsGrid
             columns: 1
-            rows: 12
+            rows: 14
             spacing: 5
             anchors.fill: parent
             width: parent.width
-            height: 350
+            height: 380
 
             GroupSeparator {
                 title: qsTr("Contact JID (set resource if needed)")
@@ -533,6 +586,45 @@ Page {
                 width: parent.width
                 text: qsTr("Remove Fingerprint")
                 onClicked: deleteFingerprint();
+            }
+
+            GroupSeparator {
+                title: qsTr("GnuPG public key")
+            }
+
+            Row {
+                width: parent.width
+
+                TextArea {
+                    id: pgpPublicKey;
+                    text: ""
+                    width: parent.width - buttonSelectPgpKey.width - buttonClearPgpKey.width
+                    readOnly: true
+                    font.family: "Courier"
+                    font.pixelSize: 21
+                    font.bold: true
+                }
+                Button {
+                    id: buttonSelectPgpKey
+                    width: parent.width/3
+                    text: qsTr("Select")
+                    enabled: true
+
+                    onClicked: {
+                        keyDialog.stateAfterExit = "CHAT_PROFILE_ATTACH";
+                        pageStack.push(keyDialog);
+                    }
+                }
+                Button {
+                    id: buttonClearPgpKey
+                    width: 50
+                    enabled: true
+                    iconSource: "image://theme/icon-m-toolbar-backspace"
+
+                    onClicked: {
+                        assignedPgpKey = "";
+                    }
+                }
             }
 
         }
@@ -685,10 +777,30 @@ Page {
                 height: 45
                 y: 5
                 x: 20 + sendSmileyButton.width
-                iconSource: "image://theme/icon-s-conversation-attachment"
+                //iconSource: "image://theme/icon-s-conversation-attachment"
+                iconSource: "image://theme/icon-m-toolbar-gallery"
 
                 onClicked: {
+                    lastAttachmentIsPicture = true;
+                    pictureSelectionPage.action_prop = "CHAT";
                     pageStack.push(pictureSelectionPage);
+                }
+            }
+
+            Button {
+                id: sendFileButton
+                visible: true;
+                text: ""
+                width: 45
+                height: 45
+                y: 5
+                x: 30 + sendSmileyButton.width + sendPictureButton.width
+                iconSource: "image://theme/icon-m-toolbar-directory"
+
+                onClicked: {
+                    lastAttachmentIsPicture = false;
+                    fileSelectionPage.action_prop = "CHAT";
+                    pageStack.push(fileSelectionPage);
                 }
             }
 
@@ -940,6 +1052,31 @@ Page {
 
         onAccepted: {
             changeTextSendingMode(dialogEncryptionMode.model.get(dialogEncryptionMode.selectedIndex).value);
+        }
+    }
+
+    SelectionDialog {
+        id: dialogAttachmentSendMethod
+        titleText: qsTr("Encrypt attachment\n using GnuPG?")
+        selectedIndex: 0
+        model: ListModel {
+            id: dialogAttachmentSendMethodModel
+            ListElement { name: "YES, use GnuPG"; value: true }
+            ListElement { name: "NO"; value: false }
+        }
+
+        onAccepted: {
+            var retVal = dialogAttachmentSendMethod.model.get(dialogAttachmentSendMethod.selectedIndex).value;
+
+            if(!retVal) {
+                uploadImage(lastAttachmentPath, false);
+            } else {
+                uploadAttachmentWithPGP();
+            }
+        }
+
+        onRejected: {
+            uploadImage(lastAttachmentPath, false);
         }
     }
 

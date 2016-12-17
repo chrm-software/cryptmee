@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'qmlapplicationviewer.h'
 **
-** Created: Mon 9. Nov 17:02:12 2015
+** Created: Fri 25. Nov 14:30:39 2016
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.4)
 **
 ** WARNING! All changes made in this file will be lost!

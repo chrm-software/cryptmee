@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'gnupgconnector.h'
 **
-** Created: Tue 18. Oct 10:36:52 2016
+** Created: Sat 17. Dec 14:55:54 2016
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.4)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_GnuPGConnector[] = {
        5,       // revision
        0,       // classname
        0,    0, // classinfo
-      34,   14, // methods
+      38,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -46,29 +46,33 @@ static const uint qt_meta_data_GnuPGConnector[] = {
      232,  224,  101,   15, 0x02,
      246,   15,  101,   15, 0x02,
      271,  265,   15,   15, 0x02,
-     304,  295,  101,   15, 0x02,
-     323,  320,  101,   15, 0x22,
-     339,  335,  101,   15, 0x02,
-     374,  359,  101,   15, 0x02,
-     397,   15,  101,   15, 0x22,
-     426,  420,  416,   15, 0x02,
-     447,   15,  416,   15, 0x22,
-     504,  470,  465,   15, 0x02,
-     569,  553,  465,   15, 0x02,
-     606,  600,  465,   15, 0x02,
-     631,   15,  101,   15, 0x02,
-     653,  600,  465,   15, 0x02,
-     681,   15,  465,   15, 0x02,
-     716,  707,  465,   15, 0x02,
-     753,  747,  465,   15, 0x02,
-     786,  335,  465,   15, 0x02,
-     829,  805,  465,   15, 0x02,
-     874,  862,  465,   15, 0x02,
-     898,   15,  101,   15, 0x02,
-     921,  911,  465,   15, 0x02,
-     954,  942,   15,   15, 0x02,
-     993,  988,  101,   15, 0x02,
-    1019,   15,   15,   15, 0x02,
+     295,   15,  101,   15, 0x02,
+     331,  322,  101,   15, 0x02,
+     350,  347,  101,   15, 0x22,
+     366,  362,  101,   15, 0x02,
+     401,  386,  101,   15, 0x02,
+     424,   15,  101,   15, 0x22,
+     453,  447,  443,   15, 0x02,
+     474,   15,  443,   15, 0x22,
+     531,  497,  492,   15, 0x02,
+     596,  580,  492,   15, 0x02,
+     633,  627,  492,   15, 0x02,
+     658,   15,  101,   15, 0x02,
+     701,  680,  101,   15, 0x02,
+     752,  730,  101,   15, 0x02,
+     781,  627,  492,   15, 0x02,
+     809,   15,  492,   15, 0x02,
+     844,  835,  492,   15, 0x02,
+     881,  875,  492,   15, 0x02,
+     914,  362,  492,   15, 0x02,
+     957,  933,  492,   15, 0x02,
+    1002,  990,  492,   15, 0x02,
+    1026,   15,  101,   15, 0x02,
+    1039,   15,   15,   15, 0x02,
+    1064, 1054,  492,   15, 0x02,
+    1097, 1085,   15,   15, 0x02,
+    1136, 1131,  101,   15, 0x02,
+    1162,   15,   15,   15, 0x02,
 
        0        // eod
 };
@@ -82,7 +86,8 @@ static const char qt_meta_stringdata_GnuPGConnector[] = {
     "decrypt(QString,QString)\0showKeys()\0"
     "showSecretKeys()\0_errors\0getData(bool)\0"
     "getFromClipboard()\0_data\0"
-    "setToClipboard(QString)\0_i,_type\0"
+    "setToClipboard(QString)\0"
+    "getLastEncryptedFilename()\0_i,_type\0"
     "getKey(int,int)\0_i\0getKey(int)\0_id\0"
     "getKeyByID(QString)\0_asCommandLine\0"
     "getPrivateKeyIDs(bool)\0getPrivateKeyIDs()\0"
@@ -92,15 +97,20 @@ static const char qt_meta_stringdata_GnuPGConnector[] = {
     "generateKeyPair(QString,QString,QString,QString)\0"
     "_id,_trustLevel\0setOwnerTrust(QString,QString)\0"
     "_path\0checkGPGVersion(QString)\0"
-    "getGPGVersionString()\0importKeysFromFile(QString)\0"
+    "getGPGVersionString()\0_filename,_recipient\0"
+    "encryptFile(QString,QString)\0"
+    "_filename,_passphrase\0"
+    "decryptFile(QString,QString)\0"
+    "importKeysFromFile(QString)\0"
     "importKeysFromClipboard()\0_keyword\0"
     "searchKeysOnKeyserver(QString)\0_keys\0"
     "importKeysFromKeyserver(QString)\0"
     "deleteKey(QString)\0_id,_passwd,_privateKey\0"
     "signKey(QString,QString,QString)\0"
     "_mode,_path\0exportKeys(int,QString)\0"
-    "getHistory()\0_filename\0saveHistory(QString)\0"
-    "_key,_value\0settingsSetValue(QString,QString)\0"
+    "getHistory()\0clearHistory()\0_filename\0"
+    "saveHistory(QString)\0_key,_value\0"
+    "settingsSetValue(QString,QString)\0"
     "_key\0settingsGetValue(QString)\0"
     "settingsReset()\0"
 };
@@ -151,53 +161,60 @@ int GnuPGConnector::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 9: { QString _r = getFromClipboard();
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
         case 10: setToClipboard((*reinterpret_cast< QString(*)>(_a[1]))); break;
-        case 11: { QString _r = getKey((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2])));
+        case 11: { QString _r = getLastEncryptedFilename();
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
-        case 12: { QString _r = getKey((*reinterpret_cast< int(*)>(_a[1])));
+        case 12: { QString _r = getKey((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
-        case 13: { QString _r = getKeyByID((*reinterpret_cast< QString(*)>(_a[1])));
+        case 13: { QString _r = getKey((*reinterpret_cast< int(*)>(_a[1])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
-        case 14: { QString _r = getPrivateKeyIDs((*reinterpret_cast< bool(*)>(_a[1])));
+        case 14: { QString _r = getKeyByID((*reinterpret_cast< QString(*)>(_a[1])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
-        case 15: { QString _r = getPrivateKeyIDs();
+        case 15: { QString _r = getPrivateKeyIDs((*reinterpret_cast< bool(*)>(_a[1])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
-        case 16: { int _r = getNumOfPubKeys((*reinterpret_cast< int(*)>(_a[1])));
+        case 16: { QString _r = getPrivateKeyIDs();
+            if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
+        case 17: { int _r = getNumOfPubKeys((*reinterpret_cast< int(*)>(_a[1])));
             if (_a[0]) *reinterpret_cast< int*>(_a[0]) = _r; }  break;
-        case 17: { int _r = getNumOfPubKeys();
+        case 18: { int _r = getNumOfPubKeys();
             if (_a[0]) *reinterpret_cast< int*>(_a[0]) = _r; }  break;
-        case 18: { bool _r = generateKeyPair((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])),(*reinterpret_cast< QString(*)>(_a[3])),(*reinterpret_cast< QString(*)>(_a[4])));
+        case 19: { bool _r = generateKeyPair((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])),(*reinterpret_cast< QString(*)>(_a[3])),(*reinterpret_cast< QString(*)>(_a[4])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
-        case 19: { bool _r = setOwnerTrust((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])));
+        case 20: { bool _r = setOwnerTrust((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
-        case 20: { bool _r = checkGPGVersion((*reinterpret_cast< QString(*)>(_a[1])));
+        case 21: { bool _r = checkGPGVersion((*reinterpret_cast< QString(*)>(_a[1])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
-        case 21: { QString _r = getGPGVersionString();
+        case 22: { QString _r = getGPGVersionString();
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
-        case 22: { bool _r = importKeysFromFile((*reinterpret_cast< QString(*)>(_a[1])));
-            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
-        case 23: { bool _r = importKeysFromClipboard();
-            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
-        case 24: { bool _r = searchKeysOnKeyserver((*reinterpret_cast< QString(*)>(_a[1])));
-            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
-        case 25: { bool _r = importKeysFromKeyserver((*reinterpret_cast< QString(*)>(_a[1])));
-            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
-        case 26: { bool _r = deleteKey((*reinterpret_cast< QString(*)>(_a[1])));
-            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
-        case 27: { bool _r = signKey((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])),(*reinterpret_cast< QString(*)>(_a[3])));
-            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
-        case 28: { bool _r = exportKeys((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])));
-            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
-        case 29: { QString _r = getHistory();
+        case 23: { QString _r = encryptFile((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
-        case 30: { bool _r = saveHistory((*reinterpret_cast< QString(*)>(_a[1])));
-            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
-        case 31: settingsSetValue((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
-        case 32: { QString _r = settingsGetValue((*reinterpret_cast< QString(*)>(_a[1])));
+        case 24: { QString _r = decryptFile((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
-        case 33: settingsReset(); break;
+        case 25: { bool _r = importKeysFromFile((*reinterpret_cast< QString(*)>(_a[1])));
+            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
+        case 26: { bool _r = importKeysFromClipboard();
+            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
+        case 27: { bool _r = searchKeysOnKeyserver((*reinterpret_cast< QString(*)>(_a[1])));
+            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
+        case 28: { bool _r = importKeysFromKeyserver((*reinterpret_cast< QString(*)>(_a[1])));
+            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
+        case 29: { bool _r = deleteKey((*reinterpret_cast< QString(*)>(_a[1])));
+            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
+        case 30: { bool _r = signKey((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])),(*reinterpret_cast< QString(*)>(_a[3])));
+            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
+        case 31: { bool _r = exportKeys((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])));
+            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
+        case 32: { QString _r = getHistory();
+            if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
+        case 33: clearHistory(); break;
+        case 34: { bool _r = saveHistory((*reinterpret_cast< QString(*)>(_a[1])));
+            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
+        case 35: settingsSetValue((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
+        case 36: { QString _r = settingsGetValue((*reinterpret_cast< QString(*)>(_a[1])));
+            if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
+        case 37: settingsReset(); break;
         default: ;
         }
-        _id -= 34;
+        _id -= 38;
     }
     return _id;
 }

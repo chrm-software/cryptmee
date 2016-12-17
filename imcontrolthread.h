@@ -124,6 +124,8 @@ public:
     Q_INVOKABLE int getChatHistorySizeFor(QString _contact);
     Q_INVOKABLE QString getNewestChatMessageFor(QString _contact);
     Q_INVOKABLE void addChatMessage(QString _contact, QString _message, bool _remote, bool _system, bool _sendEncrypted = true);
+    Q_INVOKABLE void clearMessageHistoryFor(QString _contact);
+    Q_INVOKABLE bool clearUnreadMsgFlag(QString _contact);
 
     Q_INVOKABLE void verifyFingerprint(QString _account, QString _contact, QString _fingerprint, bool _verified);
     Q_INVOKABLE void deleteFingerprint(QString _account, QString _contact, QString _fingerprint);
@@ -141,8 +143,7 @@ public:
     bool meegoNotification(QString _message, bool _isUserMsg = false);
     void guiConnector(int _action, QString _value);
     QStringList getKnownOTRPartners();
-    QString getReadableAccountName(QString _account);
-    bool hasPendingMessageFor(QString _contact);
+    QString getReadableAccountName(QString _account);   
 
     
 public slots:
@@ -172,8 +173,10 @@ private:
 
     bool parseParameter(QString _param);
 
+
     bool variantToString(const QVariant &arg, QString &out);
     bool argToString(const QDBusArgument &busArg, QString &out);
+    bool parsingUnreadFlag;
 
     void foundMessageInTracker(QString _message);
     void clearedMessageTextInTracker(QString _message);
@@ -204,6 +207,7 @@ private:
 private slots:
     void telepathyMessageReceived(const QDBusMessage &reply);
     void telepathyPresenceChanged(const QDBusMessage &reply);
+    void telepathyConversationOpened(const QDBusMessage &reply);
 
     void mctoolFinished(int _retVal);
     void mctoolError(QProcess::ProcessError _pe);
